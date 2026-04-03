@@ -1,7 +1,5 @@
 url: https://zrayw.github.io/BRIER2/
-
-llm-docs: false
-
+llm-docs: no
 template:
   bootstrap: 5
   bslib:
@@ -13,48 +11,43 @@ template:
       google: JetBrains Mono
     bootswatch: lumen
   math-rendering: mathjax
-
 toc:
   depth: 6
-
 navbar:
   left:
-    - text: Home
-      href: index.html
-    - text: Get started
-      href: articles/BRIER2.html
-    - text: Appendix
-      menu:
-        - text: Overview
-          href: articles/Appendix.html
-        - text: Model Details
-          href: articles/Appendix_Model.html
-        - text: Distribution Family and Evaluation Metrics
-          href: articles/Appendix_Distr.html
-        - text: Information Criteria for Hyper-parameter Tuning
-          href: articles/Appendix_IC.html
-        - text: Recovering Summary-level Input from GWAS Results
-          href: articles/Appendix_GWAS.html
-    - text: Reference
-      href: reference/index.html
+  - text: Home
+    href: index.html
+  - text: Get started
+    href: articles/BRIER2.html
+  - text: Appendix
+    menu:
+    - text: Overview
+      href: articles/Appendix.html
+    - text: Model Details
+      href: articles/Appendix_Model.html
+    - text: Distribution Family and Evaluation Metrics
+      href: articles/Appendix_Distr.html
+    - text: Information Criteria for Hyper-parameter Tuning
+      href: articles/Appendix_IC.html
+    - text: Recovering Summary-level Input from GWAS Results
+      href: articles/Appendix_GWAS.html
+  - text: Reference
+    href: reference/index.html
   right:
-    - icon: fa-github fa-lg
-      href: https://github.com/zrayw/BRIER2
-      aria-label: GitHub repository
-
+  - icon: fa-github fa-lg
+    href: https://github.com/zrayw/BRIER2
+    aria-label: GitHub repository
 articles:
-  - title: Get started
-    navbar: ~
-    contents:
-      - BRIER2
-
-  - title: Appendix
-    navbar: Appendix
-    contents:
-      - Appendix
-      - Appendix_Model
-      - Appendix_Distr
-      - Appendix_IC
-      - Appendix_GWAS
-
+- title: Get started
+  navbar: ~
+  contents: BRIER2
+- title: Appendix
+  navbar: Appendix
+  contents:
+  - Appendix
+  - Appendix_Model
+  - Appendix_Distr
+  - Appendix_IC
+  - Appendix_GWAS
 reference: ~
+
