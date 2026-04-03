@@ -1,15 +1,20 @@
 ---
 title: "Distribution Family and Evaluation Metrics"
-output: rmarkdown::html_vignette
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 6
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Distribution Family and Evaluation Metrics}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: sentence
 bibliography: references.bib
 ---
+
 
 # Distribution family {#sec-distr}
 

@@ -1,17 +1,19 @@
 ---
 title: "Recovering Summary-level Input from GWAS Results"
-output: rmarkdown::html_vignette
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 6
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Recovering Summary-level Input from GWAS Results}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: sentence
 bibliography: references.bib
 ---
-
-
 
 
 In the `BRIER.S` framework, model fitting relies on two summary-level quantities: (i) the vector of standardized marginal correlations $\boldsymbol{r} = \boldsymbol{X}^\top \boldsymbol{y}/n$ between each genetic predictor and the outcome, and (ii) an estimate of the linkage disequilibrium (LD) matrix $\widetilde{\boldsymbol{\Sigma}}$. In this section, we describe how these quantities can be recovered or approximated from GWAS summary statistics and external reference panels.

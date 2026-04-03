@@ -1,12 +1,16 @@
 ---
 title: "Information Criteria for Hyper-parameter Tuning"
-output: rmarkdown::html_vignette
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 6
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Information Criteria for Hyper-parameter Tuning}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: sentence
 bibliography: references.bib
 ---
