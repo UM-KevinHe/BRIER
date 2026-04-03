@@ -1,0 +1,54 @@
+url: https://um-kevinhe.github.io/BRIER2
+
+template:
+  bootstrap: 5
+  bslib:
+    base_font: {google: "Roboto"}
+    heading_font: {google: "Roboto Slab"}
+    code_font: {google: "JetBrains Mono"}
+  params:
+    bootswatch: lumen
+    ganalytics: UA-54921687-5
+    mathjax: true
+  in_header:
+    - pkgdown/extra.css
+
+toc:
+  depth: 6
+
+navbar:
+  type: inverse
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Get started"
+      href: articles/BRIER2.html
+    - text: "Appendix"
+      menu:
+        - text: "Model Details"
+          href: articles/Appendix_Model.html
+        - text: "Distribution Family and Evaluation Metrics"
+          href: articles/Appendix_Distr.html
+        - text: "Information Criteria for Hyper-parameter Tuning"
+          href: articles/Appendix_IC.html
+        - text: "Recovering Summary-level Input from GWAS Results"
+          href: articles/Appendix_GWAS.html
+    - text: "Reference"
+      href: reference/index.html
+  right:
+    - icon: fa-github fa-lg
+      href: https://um-kevinhe.github.io/BRIER2
+      aria-label: "GitHub repository"
+
+articles:
+  - title: "Get started"
+    contents:
+      - tutorial
+  - title: "Appendix"
+    contents:
+      - Appendix_Model
+      - Appendix_Distr
+      - Appendix_IC
+      - Appendix_GWAS
+
+reference:

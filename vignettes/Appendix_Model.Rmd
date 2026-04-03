@@ -1,0 +1,356 @@
+---
+title: "Model Details"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model Details}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: sentence
+bibliography: references.bib
+---
+
+
+# `BRIER.FULL`
+
+The `BRIER.FULL` procedure aims to minimize the following objective function:
+
+$$
+Q_{\boldsymbol{\eta}}(\boldsymbol{\beta})
+=
+-\, \ell\!\left(\boldsymbol{\beta}\mid \boldsymbol{X}, \boldsymbol{Y}\right)
+-
+\sum_{m=1}^{M}
+\eta_m\,
+\ell\!\left(\boldsymbol{\beta}\mid \check{\boldsymbol{X}}_m, \check{\boldsymbol{Y}}_m\right).
+$$
+
+The integration weight $\eta_m \ge 0$ controls the extent of information transferred from the $m$-th external cohort to the target data. Here, $\ell(\cdot)$ denotes the log-likelihood function. For generalized linear models and the Cox proportional hazards model, the corresponding log-likelihood functions are specified below.
+
+## Generalized Linear Models
+
+Assume that the conditional distribution of $Y_i$ given $\boldsymbol{X}_i$ belongs to the canonical exponential family, with conditional density
+
+$$
+f(Y_i; \theta_i, \phi)
+\propto
+\exp\left(
+\frac{Y_i \theta_i - b(\theta_i)}{a(\phi)}
+\right),
+$$
+
+where $a(\cdot)$ and $b(\cdot)$ are pre-specified functions corresponding to the assumed outcome distribution, $\phi$ is a nuisance parameter related to the variance, and $\theta_i$ is the canonical parameter. The mean and variance satisfy
+
+$$
+\mu_i = \mathbb{E}(Y_i \mid \theta_i) = b'(\theta_i),
+$$
+
+and
+
+$$
+\mathrm{Var}(Y_i \mid \theta_i) = a(\phi)\, b''(\theta_i).
+$$
+
+The mean $\mu_i$ is related to the linear predictor through a link function:
+
+$$
+g(\mu_i) = \eta_i = \boldsymbol{x}_i^\top \boldsymbol{\beta}.
+$$
+
+The log-likelihood function is given by
+
+$$
+\ell(\boldsymbol{\beta})
+=
+\sum_{i=1}^n
+\log f\!\left(y_i \mid \theta_i(\boldsymbol{\beta}), \phi\right)
+=
+\sum_{i=1}^n
+\left[
+\frac{y_i \theta_i(\boldsymbol{\beta}) - b\!\left(\theta_i(\boldsymbol{\beta})\right)}{a(\phi)}
++
+c(y_i,\phi)
+\right].
+$$
+
+Table: (\#tab:glm-family) Exponential-family distributions implemented in `BRIER2`, including cumulant functions $b(\theta)$ and canonical link functions $g(\mu)$.
+
+| **Family** | $\mathbf{b(\theta)}$ | $\boldsymbol{\mu=b'(\theta)}$ | $\mathbf{\mathrm{Var}(Y)}$ | **$g(\mu)$** |
+|:--|:--|:--|:--|:--|
+| Gaussian | $\dfrac{\theta^2}{2}$ | $\theta$ | $\phi$ | $\mu$ |
+| Bernoulli | $\log(1+e^{\theta})$ | $\dfrac{e^\theta}{1+e^\theta}$ | $\mu(1-\mu)$ | $\log\!\left(\dfrac{\mu}{1-\mu}\right)$ |
+| Poisson | $e^{\theta}$ | $e^\theta$ | $\mu$ | $\log(\mu)$ |
+| Negative Binomial | $-r\log(1-e^{\theta}),\;\theta<0$ | $\dfrac{r e^\theta}{1-e^\theta}$ | $\mu+\dfrac{\mu^2}{r}$ | $\log\!\left(\dfrac{\mu}{\mu+r}\right)$ |
+
+For the Cox proportional hazards model, the negative log-partial likelihood admits a KL-divergence interpretation through the sequence of conditional failure-time distributions. Let $t_{(1)} < \cdots < t_{(K)}$ denote the ordered distinct event times, and let $\mathcal{R}_k$ denote the risk set immediately prior to $t_{(k)}$. If subject $i_k$ experiences the event at $t_{(k)}$, the working Cox model induces the conditional probability
+
+$$
+f^{(\boldsymbol{\beta})}(i_k \mid \mathcal{R}_k)
+=
+\frac{\exp(\boldsymbol{x}_{i_k}^{\top}\boldsymbol{\beta})}
+{\sum_{j\in\mathcal{R}_k}\exp(\boldsymbol{x}_j^{\top}\boldsymbol{\beta})}.
+$$
+
+The log-partial likelihood of the working Cox model is
+
+$$
+\ell_p(\boldsymbol{\beta})
+=
+\sum_{k=1}^{K}
+\log
+f^{(\boldsymbol{\beta})}(i_k \mid \mathcal{R}_k)
+=
+\sum_{k=1}^{K}
+\left[
+\boldsymbol{x}_{i_k}^{\top}\boldsymbol{\beta}
+-
+\log
+\left(
+\sum_{j\in\mathcal{R}_k}
+\exp(\boldsymbol{x}_j^{\top}\boldsymbol{\beta})
+\right)
+\right].
+$$
+
+
+
+# `BRIER.I`
+
+The `BRIER.I` procedure minimizes the following objective:
+
+$$
+Q_{\boldsymbol{\eta}}(\boldsymbol{\beta})
+=
+-\, \ell\!\left(\boldsymbol{\beta}\mid \boldsymbol{X}, \boldsymbol{Y}\right)
++
+\sum_{m=1}^{M}
+\eta_m\,
+\operatorname{D_{KL}}\!\left(\check{f}_m \,\|\, f\right).
+$$
+
+The integration weight $\eta_m \ge 0$ controls the extent of information transfer from the $m$-th external cohort to the target data. Here, $\ell\!\left(\boldsymbol{\beta}\mid \boldsymbol{X}, \boldsymbol{Y}\right)$ is the log-likelihood evaluated on the target individual-level data, and $\operatorname{D_{KL}}\!\left(\check{f}_m \,\|\, f\right)$ is the Kullback-Leibler (KL) divergence [@kullback1951_kl], measuring the discrepancy between the density $\check{f}_m$ induced by the external model $\check{\boldsymbol{\beta}}_m$ and the density $f$ induced by the target working model $\boldsymbol{\beta}$. For generalized linear models and the Cox proportional hazards model, the corresponding KL divergences are specified below.
+
+## Generalized Linear Models
+
+For outcomes following an exponential-family distribution, `BRIER.I` follows the prior lasso framework of [@jiang2016_priorlasso] to quantify the discrepancy between the target working model and external information. For an individual $i$ in the target cohort, let $f$ denote the density defined by the target model:
+
+$$
+f(y_i)
+\propto
+\exp\left\{
+\frac{y_i \theta_i - b(\theta_i)}{a(\phi)}
+\right\},
+$$
+
+where $b(\theta)$ is the cumulant function and $g(\cdot)$ is the link function. The canonical parameter $\theta_i$ satisfies
+
+$$
+b'(\theta_i) = g^{-1}(\boldsymbol{X}_i^\top \boldsymbol{\beta}).
+$$
+
+The density $\check{f}_{i,m}$ is induced by the $m$-th external model, with canonical parameter $\check{\theta}_{i,m}$ satisfying
+
+$$
+b'(\check{\theta}_{i,m})
+=
+g^{-1}(\boldsymbol{X}_i^\top \check{\boldsymbol{\beta}}_m).
+$$
+
+The Kullback-Leibler divergence between the external model and the working model is defined as
+
+$$
+D_{\mathrm{KL}}\!\left(\check{f}_m \,\|\, f\right)
+=
+\mathbb{E}_{\check{f}_m}
+\left(
+\log \frac{\check{f}_m}{f}
+\right).
+$$
+
+## Cox Proportional Hazards Models
+
+For time-to-event outcomes, `BRIER.I` adopts the `CoxKL` framework of [@wang2023_coxkl] to construct a KL divergence based on the Cox partial likelihood. We formulate the censored survival data as a dynamic ranking problem over $S$ unique failure times $t_1 < \dots < t_S$. At each event time $t_s$, let $f(A_s \mid B_s)$ denote the conditional density defined by the target model:
+
+$$
+f(A_s \mid B_s)
+=
+\frac{\exp\{\boldsymbol{X}_s^\top \boldsymbol{\beta}\}}
+{\sum_{i=1}^n Y_i(t_s)\exp\{\boldsymbol{X}_i^\top \boldsymbol{\beta}\}},
+$$
+
+and let $\check{f}_m(A_s \mid B_s)$ denote the corresponding density induced by the $m$-th external risk score $\boldsymbol{X}^\top \check{\boldsymbol{\beta}}_m$:
+
+$$
+\check{f}_m(A_s \mid B_s)
+=
+\frac{\exp\{\boldsymbol{X}_s^\top \check{\boldsymbol{\beta}}_m\}}
+{\sum_{i=1}^n Y_i(t_s)\exp\{\boldsymbol{X}_i^\top \check{\boldsymbol{\beta}}_m\}}.
+$$
+
+The discrepancy between the target model and the $m$-th external model is measured by the accumulated KL divergence across all conditional experiments:
+
+$$
+D_{\mathrm{KL}}(\check{f}_m \parallel f)
+=
+\sum_{s=1}^S
+\mathbb{E}_{\check{f}_m}
+\left[
+\log
+\frac{\check{f}_m(A_s \mid B_s)}
+{f(A_s \mid B_s)}
+\right].
+$$
+
+
+# `BRIER.S`
+
+The `BRIER.S` procedure minimizes the following objective function, constructed from summary-level data using the squared Mahalanobis distance:
+
+$$
+Q_{\boldsymbol{\eta}}(\boldsymbol{\beta})
+=
+\frac{1}{2}\,
+\operatorname{D}_{\widetilde{\boldsymbol{\Sigma}}}
+\left(
+\widetilde{\boldsymbol{\Sigma}}^{-1}\widetilde{\boldsymbol{r}}\, \|\, \boldsymbol{\beta}
+\right)
++
+\frac{1}{2}
+\sum_{m=1}^{M}
+\eta_m\,
+\operatorname{D}_{\widetilde{\boldsymbol{\Sigma}}}
+\left(
+\check{\boldsymbol{\beta}}_m\, \|\, \boldsymbol{\beta}
+\right).
+$$
+
+The integration weight $\eta_m \ge 0$ controls the contribution of each external model. The first term,
+
+$$
+\operatorname{D}_{\widetilde{\boldsymbol{\Sigma}}}
+\left(
+\widetilde{\boldsymbol{\Sigma}}^{-1}\widetilde{\boldsymbol{r}}\, \|\, \boldsymbol{\beta}
+\right),
+$$
+
+is the squared Mahalanobis distance measuring the discrepancy between the target summary-level data and the target working model. The second term,
+
+$$
+\operatorname{D}_{\widetilde{\boldsymbol{\Sigma}}}
+\left(
+\check{\boldsymbol{\beta}}_m\, \|\, \boldsymbol{\beta}
+\right),
+$$
+
+measures the discrepancy between the target working model and the $m$-th external trained model.
+
+
+# Integration of multiple external models
+
+Suppose $K$ external studies each provide a trained model with estimated coefficients
+$\check{\boldsymbol{\beta}}_{1}, \dots, \check{\boldsymbol{\beta}}_{K}$.
+In principle, the original `BRIER` framework can be extended to incorporate multiple sources of external information by introducing one tuning parameter for each external model. However, the resulting hyperparameter space grows exponentially with $K$, substantially increasing the computational burden of tuning parameter selection. To address this challenge, we propose a simple ensemble-based strategy that first combines the $K$ external models into a single composite external model, which is then integrated with the local target data through the corresponding `BRIER` objective.
+
+## `BRIERi.multi`
+
+When individual-level local data $\{\boldsymbol{X}, \boldsymbol{Y}\}$ are available, each external model $\check{\boldsymbol{\beta}}_{k}$ induces a model-implied linear predictor
+
+$$
+\boldsymbol{\nu}_{k}
+=
+\boldsymbol{X}\check{\boldsymbol{\beta}}_{k},
+$$
+
+and the corresponding mean response
+
+$$
+\check{\boldsymbol{\mu}}_{k}
+=
+g^{-1}(\boldsymbol{\nu}_{k}),
+$$
+
+where $g(\cdot)$ is the link function of the generalized linear model.
+
+To combine the $K$ external models, `BRIERi.multi` constructs an ensemble estimator by linearly aggregating their implied linear predictors. Specifically, we estimate ensemble weights $\{\omega_k\}_{k=1}^K$ by fitting
+
+$$
+g(\boldsymbol{Y})
+=
+\sum_{k=1}^{K} \omega_k\, \boldsymbol{\nu}_{k}.
+$$
+
+This yields a set of data-driven weights that reflect the relative contribution of each external model to the local prediction task.
+
+The resulting composite external model is defined as the weighted combination of the external coefficient vectors:
+
+$$
+\check{\boldsymbol{\beta}}
+=
+\sum_{k=1}^{K} \omega_k\, \check{\boldsymbol{\beta}}_{k}.
+$$
+
+This aggregated coefficient vector can then be directly incorporated into the `BRIER.I` objective, reducing the dimensionality of the hyperparameter space while retaining predictive information across all external sources.
+
+## `BRIERs.multi`
+
+When only summary-level local data are available, the individual-level quantities $\{\boldsymbol{X}, \boldsymbol{Y}\}$ cannot be accessed. Instead, we assume availability of the summary-level proxy statistics
+
+$$
+\boldsymbol{r} = \frac{1}{n}\boldsymbol{X}^{\top}\boldsymbol{Y},
+\qquad
+\boldsymbol{R} = \frac{1}{n}\boldsymbol{X}^{\top}\boldsymbol{X},
+$$
+
+where $\boldsymbol{r}$ denotes the score vector and $\boldsymbol{R}$ denotes the LD (correlation) matrix estimated from the local data.
+
+In this setting, `BRIERs.multi` extends the ensemble framework of `BRIERi.multi` by estimating the ensemble weights using a least-squares proxy objective that depends only on $\boldsymbol{r}$ and $\boldsymbol{R}$. Let
+
+$$
+\boldsymbol{B}
+=
+\left(
+\check{\boldsymbol{\beta}}_{1},
+\ldots,
+\check{\boldsymbol{\beta}}_{K}
+\right)
+$$
+
+denote the matrix collecting the external coefficient vectors, and let $\boldsymbol{w}$ denote the ensemble weights. Consider the proxy quadratic loss
+
+$$
+\frac{1}{n}\big\|\boldsymbol{Y} - \boldsymbol{X}\boldsymbol{B}\boldsymbol{w}\big\|_2^2.
+$$
+
+Expanding this expression using only $\boldsymbol{r}$ and $\boldsymbol{R}$ yields
+
+$$
+\frac{1}{n}\|\boldsymbol{Y} - \boldsymbol{X}\boldsymbol{B}\boldsymbol{w}\|_2^2
+=
+\text{const}
+- 2\,\boldsymbol{w}^{\top}\boldsymbol{B}^{\top}\boldsymbol{r}
++
+\boldsymbol{w}^{\top}\boldsymbol{B}^{\top}\boldsymbol{R}\boldsymbol{B}\boldsymbol{w}.
+$$
+
+Setting the derivative to zero gives the closed-form estimator of the ensemble weights:
+
+$$
+\widehat{\boldsymbol{w}}
+=
+\big(\boldsymbol{B}^{\top}\boldsymbol{R}\boldsymbol{B}\big)^{-1}
+\boldsymbol{B}^{\top}\boldsymbol{r}.
+$$
+
+The summary-level composite external model is then obtained as
+
+$$
+\check{\boldsymbol{\beta}}
+=
+\sum_{k=1}^{K} \widehat{w}_k\,\check{\boldsymbol{\beta}}_{k}.
+$$
+
+This aggregated coefficient vector can be plugged directly into the `BRIER.S` objective, enabling information borrowing from multiple external models without requiring individual-level local data or an independent validation set. `BRIERs.multi` therefore provides a computationally efficient and privacy-preserving approach for multi-study integration under summary-level constraints.
+
+
+

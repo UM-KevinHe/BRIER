@@ -1,0 +1,169 @@
+---
+title: "Information Criteria for Hyper-parameter Tuning"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Information Criteria for Hyper-parameter Tuning}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: sentence
+bibliography: references.bib
+---
+  
+We implement a comprehensive set of information criteria to tune the integration weight $\eta$ and the sparsity penalty parameter $\lambda$in `BRIER.I` and `BRIER.S`. In this article, we introduce detailed formulation of the information criteria implemented in `BRIER2`
+
+
+# BRIERi.selection
+
+We implement several information-criterion–based model selection procedures in `BRIERi.selection`, including the Bayesian information criterion (BIC), Mallows’ $C_p$, and generalized cross-validation (GCV), to select the tuning parameter $\eta$ and $\lambda$.
+
+**Bayesian Information Criterion (BIC).**
+  The BIC is defined as
+\begin{equation}
+\label{eq:BIC}
+\mathrm{BIC}(\eta,\lambda)
+=
+  \frac{1}{n}
+\left\{
+  \mathrm{Dev}\!\left(y,\widehat{\boldsymbol{\beta}}_{\eta,\lambda}\right)
+  +
+    \log(n)\,\mathrm{df}(\eta,\lambda)
+  \right\},
+\end{equation}
+where $\mathrm{Dev}(y,\widehat{\boldsymbol{\beta}}_{\eta,\lambda})$ denotes the deviance evaluated at the fitted model with tuning parameters $(\eta,\lambda)$, and $\mathrm{df}(\eta,\lambda)$ is the corresponding effective degrees of freedom.
+
+**Mallows’ $C_p$.**
+  For linear models with known error variance $\sigma^2$, Mallows’ $C_p$ is defined as
+\begin{equation}
+\label{eq:Cp}
+C_p(\widehat{\boldsymbol{\mu}})
+=
+  \frac{1}{n}
+\left\| \boldsymbol{y} - \widehat{\boldsymbol{\mu}} \right\|^2
++
+  \frac{2\sigma^2}{n}\, \mathrm{df},
+\end{equation}
+where $\widehat{\boldsymbol{\mu}}$ denotes the vector of predicted means and $\mathrm{df}$ is the associated degrees of freedom.
+
+**Generalized Cross-Validation (GCV).**
+  Generalized cross-validation provides a computationally efficient approximation to leave-one-out cross-validation and is given by
+\begin{equation}
+\label{eq:GCV}
+\mathrm{GCV}(\lambda)
+=
+  \frac{\mathrm{Dev}(y,\widehat{\boldsymbol{\beta}}_{\lambda})}
+{n \left\{ 1 - \mathrm{df}(\lambda)/n \right\}^2}.
+\end{equation}
+
+
+# `BRIERs.selection`
+
+We implement several model selection procedures in `BRIERs.selection` for summary-level data, including pseudo-validation, Bregman-divergence–based Mallows’ $C_p$ ($BRC_p$), and generalized information criteria (GIC), to select the tuning parameters $\eta$ and $\lambda$.
+
+**Pseudo-validation.**
+  Originally proposed in `LASSOsum` \citep{mak2017lassosum}, pseudo-validation selects the tuning parameter $\lambda$ by maximizing the objective
+\begin{equation}
+\label{eq:pseudoval}
+f(\lambda)
+=
+  \frac{\boldsymbol{\beta}_{\lambda}^{\top}\,\widehat{\mathbf{r}}}
+{\sqrt{\boldsymbol{\beta}_{\lambda}^{\top}\,\widetilde{\boldsymbol{X}}_{0}^{\top}
+  \widetilde{\boldsymbol{X}}_{0}\,\boldsymbol{\beta}_{\lambda}}},
+\end{equation}
+where $\widetilde{\boldsymbol{X}}_{0}$ is the standardized genotype matrix from an external reference panel and
+$\widehat{\mathbf{r}}$ is a shrinkage-adjusted estimate of the SNP–phenotype correlation vector.
+Specifically, each element of $\widehat{\mathbf{r}}$ is defined as
+\[
+  \widehat{r}_j
+  =
+    r_j\left(1-\mathrm{fdr}_j\right),
+  \]
+where $\mathrm{fdr}_j$ denotes the local false discovery rate for SNP $j$.
+This objective approximates the Spearman correlation between the predicted genetic score
+$\widetilde{\boldsymbol{X}}_{0}\boldsymbol{\beta}_{\lambda}$ and the unobserved true phenotype.
+
+**Bregman-divergence based $C_p$.**
+  For summary-level settings, we adopt a Bregman-divergence based extension of Mallows’ $C_p$, referred to as BRC$_p$.
+The criterion is defined as
+\begin{equation}
+\label{eq:BRCp}
+\widehat{R}_{\mathrm{BRC}_p}
+\!\left(\widehat{\boldsymbol{\beta}}_{\eta,\lambda}\right)
+=
+  D_{\mathcal{E}_{\widetilde{\boldsymbol{\Sigma}}}}
+\!\left(
+  \widehat{\boldsymbol{\beta}}_{\eta,\lambda},
+  \widehat{\boldsymbol{\beta}}
+  \right)
++
+  \frac{|\mathcal{S}_{\eta,\lambda}|}{n(1+\eta)}
+\,
+D_{\mathcal{E}_{\widetilde{\boldsymbol{\Sigma}}}}
+\!\left(
+  \widehat{\boldsymbol{\beta}}_{\eta,\lambda},
+  \widehat{\boldsymbol{\beta}}
+  \right),
+\end{equation}
+where
+$D_{\mathcal{E}_{\widetilde{\boldsymbol{\Sigma}}}}(\cdot,\cdot)$ denotes the Bregman divergence induced by a quadratic loss
+with respect to the linkage disequilibrium (LD) matrix $\widetilde{\boldsymbol{\Sigma}}$,
+$\widehat{\boldsymbol{\beta}}$ is a pilot or reference coefficient estimate,
+and $|\mathcal{S}_{\eta,\lambda}|$ is the size of the active set associated with tuning parameters $(\eta,\lambda)$.
+The factor $1+\eta$ accounts for the effective sample-size inflation induced by external model integration.
+
+**Generalized Information Criterion (GIC).**
+  We further implement the generalized information criterion for summary-level models, defined as
+\begin{equation}
+\label{eq:GIC_s}
+\mathrm{GIC}(\eta,\lambda)
+=
+  \frac{1}{n}
+\left\{
+  G\!\left(\widehat{\boldsymbol{\beta}}_{\eta,\lambda}\right)
+  +
+    a_n\,\mathrm{df}(\eta,\lambda)
+  \right\},
+\end{equation}
+where $G(\cdot)$ denotes a goodness-of-fit measure expressed in terms of summary statistics,
+$\mathrm{df}(\eta,\lambda)$ is the effective degrees of freedom defined in the previous section,
+and $a_n$ is a penalty term controlling model complexity.
+Throughout this work, we set $a_n = \log(n)$, corresponding to the Bayesian information criterion (BIC).
+In `BRIERs`, the goodness-of-fit term $G(\cdot)$ is evaluated using the Bregman divergence associated with the quadratic loss induced by the linkage disequilibrium matrix.
+
+
+# Degree of freedom.
+
+Accurate estimation of the degrees of freedom (DoF) is essential for information-criterion–based model selection procedures.
+Both `BRIERi` and `BRIERs` can be formulated as penalized regression problems with respect to an external-model–weighted response, denoted by $\widetilde{\boldsymbol{Y}}$ 
+Under this formulation, the effective degrees of freedom of the fitted model can be explicitly expressed as
+\begin{equation}
+\label{eq:df_weighted}
+\mathrm{df}
+=
+  \frac{\mathrm{df}(\widetilde{\boldsymbol{Y}})}{1+\eta},
+\end{equation}
+where $\mathrm{df}(\widetilde{\boldsymbol{Y}})$ denotes the degrees of freedom associated with the weighted response, and $\eta$ is integration weight. In `BRIER2`, we implement two approaches to estimate the degrees of freedom for penalized models. The first approach adopts a simple and computationally efficient estimator that uses the number of active predictors, i.e., the number of nonzero regression coefficients in the fitted model, as an estimate of the degrees of freedom. This estimator has been shown to be consistent for LASSO-type problems under suitable regularity conditions \citep{zou2007_df.lasso}. The second approach implements a more general degrees-of-freedom estimator based on the generalized information criterion (GIC) \citep{zhang2010_gic}. Specifically, the degrees of freedom are defined as
+\begin{equation}
+\label{eq:df_gic}
+\mathrm{df}_{\lambda}
+\;=\;
+\mathrm{tr}
+\left\{
+  \left[
+    \nabla^{2}_{\boldsymbol{\beta}}
+    Q_{\eta, \lambda}\!\left(\widehat{\boldsymbol{\beta}}_{\lambda}\right)
+    \right]^{-1}
+  \nabla^{2}_{\boldsymbol{\beta}}
+  \ell\!\left(\widehat{\boldsymbol{\beta}}_{\lambda}\right)
+  \right\},
+\end{equation}
+where
+\[
+  Q_{\eta, \lambda}(\boldsymbol{\beta})
+  =
+    Q_{\eta}(\boldsymbol{\beta})
+  +
+    p_{\lambda}(\boldsymbol{\beta})
+  \]
+denotes the penalized objective function with penalty function $p_{\lambda}(\boldsymbol{\beta})$ and $\widehat{\boldsymbol{\beta}}_{\lambda}$ is the estimated coefficient vector at tuning parameter $\lambda$.

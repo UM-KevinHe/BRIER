@@ -1,0 +1,53 @@
+---
+title: "Recovering Summary-level Input from GWAS Results"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Recovering Summary-level Input from GWAS Results}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: sentence
+bibliography: references.bib
+---
+
+
+
+
+In the `BRIER.S` framework, model fitting relies on two summary-level quantities: (i) the vector of standardized marginal correlations $\boldsymbol{r} = \boldsymbol{X}^\top \boldsymbol{y}/n$ between each genetic predictor and the outcome, and (ii) an estimate of the linkage disequilibrium (LD) matrix $\widetilde{\boldsymbol{\Sigma}}$. In this section, we describe how these quantities can be recovered or approximated from GWAS summary statistics and external reference panels.
+
+# Marginal correlation from GWAS summary statistics
+
+Let $r_j$ denote the standardized marginal correlation between SNP $j$ and the outcome. In many GWAS or eQTL summary-level datasets, $r_j$ is not directly reported, but can be accurately approximated from the reported $z$-score and sample size.
+
+When the GWAS reports Wald-type test statistics, `BRIER.S` implements the following formula to approximate the standardized marginal effect size from GWAS summary statistics:
+
+$$
+\tilde r_j
+\;\approx\;
+\frac{Z_j}{\sqrt{N_j - 1 + Z_j^2}},
+$$
+
+where $Z_j$ is the $z$-score for SNP $j$ and $N_j$ is the corresponding sample size (or effective sample size). This approximation is widely used in summary-statistics-based polygenic modeling frameworks, including `LDpred2` and `SUMMIT`, and performs well when effect sizes are small to moderate.
+
+In practice, GWAS summary statistics are often obtained through meta-analysis across multiple cohorts, resulting in SNP-specific sample sizes. To avoid bias, we use the SNP-specific sample size $N_j$ rather than the maximum cohort size when computing $\tilde r_j$.
+
+# Construction of the LD matrix
+
+An estimate of the LD correlation matrix $\widetilde{\boldsymbol{\Sigma}}$ is required for model fitting in `BRIER.S`. Direct estimation of the full $p \times p$ LD matrix from individual-level data is often infeasible due to computational and storage constraints. Instead, `BRIER2` supports several practical and scalable strategies.
+
+## Estimation of LD using a reference panel
+
+The LD correlation matrix $\widetilde{\boldsymbol{\Sigma}}$ can be estimated using an external reference genotype panel when individual-level data from the target cohort are unavailable. Let $\boldsymbol{G} \in \mathbb{R}^{n_r \times p}$ denote the reference genotype matrix with $n_r$ individuals and $p$ SNPs. Each genotype vector is first standardized to have mean zero and unit variance, after which the sample LD correlation matrix is computed as
+
+$$
+\widetilde{\boldsymbol{\Sigma}} = \frac{1}{n_r} \boldsymbol{G}^\top \boldsymbol{G}.
+$$
+
+To reduce both computational and storage burden in high-dimensional settings, `BRIER2` adopts a block-wise LD approximation based on approximately independent LD blocks defined in @berisa2016_ld. Under this strategy, the genome is partitioned into contiguous LD blocks, and LD is computed and stored separately within each block. Correlations between SNPs belonging to different blocks are set to zero, yielding a sparse block-diagonal approximation of $\widetilde{\boldsymbol{\Sigma}}$. This approximation substantially improves scalability while preserving the essential local LD structure required for accurate polygenic modeling.
+
+`BRIER2` supports LD estimation from user-provided genotype data in PLINK binary format (`.bed`, `.bim`, `.fam`). In addition, imputed genotype data are directly supported through the `calculate.LD` module, which accepts `BGEN` files and constructs LD matrices using dosage values. The resulting LD matrices are stored in sparse format to further improve computational efficiency. When using user-specified reference data, users are responsible for ensuring appropriate quality control and consistency between the reference panel and the GWAS summary statistics, including genome build, allele alignment, and SNP filtering.
+
+## Precomputed LD references
+
+The `BRIER2` package distributes precomputed block-structured LD reference panels for major continental ancestries (EUR, AFR, EAS, SAS, WAS, AMR), derived from preprocessed 1000 Genomes Project cohorts. Preprocessing includes restricting to HapMap3 SNPs, filtering SNPs with minor allele frequency (MAF) greater than 0.05, and removing variants with missing rates above 0.01, resulting in 471,965 SNPs. Both standardized and unstandardized LD matrices are provided for `hg19` and `hg38` genome builds.

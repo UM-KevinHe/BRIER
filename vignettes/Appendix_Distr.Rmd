@@ -1,0 +1,47 @@
+---
+title: "Distribution Family and Evaluation Metrics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Distribution Family and Evaluation Metrics}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: sentence
+bibliography: references.bib
+---
+
+# Distribution family {#sec-distr}
+
+`BRIER2` supports a wide range of distribution families for modeling complex traits, including continuous, binary, count, and survival outcomes, as summarized in Table \@ref(tab:family). For each distribution family, the corresponding evaluation metrics used to assess predictive performance are provided in Table \@ref(tab:metrics) (see Section 10). In `BRIER2`, the model family is specified through the `family` argument in the model fitting functions `BRIERfull`, `BRIERi`, and `BRIERs`, with `"gaussian"` used as the default. In the following sections, we present step-by-step tutorials using Gaussian outcomes as an illustrative example; guidance for other distribution families is provided in [Modeling with Complex Distributions](link).
+
+Table: (\#tab:family) Distribution families implemented in `BRIER2` and the corresponding model specification.
+
+| **Outcome Type** | **Family** | **Family Argument** | **$g(\mu_i)$ / model specification** |
+|:--|:--|:--|:--|
+| Continuous | Gaussian | `gaussian` | $\mu_i = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
+| Case-control | Binomial | `binary` | $\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
+| Count | Poisson | `poisson` | $\log(\mu_i) = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
+| Count | Negative Binomial | `negbin` | $\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
+| Time-to-event | Cox Proportional Hazards | `survival` | $\lambda_i(t)=\lambda_0(t)\exp(\boldsymbol{x}_i^\top \boldsymbol{\beta})$ |
+
+
+# Evaluation of `BRIER2` model {#sec-eval}
+
+We provide comprehensive metrics to evaluate fitted `BRIER2` predictive performance on validation or testing datasets, as summarized in Table \@ref(tab:metrics).
+
+Table: (\#tab:metrics) Evaluation metrics for outcome families implemented in `BRIER2`. Abbreviations: MSPE, mean squared prediction error; PD, predicted deviance; AUC, area under the ROC curve.
+
+| **Family** | **Metric** | **Criteria Argument** | **Formula** | **Optimal** |
+|:--|:--|:--|:--|:--|
+| Continuous | MSPE (PD) | `gaussian.mspe` | $\dfrac{1}{n}\sum_{i=1}^n (y_i-\widehat{y}_i)^2$ | Min |
+| Continuous | Pearson $R^2$ | `gaussian.pearson.rsq` | $\dfrac{\left\{\sum_{i=1}^n (y_i-\bar{y})(\widehat{y}_i-\overline{\widehat{y}})\right\}^2}{\left\{\sum_{i=1}^n (y_i-\bar{y})^2\right\}\left\{\sum_{i=1}^n (\widehat{y}_i-\overline{\widehat{y}})^2\right\}}$ | Max |
+| Binary | PD | `binomial.dev` | $-2\sum_{i=1}^n\left[y_i\log(\widehat{y}_i)+(1-y_i)\log(1-\widehat{y}_i)\right]$ | Min |
+| Binary | Tjur $R^2$ | `binomial.Tjur.rsq` | $\dfrac{1}{n_1}\sum_{i:y_i=1}\widehat{y}_i-\dfrac{1}{n_0}\sum_{i:y_i=0}\widehat{y}_i$ | Max |
+| Binary | AUC | `binomial.AUC` | $\mathrm{Pr}(\widehat{y}_i>\widehat{y}_j \mid y_i=1,\; y_j=0)$ | Max |
+| Count | PD | `poisson.dev` | $2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i-\widehat{y}_i)\right]$ | Min |
+| Count | PD | `negbin.dev` | $2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i+r)\log\!\left(\dfrac{y_i+r}{\widehat{y}_i+r}\right)\right]$ | Min |
+| Survival | PD | `survival.dev` | $-2\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]$ | Min |
+| Survival | C-index | `survival.Cindex` | $\mathrm{Pr}(\widehat{r}_i>\widehat{r}_j \mid T_i<T_j)$ | Max |
+
+Here $y_i$ denotes the observed outcome, $\widehat{y}_i$ the predicted mean (or risk), and $\widehat{r}_i=\exp(\boldsymbol{x}_i^\top\boldsymbol{\beta})$ the predicted relative risk for survival outcomes. For binary outcomes, $n_1$ and $n_0$ denote the numbers of cases and controls, respectively. For negative binomial outcomes, $r$ denotes the dispersion parameter. For survival outcomes, $\mathrm{E}$ denotes individuals with observed events and $\mathrm{R}_i$ the corresponding risk set.
