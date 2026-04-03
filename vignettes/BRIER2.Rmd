@@ -1,6 +1,10 @@
 ---
 title: "BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression"
-output: rmarkdown::html_vignette
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 6
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression}
   %\VignetteEncoding{UTF-8}

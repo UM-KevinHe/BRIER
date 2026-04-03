@@ -21,8 +21,6 @@ navbar:
     href: articles/BRIER2.html
   - text: Appendix
     menu:
-    - text: Overview
-      href: articles/Appendix.html
     - text: Model Details
       href: articles/Appendix_Model.html
     - text: Distribution Family and Evaluation Metrics
@@ -44,7 +42,6 @@ articles:
 - title: Appendix
   navbar: Appendix
   contents:
-  - Appendix
   - Appendix_Model
   - Appendix_Distr
   - Appendix_IC

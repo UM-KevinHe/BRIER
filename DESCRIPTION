@@ -1,7 +1,7 @@
 Package: BRIER2
 Type: Package
 Title: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
-Version: 0.0.0.9000
+Version: 0.0.9
 Authors@R: 
     person("Ruiwen", "Zhou", role = c("aut", "cre"), email = "zrayw@umich.edu")
 Description: BRIER2 is a transfer learning framework for improving genetic risk
