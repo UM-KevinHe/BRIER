@@ -1,10 +1,3 @@
-<style>
-h1, h2, h3 {
-    border-bottom: none !important;
-    box-shadow: none !important;
-}
-</style>
-
 
 # Description
 
@@ -107,7 +100,7 @@ Or install the development version from GitHub:
 
 # Detailed Tutorial
 
-Full package documentation and parameter explanations: [here](https://um-kevinhe.github.io/BRIER2/)
+Full package documentation and parameter explanations: [here](https://zrayw.github.io/BRIER2/)
 
 
 # Getting Help

@@ -1,10 +1,6 @@
 ---
 title: "BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression"
-output:
-  bookdown::html_document2:
-    toc: true
-    toc_depth: 6
-    number_sections: true
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression}
   %\VignetteEncoding{UTF-8}
@@ -22,12 +18,6 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE
   )
-```
-
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(fig.alt = "Plot generated in SurvBregDiv vignette")
-library(dplyr)
 ```
 
 
@@ -51,8 +41,7 @@ Despite these advances, prediction performance remains limited in clinically und
 
 We provide a flowchart outlining the `BRIER2` pipeline and its major components.
 
-![](../man/figures/Figure1.png){width = 100%}
-
+![Flowchart of the BRIER2 package](../man/figures/Figure1.png){width=100%}
 
 ## Features
 
@@ -88,8 +77,6 @@ install.packages(
     dependencies = TRUE
 )
 ```
-
-### Installation {#sec-install}
 
 You can install the package from CRAN:
 ```{r, echo = TRUE, eval = FALSE}
@@ -241,7 +228,9 @@ plot.eta(out)
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png" style="width:48%;" />
+  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png"
+       alt="Mean squared prediction error on the validation set as a function of $\eta$"
+       style="width:48%;" />
 </div>
 
 
@@ -281,7 +270,9 @@ plot.eta(out)
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/density.eta_hsq0.07_het.high_seed3.png" style="width:48%;" />
+  <img src="../man/figures/density.eta_hsq0.07_het.high_seed3.png"
+       alt="Density of eta values explored during Bayesian optimization"
+       style="width:48%;" />
 </div>
 
 
@@ -522,8 +513,12 @@ plot.eta(out)
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png" style="width:48%;" />
-  <img src="../man/figures/line.eta.Cp_val_hsq0.07_het.high.png" style="width:48%;" />
+  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png"
+       alt="Mean squared prediction error on the validation set as a function of eta"
+       style="width:48%;" />
+  <img src="../man/figures/line.eta.Cp_val_hsq0.07_het.high.png"
+       alt="Cp criterion as a function of eta"
+       style="width:48%;" />
 </div>
 
 
@@ -580,7 +575,9 @@ plot.eta(out)
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/density.eta_hsq0.07_het.high_seed3.png" style="width:48%;" />
+  <img src="../man/figures/density.eta_hsq0.07_het.high_seed3.png"
+       alt="Density of eta values explored during Bayesian optimization"
+       style="width:48%;" />
 </div>
 
 
@@ -898,10 +895,13 @@ plot.eta(out)
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.med.png" style="width:48%;" />
-  <img src="../man/figures/line.eta.GIC_val_hsq0.07_het.med.png" style="width:48%;" />
+  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.med.png"
+       alt="Mean squared prediction error on the validation set as a function of eta"
+       style="width:48%;" />
+  <img src="../man/figures/line.eta.GIC_val_hsq0.07_het.med.png"
+       alt="Generalized information criterion as a function of eta"
+       style="width:48%;" />
 </div>
-
 
 ## Hyperparameter tuning of $\eta$ using Bayesian optimization
 
@@ -961,7 +961,9 @@ plot.eta(out)
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/density.eta_hsq0.07_het.high_seed3.png" style="width:48%;" />
+  <img src="../man/figures/density.eta_hsq0.07_het.high_seed3.png"
+       alt="Density of eta values explored during Bayesian optimization"
+       style="width:48%;" />
 </div>
 
 
@@ -980,7 +982,7 @@ In such cases, users may first integrate each external model individually with t
 
 In the example below, three `BRIER2` models are fitted by integrating different external models with the same target dataset. The model corresponding to the dashed light-green curve shows no improvement in predictive MSPE across values of $\eta$, indicating substantial heterogeneity with the target data. Consequently, users may reasonably exclude this external model when jointly integrating multiple sources using `BRIER.multi`.
 
-![](../man/figures/line.eta.mspe_hsq0.07_het.png){width=50%}
+![Mean squared prediction error as a function of eta for three external models with different degrees of heterogeneity](../man/figures/line.eta.mspe_hsq0.07_het.png){width=50%}
 
 
 ## `BRIERi.multi` with individual-level target data {#sec-BRIERi.multi}
@@ -1226,8 +1228,12 @@ p <- plot.eta(
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.low.png" style="width:48%;" />
-  <img src="../man/figures/line.eta.mspe_hsq0.07_het.low.png" style="width:48%;" />
+  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.low.png"
+       alt="Pearson R-squared on the testing set as a function of eta"
+       style="width:48%;" />
+  <img src="../man/figures/line.eta.mspe_hsq0.07_het.low.png"
+       alt="Mean squared prediction error on the testing set as a function of eta "
+       style="width:48%;" />
 </div>
 
 **Integrating high heterogeneous external information**
@@ -1247,8 +1253,12 @@ p <- plot.eta(
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.high.png" style="width:48%;" />
-  <img src="../man/figures/line.eta.mspe_hsq0.07_het.high.png" style="width:48%;" />
+  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.high.png"
+       alt="Pearson R-squared on the testing set as a function of eta"
+       style="width:48%;" />
+  <img src="../man/figures/line.eta.mspe_hsq0.07_het.high.png"
+       alt="Mean squared prediction error on the testing set as a function of eta"
+       style="width:48%;" />
 </div>
 
 
@@ -1272,8 +1282,12 @@ p
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.png" style="width:48%;" />
-  <img src="../man/figures/line.eta.mspe_hsq0.07_het.png" style="width:48%;" />
+  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.png"
+       alt="Pearson R-squared on the testing set as a function of eta for multiple external models"
+       style="width:48%;" />
+  <img src="../man/figures/line.eta.mspe_hsq0.07_het.png"
+       alt="Mean squared prediction error on the testing set as a function of eta for multiple external models"
+       style="width:48%;" />
 </div>
 
 
@@ -1299,8 +1313,12 @@ p
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.low.png" style="width:48%;" />
-  <img src="../man/figures/boxplot.mspe_SCAD_1_hsq0.07_het.low.png" style="width:48%;" />
+  <img src="../man/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.low.png"
+       alt="Boxplots of Pearson R-squared on the testing set"
+       style="width:48%;" />
+  <img src="../man/figures/boxplot.mspe_SCAD_1_hsq0.07_het.low.png"
+       alt="Boxplots of mean squared prediction error on the testing set"
+       style="width:48%;" />
 </div>
 
 **Integrating high heterogeneous external information**
@@ -1321,8 +1339,12 @@ p
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.high.png" style="width:48%;" />
-  <img src="../man/figures/boxplot.mspe_SCAD_1_hsq0.07_het.high.png" style="width:48%;" />
+  <img src="../man/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.high.png"
+       alt="Boxplots of Pearson R-squared on the testing set"
+       style="width:48%;" />
+  <img src="../man/figures/boxplot.mspe_SCAD_1_hsq0.07_het.high.png"
+       alt="Boxplots of mean squared prediction error on the testing set"
+       style="width:48%;" />
 </div>
 
 
@@ -1335,7 +1357,7 @@ p <- plot.importance(out, X = X_validation, y = y_validation, n.top = 10, replic
 p
 ```
 
-![](../man/figures/bar_top_selection.freq.png){width=50%}
+![Bar plot of selection frequencies for the top predictors](../man/figures/bar_top_selection.freq.png){width=50%}
 
 By specifying `n.top = NA`, the `plot.importance` function will output the selection frequency distribution histogram for all prediction.
 
@@ -1344,7 +1366,7 @@ p <- plot.importance(out, X = X_validation, y = y_validation, n.top = NA, replic
 p
 ```
 
-![](../man/figures/density_selection.freq.png){width=50%}
+![Distribution of predictor selection frequencies across bootstrap resamples](../man/figures/density_selection.freq.png){width=50%}
 
 
 ## PRS stratification {#sec-prs_strat}
@@ -1356,7 +1378,7 @@ p <- plot.strat(out, X = X_testing, y = y_testing, lower = 0.4, upper = 0.4)
 p
 ```
 
-![](../man/figures/density_testing_stratification.png){width=50%}
+![Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER2 models](../man/figures/density_testing_stratification.png){width=50%}
 
 
 ## Performing TWAS on trait of interest {#sec-TWAS}
