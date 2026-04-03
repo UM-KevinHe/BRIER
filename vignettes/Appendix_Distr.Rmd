@@ -24,11 +24,11 @@ Table: (\#tab:family) Distribution families implemented in `BRIER2` and the corr
 
 | **Outcome Type** | **Family** | **Family Argument** | **$g(\mu_i)$ / model specification** |
 |:--|:--|:--|:--|
-| Continuous | Gaussian | `gaussian` | $\mu_i = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
-| Case-control | Binomial | `binary` | $\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
-| Count | Poisson | `poisson` | $\log(\mu_i) = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
-| Count | Negative Binomial | `negbin` | $\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \boldsymbol{x}_i^\top \boldsymbol{\beta}$ |
-| Time-to-event | Cox Proportional Hazards | `survival` | $\lambda_i(t)=\lambda_0(t)\exp(\boldsymbol{x}_i^\top \boldsymbol{\beta})$ |
+| Continuous | Gaussian | `gaussian` | $\mu_i = \mathbf{x}_i^\top \mathbf{\beta}$ |
+| Case-control | Binomial | `binary` | $\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \mathbf{x}_i^\top \mathbf{\beta}$ |
+| Count | Poisson | `poisson` | $\log(\mu_i) = \mathbf{x}_i^\top \mathbf{\beta}$ |
+| Count | Negative Binomial | `negbin` | $\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \mathbf{x}_i^\top \mathbf{\beta}$ |
+| Time-to-event | Cox Proportional Hazards | `survival` | $\lambda_i(t)=\lambda_0(t)\exp(\mathbf{x}_i^\top \mathbf{\beta})$ |
 
 
 # Evaluation of `BRIER2` model {#sec-eval}
@@ -49,4 +49,4 @@ Table: (\#tab:metrics) Evaluation metrics for outcome families implemented in `B
 | Survival | PD | `survival.dev` | $-2\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]$ | Min |
 | Survival | C-index | `survival.Cindex` | $\mathrm{Pr}(\widehat{r}_i>\widehat{r}_j \mid T_i<T_j)$ | Max |
 
-Here $y_i$ denotes the observed outcome, $\widehat{y}_i$ the predicted mean (or risk), and $\widehat{r}_i=\exp(\boldsymbol{x}_i^\top\boldsymbol{\beta})$ the predicted relative risk for survival outcomes. For binary outcomes, $n_1$ and $n_0$ denote the numbers of cases and controls, respectively. For negative binomial outcomes, $r$ denotes the dispersion parameter. For survival outcomes, $\mathrm{E}$ denotes individuals with observed events and $\mathrm{R}_i$ the corresponding risk set.
+Here $y_i$ denotes the observed outcome, $\widehat{y}_i$ the predicted mean (or risk), and $\widehat{r}_i=\exp(\mathbf{x}_i^\top\mathbf{\beta})$ the predicted relative risk for survival outcomes. For binary outcomes, $n_1$ and $n_0$ denote the numbers of cases and controls, respectively. For negative binomial outcomes, $r$ denotes the dispersion parameter. For survival outcomes, $\mathrm{E}$ denotes individuals with observed events and $\mathrm{R}_i$ the corresponding risk set.

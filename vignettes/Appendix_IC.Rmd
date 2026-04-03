@@ -30,25 +30,25 @@ We implement several information-criterion–based model selection procedures in
 =
   \frac{1}{n}
 \left\{
-  \mathrm{Dev}\!\left(y,\widehat{\boldsymbol{\beta}}_{\eta,\lambda}\right)
+  \mathrm{Dev}\!\left(y,\widehat{\mathbf{\beta}}_{\eta,\lambda}\right)
   +
     \log(n)\,\mathrm{df}(\eta,\lambda)
   \right\},
 \end{equation}
-where $\mathrm{Dev}(y,\widehat{\boldsymbol{\beta}}_{\eta,\lambda})$ denotes the deviance evaluated at the fitted model with tuning parameters $(\eta,\lambda)$, and $\mathrm{df}(\eta,\lambda)$ is the corresponding effective degrees of freedom.
+where $\mathrm{Dev}(y,\widehat{\mathbf{\beta}}_{\eta,\lambda})$ denotes the deviance evaluated at the fitted model with tuning parameters $(\eta,\lambda)$, and $\mathrm{df}(\eta,\lambda)$ is the corresponding effective degrees of freedom.
 
 **Mallows’ $C_p$.**
   For linear models with known error variance $\sigma^2$, Mallows’ $C_p$ is defined as
 \begin{equation}
 \label{eq:Cp}
-C_p(\widehat{\boldsymbol{\mu}})
+C_p(\widehat{\mathbf{\mu}})
 =
   \frac{1}{n}
-\left\| \boldsymbol{y} - \widehat{\boldsymbol{\mu}} \right\|^2
+\left\| \mathbf{y} - \widehat{\mathbf{\mu}} \right\|^2
 +
   \frac{2\sigma^2}{n}\, \mathrm{df},
 \end{equation}
-where $\widehat{\boldsymbol{\mu}}$ denotes the vector of predicted means and $\mathrm{df}$ is the associated degrees of freedom.
+where $\widehat{\mathbf{\mu}}$ denotes the vector of predicted means and $\mathrm{df}$ is the associated degrees of freedom.
 
 **Generalized Cross-Validation (GCV).**
   Generalized cross-validation provides a computationally efficient approximation to leave-one-out cross-validation and is given by
@@ -56,7 +56,7 @@ where $\widehat{\boldsymbol{\mu}}$ denotes the vector of predicted means and $\m
 \label{eq:GCV}
 \mathrm{GCV}(\lambda)
 =
-  \frac{\mathrm{Dev}(y,\widehat{\boldsymbol{\beta}}_{\lambda})}
+  \frac{\mathrm{Dev}(y,\widehat{\mathbf{\beta}}_{\lambda})}
 {n \left\{ 1 - \mathrm{df}(\lambda)/n \right\}^2}.
 \end{equation}
 
@@ -71,11 +71,11 @@ We implement several model selection procedures in `BRIERs.selection` for summar
 \label{eq:pseudoval}
 f(\lambda)
 =
-  \frac{\boldsymbol{\beta}_{\lambda}^{\top}\,\widehat{\mathbf{r}}}
-{\sqrt{\boldsymbol{\beta}_{\lambda}^{\top}\,\widetilde{\boldsymbol{X}}_{0}^{\top}
-  \widetilde{\boldsymbol{X}}_{0}\,\boldsymbol{\beta}_{\lambda}}},
+  \frac{\mathbf{\beta}_{\lambda}^{\top}\,\widehat{\mathbf{r}}}
+{\sqrt{\mathbf{\beta}_{\lambda}^{\top}\,\widetilde{\mathbf{X}}_{0}^{\top}
+  \widetilde{\mathbf{X}}_{0}\,\mathbf{\beta}_{\lambda}}},
 \end{equation}
-where $\widetilde{\boldsymbol{X}}_{0}$ is the standardized genotype matrix from an external reference panel and
+where $\widetilde{\mathbf{X}}_{0}$ is the standardized genotype matrix from an external reference panel and
 $\widehat{\mathbf{r}}$ is a shrinkage-adjusted estimate of the SNP–phenotype correlation vector.
 Specifically, each element of $\widehat{\mathbf{r}}$ is defined as
 \[
@@ -85,7 +85,7 @@ Specifically, each element of $\widehat{\mathbf{r}}$ is defined as
   \]
 where $\mathrm{fdr}_j$ denotes the local false discovery rate for SNP $j$.
 This objective approximates the Spearman correlation between the predicted genetic score
-$\widetilde{\boldsymbol{X}}_{0}\boldsymbol{\beta}_{\lambda}$ and the unobserved true phenotype.
+$\widetilde{\mathbf{X}}_{0}\mathbf{\beta}_{\lambda}$ and the unobserved true phenotype.
 
 **Bregman-divergence based $C_p$.**
   For summary-level settings, we adopt a Bregman-divergence based extension of Mallows’ $C_p$, referred to as BRC$_p$.
@@ -93,26 +93,26 @@ The criterion is defined as
 \begin{equation}
 \label{eq:BRCp}
 \widehat{R}_{\mathrm{BRC}_p}
-\!\left(\widehat{\boldsymbol{\beta}}_{\eta,\lambda}\right)
+\!\left(\widehat{\mathbf{\beta}}_{\eta,\lambda}\right)
 =
-  D_{\mathcal{E}_{\widetilde{\boldsymbol{\Sigma}}}}
+  D_{\mathcal{E}_{\widetilde{\mathbf{\Sigma}}}}
 \!\left(
-  \widehat{\boldsymbol{\beta}}_{\eta,\lambda},
-  \widehat{\boldsymbol{\beta}}
+  \widehat{\mathbf{\beta}}_{\eta,\lambda},
+  \widehat{\mathbf{\beta}}
   \right)
 +
   \frac{|\mathcal{S}_{\eta,\lambda}|}{n(1+\eta)}
 \,
-D_{\mathcal{E}_{\widetilde{\boldsymbol{\Sigma}}}}
+D_{\mathcal{E}_{\widetilde{\mathbf{\Sigma}}}}
 \!\left(
-  \widehat{\boldsymbol{\beta}}_{\eta,\lambda},
-  \widehat{\boldsymbol{\beta}}
+  \widehat{\mathbf{\beta}}_{\eta,\lambda},
+  \widehat{\mathbf{\beta}}
   \right),
 \end{equation}
 where
-$D_{\mathcal{E}_{\widetilde{\boldsymbol{\Sigma}}}}(\cdot,\cdot)$ denotes the Bregman divergence induced by a quadratic loss
-with respect to the linkage disequilibrium (LD) matrix $\widetilde{\boldsymbol{\Sigma}}$,
-$\widehat{\boldsymbol{\beta}}$ is a pilot or reference coefficient estimate,
+$D_{\mathcal{E}_{\widetilde{\mathbf{\Sigma}}}}(\cdot,\cdot)$ denotes the Bregman divergence induced by a quadratic loss
+with respect to the linkage disequilibrium (LD) matrix $\widetilde{\mathbf{\Sigma}}$,
+$\widehat{\mathbf{\beta}}$ is a pilot or reference coefficient estimate,
 and $|\mathcal{S}_{\eta,\lambda}|$ is the size of the active set associated with tuning parameters $(\eta,\lambda)$.
 The factor $1+\eta$ accounts for the effective sample-size inflation induced by external model integration.
 
@@ -124,7 +124,7 @@ The factor $1+\eta$ accounts for the effective sample-size inflation induced by 
 =
   \frac{1}{n}
 \left\{
-  G\!\left(\widehat{\boldsymbol{\beta}}_{\eta,\lambda}\right)
+  G\!\left(\widehat{\mathbf{\beta}}_{\eta,\lambda}\right)
   +
     a_n\,\mathrm{df}(\eta,\lambda)
   \right\},
@@ -139,15 +139,15 @@ In `BRIERs`, the goodness-of-fit term $G(\cdot)$ is evaluated using the Bregman 
 # Degree of freedom.
 
 Accurate estimation of the degrees of freedom (DoF) is essential for information-criterion–based model selection procedures.
-Both `BRIERi` and `BRIERs` can be formulated as penalized regression problems with respect to an external-model–weighted response, denoted by $\widetilde{\boldsymbol{Y}}$ 
+Both `BRIERi` and `BRIERs` can be formulated as penalized regression problems with respect to an external-model–weighted response, denoted by $\widetilde{\mathbf{Y}}$ 
 Under this formulation, the effective degrees of freedom of the fitted model can be explicitly expressed as
 \begin{equation}
 \label{eq:df_weighted}
 \mathrm{df}
 =
-  \frac{\mathrm{df}(\widetilde{\boldsymbol{Y}})}{1+\eta},
+  \frac{\mathrm{df}(\widetilde{\mathbf{Y}})}{1+\eta},
 \end{equation}
-where $\mathrm{df}(\widetilde{\boldsymbol{Y}})$ denotes the degrees of freedom associated with the weighted response, and $\eta$ is integration weight. In `BRIER2`, we implement two approaches to estimate the degrees of freedom for penalized models. The first approach adopts a simple and computationally efficient estimator that uses the number of active predictors, i.e., the number of nonzero regression coefficients in the fitted model, as an estimate of the degrees of freedom. This estimator has been shown to be consistent for LASSO-type problems under suitable regularity conditions \citep{zou2007_df.lasso}. The second approach implements a more general degrees-of-freedom estimator based on the generalized information criterion (GIC) \citep{zhang2010_gic}. Specifically, the degrees of freedom are defined as
+where $\mathrm{df}(\widetilde{\mathbf{Y}})$ denotes the degrees of freedom associated with the weighted response, and $\eta$ is integration weight. In `BRIER2`, we implement two approaches to estimate the degrees of freedom for penalized models. The first approach adopts a simple and computationally efficient estimator that uses the number of active predictors, i.e., the number of nonzero regression coefficients in the fitted model, as an estimate of the degrees of freedom. This estimator has been shown to be consistent for LASSO-type problems under suitable regularity conditions \citep{zou2007_df.lasso}. The second approach implements a more general degrees-of-freedom estimator based on the generalized information criterion (GIC) \citep{zhang2010_gic}. Specifically, the degrees of freedom are defined as
 \begin{equation}
 \label{eq:df_gic}
 \mathrm{df}_{\lambda}
@@ -155,19 +155,19 @@ where $\mathrm{df}(\widetilde{\boldsymbol{Y}})$ denotes the degrees of freedom a
 \mathrm{tr}
 \left\{
   \left[
-    \nabla^{2}_{\boldsymbol{\beta}}
-    Q_{\eta, \lambda}\!\left(\widehat{\boldsymbol{\beta}}_{\lambda}\right)
+    \nabla^{2}_{\mathbf{\beta}}
+    Q_{\eta, \lambda}\!\left(\widehat{\mathbf{\beta}}_{\lambda}\right)
     \right]^{-1}
-  \nabla^{2}_{\boldsymbol{\beta}}
-  \ell\!\left(\widehat{\boldsymbol{\beta}}_{\lambda}\right)
+  \nabla^{2}_{\mathbf{\beta}}
+  \ell\!\left(\widehat{\mathbf{\beta}}_{\lambda}\right)
   \right\},
 \end{equation}
 where
 \[
-  Q_{\eta, \lambda}(\boldsymbol{\beta})
+  Q_{\eta, \lambda}(\mathbf{\beta})
   =
-    Q_{\eta}(\boldsymbol{\beta})
+    Q_{\eta}(\mathbf{\beta})
   +
-    p_{\lambda}(\boldsymbol{\beta})
+    p_{\lambda}(\mathbf{\beta})
   \]
-denotes the penalized objective function with penalty function $p_{\lambda}(\boldsymbol{\beta})$ and $\widehat{\boldsymbol{\beta}}_{\lambda}$ is the estimated coefficient vector at tuning parameter $\lambda$.
+denotes the penalized objective function with penalty function $p_{\lambda}(\mathbf{\beta})$ and $\widehat{\mathbf{\beta}}_{\lambda}$ is the estimated coefficient vector at tuning parameter $\lambda$.
