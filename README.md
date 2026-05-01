@@ -7,6 +7,14 @@ It flexibly accommodates a broad range of outcome types, including continuous, b
 The framework is implemented through three principled functions, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`, 
 which address the major data-access constraints encountered in biomedical and statistical-genetics research.
 
+# Writing R code with an AI assistant?
+
+An AI-optimized reference is published at
+**<https://zrayw.github.io/BRIER2/llms.txt>**
+(following the [llms.txt](https://llmstxt.org/) convention).
+Point your AI at that URL, or paste its contents into the chat, to give the
+assistant a compact map of the package — decision tree, parameter reference,
+worked examples, and common pitfalls — without ingesting the full website.
 
 # Models
 

@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -205,41 +205,40 @@ A collection of downstream analysis and visualization tools is provided to facil
 <li>
 <strong><code>y</code></strong>: Pooled individual-level outcome vector from the target cohort and external cohort(s).</li>
 <li>
-<strong><code>ind</code></strong>: An indicator vector specifying cohort membership for each observation, used to distinguish the target cohort from one or more external cohorts. The default assumes all observations come from the target cohort.</li>
+<strong><code>cohort</code></strong>: An indicator vector specifying cohort membership for each observation, used to distinguish the target cohort from one or more external cohorts. The default assumes all observations come from the target cohort.</li>
 <li>
 <strong><code>family</code></strong>: Outcome distribution family. Supported options include <code>"gaussian"</code>, <code>"binomial"</code>, <code>"poisson"</code>, and <code>"negbin"</code>. Additional details are provided in the <a href="link">Appendix</a>. The default is <code>"gaussian"</code>.</li>
 <li>
 <strong><code>penalty</code></strong>: Penalty function used for regularized estimation. Supported options include <code>"LASSO"</code>, <code>"MCP"</code>, and <code>"SCAD"</code>. The default is <code>"LASSO"</code>.</li>
 <li>
-<strong><code>eta_vec</code></strong>: A vector of integration-weight parameters <code>eta</code> controlling the degree of information borrowing from the external cohort(s).</li>
+<strong><code>eta.list</code></strong>: A list of integration-weight parameters <code>eta</code> controlling the degree of information borrowing from the external cohort(s).</li>
 </ul>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">BRIERfull</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERfull.html">BRIERfull</a></span><span class="op">(</span></span>
 <span>  X <span class="op">=</span> <span class="va">X</span>,</span>
 <span>  y <span class="op">=</span> <span class="va">y</span>,</span>
-<span>  ind <span class="op">=</span> <span class="va">ind</span>,</span>
+<span>  cohort <span class="op">=</span> <span class="va">cohort</span>,</span>
 <span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
 <span>  penalty <span class="op">=</span> <span class="st">"LASSO"</span>,</span>
-<span>  eta.vec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>When multiple external data sources are available and different integration weights are desired for each source, users should supply a list to <code>eta_vec</code>, with each element corresponding to a vector of weights for one external cohort. The order of elements in <code>eta_vec</code> must match the ordering of the external data sources as indicated by the source indicator vector ind .</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sub</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_target</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_ext1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_ext2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">y_target</span>, <span class="va">y_ext1</span>, <span class="va">y_ext2</span><span class="op">)</span></span>
-<span><span class="va">X</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">X_target</span><span class="op">[</span>, <span class="va">sub</span><span class="op">]</span>, <span class="va">X_ext1</span><span class="op">[</span>, <span class="va">sub</span><span class="op">]</span>, <span class="va">X_ext2</span><span class="op">[</span>, <span class="va">sub</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">ind</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">y_target</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">y_ext1</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">y_ext2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">=</span> <span class="fu">BRIERfull</span><span class="op">(</span></span>
-<span>  X <span class="op">=</span> <span class="va">pred</span>,</span>
-<span>  y <span class="op">=</span> <span class="va">pheno</span>,</span>
-<span>  ind <span class="op">=</span> <span class="va">ind</span>,</span>
-<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
-<span>  penalty <span class="op">=</span> <span class="st">"LASSO"</span>,</span>
-<span>  eta.vec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, length <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>sub =<span class="st"> </span><span class="kw">intersect</span>(<span class="kw">colnames</span>(X_target), <span class="kw">colnames</span>(X_ext1), <span class="kw">colnames</span>(X_ext2))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>y =<span class="st"> </span><span class="kw">c</span>(y_target, y_ext1, y_ext2)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>X =<span class="st"> </span><span class="kw">rbind</span>(X_target[, sub], X_ext1[, sub], X_ext2[, sub])</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>ind =<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(y_target)), <span class="kw">rep</span>(<span class="dv">1</span>, <span class="kw">length</span>(y_ext1)), <span class="kw">rep</span>(<span class="dv">1</span>, <span class="kw">length</span>(y_ext2)))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>fit =<span class="st"> </span><span class="kw">BRIERfull</span>(</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>  <span class="dt">X =</span> pred,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a>  <span class="dt">y =</span> pheno,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a>  <span class="dt">ind =</span> ind,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a>  <span class="dt">family =</span> <span class="st">"gaussian"</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a>  <span class="dt">penalty =</span> <span class="st">"LASSO"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a>  <span class="dt">eta.list =</span> <span class="kw">list</span>(</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a>    <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="kw">log</span>(<span class="fl">0.1</span>), <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length.out =</span> <span class="dv">20</span>)), </span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a>    <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="kw">log</span>(<span class="fl">0.1</span>), <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length.out =</span> <span class="dv">20</span>))</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a>  )</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="hyperparameters">3.3 Hyperparameters<a class="anchor" aria-label="anchor" href="#hyperparameters"></a>
@@ -256,7 +255,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="va">X_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Hyperparameter tuning using independent validation set</span></span>
-<span><span class="va">out</span> <span class="op">=</span> <span class="fu">BRIERfull.selection</span><span class="op">(</span></span>
+<span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="../reference/BRIERfull.selection.html">BRIERfull.selection</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>,</span>
 <span>  X.val <span class="op">=</span> <span class="va">X_val</span>, </span>
 <span>  y.val <span class="op">=</span> <span class="va">y_val</span>,</span>
@@ -470,13 +469,13 @@ A collection of downstream analysis and visualization tools is provided to facil
 <li>
 <strong><code>penalty</code></strong>: Penalty function used for regularized estimation. Supported options include <code>"LASSO"</code>, <code>"MCP"</code>, and <code>"SCAD"</code>. The default is <code>"LASSO"</code>.</li>
 <li>
-<strong><code>eta_vec</code></strong>: A vector of integration-weight parameters <code>eta</code> controlling the degree of information borrowing from the external cohort(s).</li>
+<strong><code>eta.list</code></strong>: A list of integration-weight parameters <code>eta</code> controlling the degree of information borrowing from the external cohort(s).</li>
 </ul>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">BRIERi</span>(</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true"></a>    <span class="dt">X =</span> dat<span class="op">$</span>X, </span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true"></a>    <span class="dt">y =</span> dat<span class="op">$</span>y, </span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true"></a>    <span class="dt">beta.external =</span> dat<span class="op">$</span>beta.external,</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true"></a>    <span class="dt">eta_vec =</span> <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length =</span> <span class="dv">20</span>))    </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true"></a>    <span class="dt">eta.list =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="kw">log</span>(<span class="fl">0.1</span>), <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length.out =</span> <span class="dv">20</span>))</span>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true"></a>    <span class="dt">family =</span> <span class="st">"gaussian"</span>,</span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true"></a>    <span class="dt">penalty =</span> <span class="st">"LASSO"</span></span>
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true"></a>)</span></code></pre></div>
@@ -494,7 +493,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a>    <span class="dt">X =</span> dat<span class="op">$</span>X, </span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a>    <span class="dt">y =</span> dat<span class="op">$</span>y, </span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true"></a>    <span class="dt">beta.external =</span> dat<span class="op">$</span>beta.external,</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true"></a>    <span class="dt">eta =</span> <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length =</span> <span class="dv">20</span>))    </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true"></a>    <span class="dt">eta.list =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="kw">log</span>(<span class="fl">0.1</span>), <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length.out =</span> <span class="dv">20</span>))    </span>
 <span id="cb23-6"><a href="#cb23-6" aria-hidden="true"></a>    <span class="dt">family =</span> <span class="st">"gaussian"</span>,</span>
 <span id="cb23-7"><a href="#cb23-7" aria-hidden="true"></a>    <span class="dt">penalty =</span> <span class="st">"LASSO"</span></span>
 <span id="cb23-8"><a href="#cb23-8" aria-hidden="true"></a>)</span></code></pre></div>
@@ -502,7 +501,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span></span>
 <span><span class="va">y_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">out</span> <span class="op">=</span> <span class="fu">BRIERi.selection</span><span class="op">(</span></span>
+<span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="../reference/BRIERi.selection.html">BRIERi.selection</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>,</span>
 <span>  X.val <span class="op">=</span> <span class="va">X_val</span>, </span>
 <span>  y.val <span class="op">=</span> <span class="va">y_val</span>,</span>
@@ -557,7 +556,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span></span>
 <span><span class="va">y_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">out</span> <span class="op">=</span> <span class="fu">BRIERi.selection</span><span class="op">(</span></span>
+<span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="../reference/BRIERi.selection.html">BRIERi.selection</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>,</span>
 <span>  criteria <span class="op">=</span> <span class="st">"Cp"</span></span>
 <span><span class="op">)</span></span>
@@ -920,13 +919,13 @@ A collection of downstream analysis and visualization tools is provided to facil
 <li>
 <strong><code>penalty</code></strong>: Penalty function used for regularized estimation. Supported options include <code>"LASSO"</code>, <code>"MCP"</code>, and <code>"SCAD"</code>. The default is <code>"LASSO"</code>.</li>
 <li>
-<strong><code>eta_vec</code></strong>: A vector of integration-weight parameters <code>eta</code> controlling the degree of information borrowing from the external cohort(s).</li>
+<strong><code>eta.list</code></strong>: A list of integration-weight parameters <code>eta</code> controlling the degree of information borrowing from the external cohort(s).</li>
 </ul>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">BRIERs</span>(</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true"></a>    <span class="dt">GWAS_sum =</span> dat<span class="op">$</span>GWAS_sum, </span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true"></a>    <span class="dt">X =</span> dat<span class="op">$</span>X, </span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true"></a>    <span class="dt">beta.external =</span> dat<span class="op">$</span>beta.external,</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true"></a>    <span class="dt">eta_vec =</span> <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length =</span> <span class="dv">20</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true"></a>    <span class="dt">eta.list =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="kw">log</span>(<span class="fl">0.1</span>), <span class="kw">log</span>(<span class="dv">10</span>), <span class="dt">length.out =</span> <span class="dv">20</span>))</span>
 <span id="cb42-6"><a href="#cb42-6" aria-hidden="true"></a>    )</span></code></pre></div>
 </div>
 <div class="section level3">
@@ -941,7 +940,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span></span>
 <span><span class="va">y_val</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path/to/file"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">out</span> <span class="op">=</span> <span class="fu">BRIERs</span><span class="op">(</span></span>
+<span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="../reference/BRIERs.html">BRIERs</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="va">fit</span>, </span>
 <span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, </span>
 <span>  X.val <span class="op">=</span> <span class="va">X_val</span>,</span>
@@ -996,7 +995,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <p>Here <code>TN</code> denotes the sample size of the target data, <code>h2</code> denotes the phenotype heritability used in information-criterion-based tuning, <code>XtX</code> denotes the linkage disequilibrium (LD) matrix estimated from the target data, and <code>GWAS_sum</code> denotes the GWAS summary statistics from the target data.</p>
 <p>Based on extensive simulation studies and real-data applications, we recommend <span class="math inline">\(GIC\)</span>, as it consistently achieves better predictive performance.</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">BRIERs</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.html">BRIERs</a></span><span class="op">(</span></span>
 <span>    model <span class="op">=</span> <span class="va">fit</span>, </span>
 <span>    criteria <span class="op">=</span> <span class="st">"GIC"</span>, </span>
 <span>    TN <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">TN</span>,</span>

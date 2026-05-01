@@ -160,19 +160,19 @@ head(ind)
 
 - **`X`**: Pooled individual-level predictor matrix from the target cohort and external cohort(s).
 - **`y`**: Pooled individual-level outcome vector from the target cohort and external cohort(s).
-- **`ind`**: An indicator vector specifying cohort membership for each observation, used to distinguish the target cohort from one or more external cohorts. The default assumes all observations come from the target cohort.
+- **`cohort`**: An indicator vector specifying cohort membership for each observation, used to distinguish the target cohort from one or more external cohorts. The default assumes all observations come from the target cohort.
 - **`family`**: Outcome distribution family. Supported options include `"gaussian"`, `"binomial"`, `"poisson"`, and `"negbin"`. Additional details are provided in the [Appendix](link). The default is `"gaussian"`.
 - **`penalty`**: Penalty function used for regularized estimation. Supported options include `"LASSO"`, `"MCP"`, and `"SCAD"`. The default is `"LASSO"`.
-- **`eta_vec`**: A vector of integration-weight parameters `eta` controlling the degree of information borrowing from the external cohort(s).
+- **`eta.list`**: A list of integration-weight parameters `eta` controlling the degree of information borrowing from the external cohort(s).
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERfull(
   X = X,
   y = y,
-  ind = ind,
+  cohort = cohort,
   family = "gaussian",
   penalty = "LASSO",
-  eta.vec = exp(seq(0, log(10), length = 20))
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20)))
 )
 ```
 
@@ -191,9 +191,9 @@ fit = BRIERfull(
   ind = ind,
   family = "gaussian",
   penalty = "LASSO",
-  eta.vec = list(
-    exp(seq(0, log(10), length = 20)),
-    seq(0, 10, length = 20)
+  eta.list = list(
+    c(0, exp(seq(log(0.1), log(10), length.out = 20)), 
+    c(0, exp(seq(log(0.1), log(10), length.out = 20))
   )
 )
 ```
@@ -437,7 +437,7 @@ Once preprocessing is complete, a `BRIER.I` model can be fitted directly. Below 
 - **`beta.external`**: A vector of pretrained model coefficients from the external cohort(s), including the intercept term.
 - **`family`**: Outcome distribution family. Supported options include `"gaussian"`, `"binomial"`, `"poisson"`, and `"negbin"`. Additional details are provided in the [Appendix](link). The default is `"gaussian"`.
 - **`penalty`**: Penalty function used for regularized estimation. Supported options include `"LASSO"`, `"MCP"`, and `"SCAD"`. The default is `"LASSO"`.
-- **`eta_vec`**: A vector of integration-weight parameters `eta` controlling the degree of information borrowing from the external cohort(s).
+- **`eta.list`**: A list of integration-weight parameters `eta` controlling the degree of information borrowing from the external cohort(s).
 
 
 ```{r, echo = TRUE, eval = FALSE}
@@ -445,7 +445,7 @@ fit <- BRIERi(
     X = dat$X, 
     y = dat$y, 
     beta.external = dat$beta.external,
-    eta_vec = exp(seq(0, log(10), length = 20))    
+    eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))
     family = "gaussian",
     penalty = "LASSO"
 )
@@ -466,7 +466,7 @@ fit = BRIERi.cv(
     X = dat$X, 
     y = dat$y, 
     beta.external = dat$beta.external,
-    eta = exp(seq(0, log(10), length = 20))    
+    eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))    
     family = "gaussian",
     penalty = "LASSO"
 )
@@ -832,14 +832,14 @@ Once preprocessing is completed, `BRIER.S` model can be fitted directly. Below w
 - **`X`**: Reference genotype matrix from the target cohort, used to estimate the reference correlation structure (e.g., the LD matrix).
 - **`beta.external`**: A vector of pretrained model coefficients from the external cohort(s). The external cohort provided should not include the intercept term.
 - **`penalty`**: Penalty function used for regularized estimation. Supported options include `"LASSO"`, `"MCP"`, and `"SCAD"`. The default is `"LASSO"`.
-- **`eta_vec`**: A vector of integration-weight parameters `eta` controlling the degree of information borrowing from the external cohort(s).
+- **`eta.list`**: A list of integration-weight parameters `eta` controlling the degree of information borrowing from the external cohort(s).
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERs(
     GWAS_sum = dat$GWAS_sum, 
     X = dat$X, 
     beta.external = dat$beta.external,
-    eta_vec = exp(seq(0, log(10), length = 20)
+    eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))
     )
 ```
 
