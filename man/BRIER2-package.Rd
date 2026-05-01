@@ -6,7 +6,12 @@
 \alias{BRIER2-package}
 \title{BRIER2: Bregman-Divergence-Based Regularized Integrative Estimator in Regression}
 \description{
-BRIER2 is a transfer learning framework for improving genetic risk prediction in a target dataset by leveraging information from external, well-powered cohorts.
+Penalized regression methods for genetic risk prediction that integrate
+pretrained external models or external individual-level data with target
+cohort data. Supports Gaussian, binomial, and Poisson families with LASSO,
+MCP, and SCAD penalties. Includes individual-level (BRIERi),
+summary-statistics (BRIERs), and full individual-level external data
+(BRIERfull) variants.
 }
 \seealso{
 Useful links:

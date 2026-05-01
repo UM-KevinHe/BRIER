@@ -1,0 +1,13 @@
+pandoc: 2.9.2.1
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  Appendix_Distr: Appendix_Distr.html
+  Appendix_GWAS: Appendix_GWAS.html
+  Appendix_IC: Appendix_IC.html
+  Appendix_Model: Appendix_Model.html
+  BRIER2: BRIER2.html
+last_built: 2026-04-03T04:37Z
+urls:
+  reference: https://zrayw.github.io/BRIER2/reference
+  article: https://zrayw.github.io/BRIER2/articles

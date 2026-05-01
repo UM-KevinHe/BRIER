@@ -14,7 +14,7 @@
 #'         where each block starts, including the end marker at n.
 #' @export
 LD_blocks <- function(chr, pos, LDB) {
-    .Call('_BRIER2_LD_blocks', PACKAGE = 'BRIER2', chr, pos, LDB)
+    .Call(`_BRIER2_LD_blocks`, chr, pos, LDB)
 }
 
 #' Block-Structured LD Calculation
@@ -27,7 +27,7 @@ LD_blocks <- function(chr, pos, LDB) {
 #' @return p x p sparse LD matrix (arma::sp_mat).
 #' @export
 LD_sigma <- function(X, blk, tau) {
-    .Call('_BRIER2_LD_sigma', PACKAGE = 'BRIER2', X, blk, tau)
+    .Call(`_BRIER2_LD_sigma`, X, blk, tau)
 }
 
 #' Coordinate descent for weighted Gaussian regression with sequential strong rule
@@ -59,7 +59,7 @@ LD_sigma <- function(X, blk, tau) {
 #'   \item{iter}{An integer vector of iteration counts for each lambda.}
 #' }
 cd_wgaussian_fit_ssr <- function(X, y, wt, multiplier, penalty, lam, alpha, gamma, lam_max, max_iter, eps, dfmax) {
-    .Call('_BRIER2_cd_wgaussian_fit_ssr', PACKAGE = 'BRIER2', X, y, wt, multiplier, penalty, lam, alpha, gamma, lam_max, max_iter, eps, dfmax)
+    .Call(`_BRIER2_cd_wgaussian_fit_ssr`, X, y, wt, multiplier, penalty, lam, alpha, gamma, lam_max, max_iter, eps, dfmax)
 }
 
 #' Coordinate descent for GLM with sequential strong rule
@@ -94,7 +94,7 @@ cd_wgaussian_fit_ssr <- function(X, y, wt, multiplier, penalty, lam, alpha, gamm
 #'   \item{iter}{An integer vector of iteration counts for each lambda.}
 #' }
 cd_glm_fit_ssr <- function(X, y, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user = FALSE, warn = TRUE) {
-    .Call('_BRIER2_cd_glm_fit_ssr', PACKAGE = 'BRIER2', X, y, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user, warn)
+    .Call(`_BRIER2_cd_glm_fit_ssr`, X, y, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user, warn)
 }
 
 #' Coordinate descent for weighted GLM with sequential strong rule
@@ -121,7 +121,7 @@ cd_glm_fit_ssr <- function(X, y, family, multiplier, penalty, lambda, alpha, gam
 #'
 #' @return A list with beta0, beta, dev, eeta, and iter.
 cd_wglm_fit_ssr <- function(X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user = FALSE, warn = TRUE) {
-    .Call('_BRIER2_cd_wglm_fit_ssr', PACKAGE = 'BRIER2', X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user, warn)
+    .Call(`_BRIER2_cd_wglm_fit_ssr`, X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user, warn)
 }
 
 #' Coordinate descent for BRIERs estimation procedure
@@ -150,7 +150,7 @@ cd_wglm_fit_ssr <- function(X, y, wt, family, multiplier, penalty, lambda, alpha
 #'   \item{dev}{A numeric vector of deviance values for each lambda.}
 #' }
 cd_summary_fit <- function(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user) {
-    .Call('_BRIER2_cd_summary_fit', PACKAGE = 'BRIER2', XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user)
+    .Call(`_BRIER2_cd_summary_fit`, XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user)
 }
 
 #' Maximum scaled inner product
@@ -168,7 +168,7 @@ cd_summary_fit <- function(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, 
 #'
 #' @return A numeric scalar: the maximum value of |X'r|(j) / m(j).
 maxprod <- function(X, r, n, p, m) {
-    .Call('_BRIER2_maxprod', PACKAGE = 'BRIER2', X, r, n, p, m)
+    .Call(`_BRIER2_maxprod`, X, r, n, p, m)
 }
 
 #' Maximum Lambda Selection for Summary Statistics
@@ -191,7 +191,7 @@ maxprod <- function(X, r, n, p, m) {
 #'
 #' @return A numeric scalar: the maximum lambda value among penalized SNPs.
 maxlambda_summary <- function(XtY, ld_mat, m, alpha, eps, max_iter) {
-    .Call('_BRIER2_maxlambda_summary', PACKAGE = 'BRIER2', XtY, ld_mat, m, alpha, eps, max_iter)
+    .Call(`_BRIER2_maxlambda_summary`, XtY, ld_mat, m, alpha, eps, max_iter)
 }
 
 #' Pseudo-validation score for summary-statistics models
@@ -210,7 +210,7 @@ maxlambda_summary <- function(XtY, ld_mat, m, alpha, eps, max_iter) {
 #'   score for each lambda. Non-finite values (e.g. when beta is all zeros)
 #'   are returned as NA.
 pseudo_validation <- function(beta, XtX, r) {
-    .Call('_BRIER2_pseudo_validation', PACKAGE = 'BRIER2', beta, XtX, r)
+    .Call(`_BRIER2_pseudo_validation`, beta, XtX, r)
 }
 
 #' Standardize a design matrix
@@ -226,8 +226,9 @@ pseudo_validation <- function(beta, XtX, r) {
 #'   \item{center}{A numeric vector of length p of column means.}
 #'   \item{scale}{A numeric vector of length p of column standard deviations.}
 #' }
+#' @export
 standardize_X <- function(Xr) {
-    .Call('_BRIER2_standardize_X', PACKAGE = 'BRIER2', Xr)
+    .Call(`_BRIER2_standardize_X`, Xr)
 }
 
 #' Weighted standardization of a design matrix
@@ -244,8 +245,9 @@ standardize_X <- function(Xr) {
 #'   \item{center}{A numeric vector of length p of weighted column means.}
 #'   \item{scale}{A numeric vector of length p of weighted column standard deviations.}
 #' }
+#' @export
 wstandardize_X <- function(X, wt) {
-    .Call('_BRIER2_wstandardize_X', PACKAGE = 'BRIER2', X, wt)
+    .Call(`_BRIER2_wstandardize_X`, X, wt)
 }
 
 #' Unstandardize coefficients
@@ -264,6 +266,6 @@ wstandardize_X <- function(X, wt) {
 #' @return A (p+1) x L matrix where the first row is the unstandardized
 #'   intercept and the remaining rows are the unstandardized coefficients.
 unstand_beta <- function(b0, b, scale, center, yy_center, L, p) {
-    .Call('_BRIER2_unstand_beta', PACKAGE = 'BRIER2', b0, b, scale, center, yy_center, L, p)
+    .Call(`_BRIER2_unstand_beta`, b0, b, scale, center, yy_center, L, p)
 }
 
