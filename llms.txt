@@ -1,0 +1,187 @@
+# BRIER2
+
+> Bregman-divergence-based regularized integrative estimator in regression for transfer-learning-based genetic risk prediction.
+
+BRIER2 is an R package for integrative prediction modeling in statistical genetics and biomedical applications. It improves prediction in a target cohort by borrowing information from external cohorts, pretrained external models, or summary-level association statistics. The package supports high-dimensional regularized modeling under multiple data-access settings.
+
+Main documentation: https://zrayw.github.io/BRIER2/
+Function reference: https://zrayw.github.io/BRIER2/reference/index.html
+Get started: https://zrayw.github.io/BRIER2/articles/BRIER2.html
+
+## Decision tree
+
+Use `BRIERfull()` when:
+- Target cohort has individual-level predictor matrix `X` and outcome `y`.
+- External cohort(s) also provide individual-level predictor matrices and outcomes.
+- You can pool target and external observations and provide a cohort vector `cohort` where `0` is target and positive integers denote external cohorts.
+
+Use `BRIERi()` when:
+- Target cohort has individual-level predictor matrix `X` and outcome `y`.
+- External source(s) do not provide raw data but provide pretrained model coefficients such as PRS weights or penalized regression coefficients.
+- `beta.external` can be supplied as a `(p + 1) x M` matrix with the intercept in the first row and predictors aligned to columns of `X`.
+
+Use `BRIERs()` when:
+- Target data are available only as summary statistics.
+- `sumstats` contains at least a `corr` column for standardized marginal correlations.
+- `XtX` is a sparse `p x p` LD matrix aligned to `sumstats`.
+- External information is available as pretrained coefficients in `beta.external` with dimension `p x M` and no intercept.
+
+Use `BRIERi.cv()` when:
+- Cross-validation is desired for BRIER.I with individual-level target data.
+
+Use `BRIERfull.selection()`, `BRIERi.selection()`, or `BRIERs.selection()` when:
+- A fitted model object already exists.
+- The goal is to select `eta` and `lambda` using a validation set, cross-validation output, or an information criterion.
+
+## Core concepts
+
+- `eta`: integration weight controlling borrowing from external information; supplied through `eta.list`.
+- `lambda`: sparsity regularization parameter.
+- `family`: outcome distribution. Current reference functions use `gaussian`, `binomial`, and `poisson`.
+- `penalty`: regularization penalty, commonly `LASSO`, with other options passed through lower-level fitting arguments when supported.
+- `multi.method`: external-model aggregation strategy for `BRIERi()` and `BRIERs()`. Options are `ind`, `PCA`, and `stacking`.
+- Summary-level BRIER.S inputs are typically `sumstats$corr`, the standardized marginal correlation vector, and `XtX`, the estimated predictor correlation or LD matrix.
+
+## Common workflow: BRIERfull
+
+```r
+library(BRIER2)
+
+fit = BRIERfull(
+  X = X,
+  y = y,
+  cohort = cohort,
+  family = "gaussian",
+  eta.list = list(c(0, 0.5, 1, 2)),
+  penalty = "LASSO"
+)
+
+sel = BRIERfull.selection(
+  object = fit,
+  criteria = "gaussian.mspe",
+  X.val = X_val,
+  y.val = y_val
+)
+```
+
+## Common workflow: BRIERi
+
+```r
+library(BRIER2)
+
+fit = BRIERi(
+  X = X_target,
+  y = y_target,
+  family = "gaussian",
+  eta.list = list(c(0, 0.5, 1, 2)),
+  beta.external = beta_external,
+  penalty = "LASSO"
+)
+
+sel = BRIERi.selection(
+  object = fit,
+  criteria = "BIC"
+)
+
+sel_val = BRIERi.selection(
+  object = fit,
+  criteria = "gaussian.mspe",
+  X.val = X_val,
+  y.val = y_val
+)
+```
+
+## Common workflow: BRIERs
+
+```r
+library(BRIER2)
+
+fit = BRIERs(
+  sumstats = sumstats,
+  XtX = XtX,
+  family = "gaussian",
+  eta.list = list(c(0, 0.5, 1, 2)),
+  beta.external = beta_external,
+  penalty = "LASSO"
+)
+
+sel = BRIERs.selection(
+  object = fit,
+  criteria = "GIC",
+  TN = TN,
+  h2 = h2
+)
+```
+
+## Summary-statistics notes
+
+For BRIER.S, recover standardized marginal correlations from GWAS summary statistics using a z-score and SNP-specific sample size:
+
+```r
+r_j = Z_j / sqrt(N_j - 1 + Z_j^2)
+```
+
+Use SNP-specific sample sizes when available. Construct LD from a matched reference panel, preferably ancestry- and genome-build matched to the summary statistics.
+
+## Function index
+
+### Core modeling and selection
+
+- `BRIERfull()` — integration of individual-level external data.
+- `BRIERfull.selection()` — model selection for BRIER.FULL fits using held-out validation data.
+- `BRIERi()` — integration of pretrained external models with target individual-level data.
+- `BRIERi.cv()` — cross-validation for BRIER.I.
+- `BRIERi.selection()` — model selection for BRIER.I fits using information criteria or validation data.
+- `BRIERs()` — integration of pretrained external models with GWAS summary statistics and LD.
+- `BRIERs.selection()` — model selection for BRIER.S fits using Cp, GIC, pseudo-validation, or validation data.
+
+### LD and summary-statistics utilities
+
+- `LD_blocks()` — LD block structured SNP grouping.
+- `LD_sigma()` — block-structured LD calculation.
+- `calLD()` — calculate LD matrix for BRIER.S.
+- `p2cor()` — convert GWAS p-values to marginal correlations.
+- `pseudo_validation()` — pseudo-validation score for summary-statistics models.
+- `maxlambda_summary()` — maximum lambda selection for summary statistics.
+
+### Low-level fitting utilities
+
+- `cd_glm_fit_ssr()` — coordinate descent for GLM with sequential strong rule.
+- `cd_summary_fit()` — coordinate descent for BRIERs estimation.
+- `cd_wgaussian_fit_ssr()` — coordinate descent for weighted Gaussian regression with sequential strong rule.
+- `cd_wglm_fit_ssr()` — coordinate descent for weighted GLM with sequential strong rule.
+- `calcDev()` — element-wise deviance.
+- `calcNullDev()` — null deviance.
+
+### Prediction, coefficients, and preprocessing
+
+- `predict(<BRIER>)` — predict from a BRIER object.
+- `predict(<BRIER.fit>)` — predict from a single BRIER fit.
+- `coef(<BRIER>)` — coefficients from a BRIER object.
+- `coef(<BRIER.fit>)` — coefficients from a single BRIER fit.
+- `standardize_X()` — standardize a design matrix.
+- `wstandardize_X()` — weighted standardization of a design matrix.
+- `unstand_beta()` — unstandardize coefficients.
+- `g_link()` — forward link function.
+- `ginv_link()` — inverse link function.
+- `maxprod()` — maximum scaled inner product.
+
+## Articles
+
+- Get started: https://zrayw.github.io/BRIER2/articles/BRIER2.html
+- Model details: https://zrayw.github.io/BRIER2/articles/Appendix_Model.html
+- Distribution family and evaluation metrics: https://zrayw.github.io/BRIER2/articles/Appendix_Distr.html
+- Information criteria for hyperparameter tuning: https://zrayw.github.io/BRIER2/articles/Appendix_IC.html
+- Recovering summary-level input from GWAS results: https://zrayw.github.io/BRIER2/articles/Appendix_GWAS.html
+
+## Common pitfalls
+
+- Align predictor order exactly between `X` and `beta.external` before running `BRIERi()`.
+- For `BRIERi()`, `beta.external` should include the intercept as the first row.
+- Restrict to shared predictors when pooling target and external individual-level data for `BRIERfull()`.
+- Use a cohort vector `cohort` where `0` denotes target samples and positive integers denote external cohorts.
+- For summary-level modeling, ensure that `sumstats` and `XtX` use the same SNP order.
+- Match LD reference ancestry and genome build to the target summary statistics.
+- For GWAS summary statistics, prefer SNP-specific `N` when converting z-scores to marginal correlations.
+- Use validation-set criteria only when a genuine held-out validation set is available.
+- Use information criteria such as BIC, Cp, GCV, or GIC when validation data are unavailable.
