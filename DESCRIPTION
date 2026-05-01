@@ -1,7 +1,7 @@
 Package: BRIER2
 Type: Package
 Title: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
-Version: 0.0.9
+Version: 1.0.0
 Authors@R: 
     person("Ruiwen", "Zhou", role = c("aut", "cre"), email = "zrayw@umich.edu")
 Description: BRIER2 is a transfer learning framework for improving genetic risk
@@ -17,11 +17,9 @@ Imports:
     Rcpp,
     RcppArmadillo,
     Matrix,
-    purrr,
+    stats,
     parallel,
-    fdrtool,
     pROC,
-    ggplot2,
     rBayesianOptimization
 LinkingTo:
     Rcpp,
@@ -35,4 +33,5 @@ Suggests:
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-SystemRequirements: GNU make
+SystemRequirements: GNU make, C++17
+
