@@ -232,7 +232,7 @@ List cd_wgaussian_fit_ssr(
 
         // ---- Check KKT Conditions for in strong set but not active set ----
         violations = 0;
-        double betachange;
+        // double betachange;
         for (int j = 0; j < p; j++) {
           if (e1(j) == 0 && e2(j) == 1) {
             l1 = alpha * lam(l) * multiplier(j);
@@ -250,7 +250,7 @@ List cd_wgaussian_fit_ssr(
 
       // ---- Check KKT Conditions not in strong set ----
       violations = 0;
-      double betachange;
+      // double betachange;
       for (int j = 0; j < p; j++) {
         if (e2(j) == 0) {
           l1 = alpha * lam(l) * multiplier(j);

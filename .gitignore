@@ -1,6 +1,23 @@
-docs
-.Rproj.user
+# R compiled objects
+*.o
+*.so
+*.dll
+src/*.o
+src/*.so
+src/*.dll
+src/symbols.rds
+
+# R session files
 .Rhistory
-.Rdata
-.httr-oauth
+.RData
+.Rproj.user/
+.Ruserdata
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Build artifacts
+inst/doc
+*.Rcheck/
+*.tar.gz

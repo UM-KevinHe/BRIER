@@ -29,6 +29,7 @@ using namespace arma;
 //'   \item{center}{A numeric vector of length p of column means.}
 //'   \item{scale}{A numeric vector of length p of column standard deviations.}
 //' }
+//' @export
 // [[Rcpp::export]]
 List standardize_X(const NumericMatrix& Xr) {
   arma::mat X = as<arma::mat>(Xr);
@@ -88,6 +89,7 @@ List standardize_X(const NumericMatrix& Xr) {
 //'   \item{center}{A numeric vector of length p of weighted column means.}
 //'   \item{scale}{A numeric vector of length p of weighted column standard deviations.}
 //' }
+//' @export
 // [[Rcpp::export]]
 List wstandardize_X(const arma::mat &X, const arma::vec &wt) {
 

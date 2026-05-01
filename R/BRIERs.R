@@ -351,7 +351,10 @@ BRIERs_fit <- function(
   # -- Build full beta matrix --
   beta <- b
   dimnames(beta) <- list(varnames, round(lambda, 4))
-  deviance <- colSums(beta * (XtX %*% beta)) - 2 * crossprod(beta, XtY)[, 1]
+  # deviance <- colSums(beta * (XtX %*% beta)) - 2 * crossprod(beta, XtY)[, 1]
+  XtXbeta <- as.matrix(XtX %*% beta)
+  beta_mat <- as.matrix(beta)
+  deviance <- colSums(beta_mat * XtXbeta) - 2 * as.numeric(crossprod(beta_mat, XtY))
 
   # -- Degree of freedom --
   k <- colSums(abs(beta) >= eps)
