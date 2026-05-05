@@ -29,7 +29,10 @@ cross-validated error (cve)."></head><body>
 <li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
@@ -115,7 +118,7 @@ stacking with binomial or Poisson families.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to <code>BRIERi_fit</code>.</p></dd>
+<dd><p>Additional arguments passed to <code>BRIERi.eta</code>.</p></dd>
 
 
 <dt id="arg-nfolds">nfolds<a class="anchor" aria-label="anchor" href="#arg-nfolds"></a></dt>
@@ -133,7 +136,7 @@ provided, overrides <code>nfolds</code> and <code>seed</code>.</p></dd>
 
 <dt id="arg-returny">returnY<a class="anchor" aria-label="anchor" href="#arg-returny"></a></dt>
 <dd><p>Logical. If TRUE, the per-fold predictions <code>Y</code> and
-per-fold deviances <code>E</code> are stored in each <code>BRIER.fit</code> object.</p></dd>
+per-fold deviances <code>E</code> are stored in each <code>BRIER.eta</code> object.</p></dd>
 
 
 <dt id="arg-trace">trace<a class="anchor" aria-label="anchor" href="#arg-trace"></a></dt>
@@ -164,7 +167,7 @@ grid in parallel using <code><a href="https://rdrr.io/r/parallel/mclapply.html" 
 <dd><p>The full combinatorial eta grid.</p></dd>
 
 <dt>res</dt>
-<dd><p>A list of <code>BRIER.fit</code> objects with CV fields attached
+<dd><p>A list of <code>BRIER.eta</code> objects with CV fields attached
 (<code>cve</code>, <code>cvse</code>, <code>lambda.min</code>, <code>lambda.min.index</code>).</p></dd>
 
 <dt>null.dev</dt>

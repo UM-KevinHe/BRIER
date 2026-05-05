@@ -33,7 +33,10 @@ lambda is selected over a regularisation path."></head><body>
 <li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
@@ -67,7 +70,7 @@ lambda is selected over a regularisation path.</p>
 <span>  <span class="va">sumstats</span>,</span>
 <span>  <span class="va">XtX</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
-<span>  <span class="va">eta.list</span>,</span>
+<span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  beta.external <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">sumstats</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span><span class="op">)</span>,</span>
 <span>  optim.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -121,7 +124,7 @@ stacking.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to <code>BRIERs_fit</code>.</p></dd>
+<dd><p>Additional arguments passed to <code>BRIERs.eta</code>.</p></dd>
 
 
 <dt id="arg-trace">trace<a class="anchor" aria-label="anchor" href="#arg-trace"></a></dt>
@@ -158,7 +161,7 @@ grid in parallel using <code><a href="https://rdrr.io/r/parallel/mclapply.html" 
 <dd><p>The full combinatorial eta grid.</p></dd>
 
 <dt>res</dt>
-<dd><p>A list of <code>BRIER.fit</code> objects, one per eta combination.</p></dd>
+<dd><p>A list of <code>BRIER.eta</code> objects, one per eta combination.</p></dd>
 
 <dt>null.dev</dt>
 <dd><p>Placeholder set to 0 (null deviance not defined for
@@ -171,7 +174,7 @@ summary-stat models).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="BRIERs_fit.html">BRIERs_fit</a></code>, <code><a href="BRIERs.selection.html">BRIERs.selection</a></code>,
+    <div class="dont-index"><p><code><a href="BRIERs.eta.html">BRIERs.eta</a></code>, <code><a href="BRIERs.selection.html">BRIERs.selection</a></code>,
 <code><a href="BRIERi.html">BRIERi</a></code>, <code><a href="BRIERfull.html">BRIERfull</a></code></p></div>
     </div>
 
