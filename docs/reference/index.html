@@ -25,7 +25,10 @@
 <li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
@@ -44,9 +47,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="brier-full">BRIER.FULL<a class="anchor" aria-label="anchor" href="#brier-full"></a></h2>
 
-
+      <div class="section-desc"><p>Models that integrate individual level external data to individual-level target data.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -66,8 +69,17 @@
 
         </dt>
         <dd>Model selection for BRIER.FULL fits</dd>
+      </dl></div><div class="section level2">
+      <h2 id="brier-i">BRIER.I<a class="anchor" aria-label="anchor" href="#brier-i"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Models that integrate pretrained external models with individual-level target data.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="BRIERi.html">BRIERi()</a></code>
 
@@ -87,8 +99,17 @@
 
         </dt>
         <dd>Model selection for BRIER.I fits</dd>
+      </dl></div><div class="section level2">
+      <h2 id="brier-s">BRIER.S<a class="anchor" aria-label="anchor" href="#brier-s"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Models that integrate summary-level external data to summary-level target data</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="BRIERs.html">BRIERs()</a></code>
 
@@ -101,20 +122,59 @@
 
         </dt>
         <dd>Model selection for BRIER.S fits</dd>
+      </dl></div><div class="section level2">
+      <h2 id="predictions">Predictions<a class="anchor" aria-label="anchor" href="#predictions"></a></h2>
+
+      <div class="section-desc"><p>Make predictions of a fitted BRIER object on an independent testing set</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="predict.BRIER.html">predict(<i>&lt;BRIER&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Predict from a BRIER object</dd>
 
         <dt>
 
-          <code><a href="LD_blocks.html">LD_blocks()</a></code>
+          <code><a href="predict.BRIER.eta.html">predict(<i>&lt;BRIER.eta&gt;</i>)</a></code>
 
         </dt>
-        <dd>LD Block Structured SNP grouping</dd>
+        <dd>Predict from a single BRIER fit</dd>
 
         <dt>
 
-          <code><a href="LD_sigma.html">LD_sigma()</a></code>
+          <code><a href="coef.BRIER.html">coef(<i>&lt;BRIER&gt;</i>)</a></code>
 
         </dt>
-        <dd>Block-Structured LD Calculation</dd>
+        <dd>Coefficients from a BRIER object</dd>
+
+        <dt>
+
+          <code><a href="coef.BRIER.eta.html">coef(<i>&lt;BRIER.eta&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coefficients from a single BRIER fit</dd>
+      </dl></div><div class="section level2">
+      <h2 id="data-processing">Data processing<a class="anchor" aria-label="anchor" href="#data-processing"></a></h2>
+
+      <div class="section-desc"><p>Data processing of input data</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="p2cor.html">p2cor()</a></code>
+
+        </dt>
+        <dd>Convert GWAS p-values to marginal correlations</dd>
 
         <dt>
 
@@ -122,6 +182,66 @@
 
         </dt>
         <dd>Calculate LD matrix for BRIER.S</dd>
+
+        <dt>
+
+          <code><a href="standardize_X.html">standardize_X()</a></code>
+
+        </dt>
+        <dd>Standardize a design matrix</dd>
+      </dl></div><div class="section level2">
+      <h2 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a></h2>
+
+      <div class="section-desc"><p>Plotting functions for visualizing the results of BRIER2.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="plot.eta.html">plot(<i>&lt;eta&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot and evaluate predictive performance as a function of integration weight eta</dd>
+
+        <dt>
+
+          <code><a href="plot.box.html">plot(<i>&lt;box&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Boxplot of predictive performance across bootstrap resamples</dd>
+
+        <dt>
+
+          <code><a href="plot.importance.html">plot(<i>&lt;importance&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot variable importance via bootstrap stability selection</dd>
+      </dl></div><div class="section level2">
+      <h2 id="other-utilities">Other utilities<a class="anchor" aria-label="anchor" href="#other-utilities"></a></h2>
+
+      <div class="section-desc"><p>Additional helper functions.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="g_link.html">g_link()</a></code>
+
+        </dt>
+        <dd>Forward link function</dd>
+
+        <dt>
+
+          <code><a href="ginv_link.html">ginv_link()</a></code>
+
+        </dt>
+        <dd>Inverse link function</dd>
 
         <dt>
 
@@ -136,6 +256,87 @@
 
         </dt>
         <dd>Null deviance</dd>
+
+        <dt>
+
+          <code><a href="evalMetric.html">evalMetric()</a></code>
+
+        </dt>
+        <dd>Compute a predictive performance metric</dd>
+
+        <dt>
+
+          <code><a href="pseudo_validation.html">pseudo_validation()</a></code>
+
+        </dt>
+        <dd>Pseudo-validation score for summary-statistics models</dd>
+
+        <dt>
+
+          <code><a href="calcExtY.html">calcExtY()</a></code>
+
+        </dt>
+        <dd>Compute external linear predictions and aggregate multiple external models</dd>
+
+        <dt>
+
+          <code><a href="calcExtXtY.html">calcExtXtY()</a></code>
+
+        </dt>
+        <dd>Compute external XtY predictions and aggregate multiple external models</dd>
+      </dl></div><div class="section level2">
+      <h2 id="datasets">Datasets<a class="anchor" aria-label="anchor" href="#datasets"></a></h2>
+
+      <div class="section-desc"><p>Simulated example datasets.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="Data_BRIERfull.html">Data_BRIERfull</a></code>
+
+        </dt>
+        <dd>Simulated example data for BRIERfull</dd>
+
+        <dt>
+
+          <code><a href="Data_BRIERi.html">Data_BRIERi</a></code>
+
+        </dt>
+        <dd>Simulated example data for BRIERi</dd>
+
+        <dt>
+
+          <code><a href="Data_BRIERs.html">Data_BRIERs</a></code>
+
+        </dt>
+        <dd>Simulated example data for BRIERs</dd>
+      </dl></div><div class="section level2">
+      <h2 id="internals">Internals<a class="anchor" aria-label="anchor" href="#internals"></a></h2>
+
+      <div class="section-desc"><p>Internal helpers, not intended for end users.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="LD_blocks.html">LD_blocks()</a></code>
+
+        </dt>
+        <dd>LD Block Structured SNP grouping</dd>
+
+        <dt>
+
+          <code><a href="LD_sigma.html">LD_sigma()</a></code>
+
+        </dt>
+        <dd>Block-Structured LD Calculation</dd>
 
         <dt>
 
@@ -167,34 +368,6 @@
 
         <dt>
 
-          <code><a href="coef.BRIER.html">coef(<i>&lt;BRIER&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coefficients from a BRIER object</dd>
-
-        <dt>
-
-          <code><a href="coef.BRIER.fit.html">coef(<i>&lt;BRIER.fit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coefficients from a single BRIER fit</dd>
-
-        <dt>
-
-          <code><a href="g_link.html">g_link()</a></code>
-
-        </dt>
-        <dd>Forward link function</dd>
-
-        <dt>
-
-          <code><a href="ginv_link.html">ginv_link()</a></code>
-
-        </dt>
-        <dd>Inverse link function</dd>
-
-        <dt>
-
           <code><a href="maxlambda_summary.html">maxlambda_summary()</a></code>
 
         </dt>
@@ -206,41 +379,6 @@
 
         </dt>
         <dd>Maximum scaled inner product</dd>
-
-        <dt>
-
-          <code><a href="p2cor.html">p2cor()</a></code>
-
-        </dt>
-        <dd>Convert GWAS p-values to marginal correlations</dd>
-
-        <dt>
-
-          <code><a href="predict.BRIER.html">predict(<i>&lt;BRIER&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Predict from a BRIER object</dd>
-
-        <dt>
-
-          <code><a href="predict.BRIER.fit.html">predict(<i>&lt;BRIER.fit&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Predict from a single BRIER fit</dd>
-
-        <dt>
-
-          <code><a href="pseudo_validation.html">pseudo_validation()</a></code>
-
-        </dt>
-        <dd>Pseudo-validation score for summary-statistics models</dd>
-
-        <dt>
-
-          <code><a href="standardize_X.html">standardize_X()</a></code>
-
-        </dt>
-        <dd>Standardize a design matrix</dd>
 
         <dt>
 
@@ -256,7 +394,8 @@
         </dt>
         <dd>Weighted standardization of a design matrix</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

@@ -7,13 +7,9 @@
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Roboto-0.4.10/font.css" rel="stylesheet"><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Model selection for BRIER.FULL fits — BRIERfull.selection"><meta name="description" content="Selects the optimal eta combination and lambda value from a fitted
 BRIERfull object using held-out validation data. Information criteria
-(AIC, BIC, etc.) are not supported for BRIERfull because external
-observations are integrated via weights, which complicates the effective
-degrees-of-freedom adjustment."><meta property="og:description" content="Selects the optimal eta combination and lambda value from a fitted
+(AIC, BIC, etc.) are not supported for BRIERfull."><meta property="og:description" content="Selects the optimal eta combination and lambda value from a fitted
 BRIERfull object using held-out validation data. Information criteria
-(AIC, BIC, etc.) are not supported for BRIERfull because external
-observations are integrated via weights, which complicates the effective
-degrees-of-freedom adjustment."></head><body>
+(AIC, BIC, etc.) are not supported for BRIERfull."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -33,7 +29,10 @@ degrees-of-freedom adjustment."></head><body>
 <li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
@@ -56,9 +55,7 @@ degrees-of-freedom adjustment."></head><body>
     <div class="ref-description section level2">
     <p>Selects the optimal eta combination and lambda value from a fitted
 <code>BRIERfull</code> object using held-out validation data. Information criteria
-(AIC, BIC, etc.) are not supported for <code>BRIERfull</code> because external
-observations are integrated via weights, which complicates the effective
-degrees-of-freedom adjustment.</p>
+(AIC, BIC, etc.) are not supported for <code>BRIERfull</code>.</p>
     </div>
 
     <div class="section level2">
@@ -82,11 +79,11 @@ degrees-of-freedom adjustment.</p>
 
 <dt id="arg-criteria">criteria<a class="anchor" aria-label="anchor" href="#arg-criteria"></a></dt>
 <dd><p>A string specifying the validation criterion. One of:</p><ul><li><p><code>"gaussian.mspe"</code>: mean squared prediction error.</p></li>
-<li><p><code>"gaussian.rsq"</code>: negative R-squared (minimised).</p></li>
+<li><p><code>"gaussian.rsq"</code>: negative R-squared (minimized).</p></li>
 <li><p><code>"binomial.dev"</code>: binomial deviance.</p></li>
-<li><p><code>"binomial.mcfrsq"</code>: McFadden's R-squared (negated, minimised).</p></li>
-<li><p><code>"binomial.tjursq"</code>: Tjur's R-squared (negated, minimised).</p></li>
-<li><p><code>"binomial.auc"</code>: AUC (negated, minimised).</p></li>
+<li><p><code>"binomial.mcfrsq"</code>: negative McFadden's R-squared (minimized).</p></li>
+<li><p><code>"binomial.tjursq"</code>: negative Tjur's R-squared (minimized).</p></li>
+<li><p><code>"binomial.auc"</code>: negative AUC (minimized).</p></li>
 <li><p><code>"poisson.dev"</code>: Poisson deviance.</p></li>
 </ul></dd>
 
@@ -118,7 +115,7 @@ the input <code>object</code> with the following added elements:</p><dl><dt>crit
 <dd><p>The corresponding lambda index.</p></dd>
 
 <dt>eta.lambda</dt>
-<dd><p>A data.frame summarising the optimal lambda for each eta.</p></dd>
+<dd><p>A data.frame summarising the optimal lambda for each eta combination.</p></dd>
 
 
 </dl></div>
@@ -136,11 +133,11 @@ the input <code>object</code> with the following added elements:</p><dl><dt>crit
 <span class="r-in"><span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  penalty <span class="op">=</span> <span class="st">"LASSO"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">sel</span> <span class="op">&lt;-</span> <span class="fu">BRIERfull.selection</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">fit_selection</span> <span class="op">&lt;-</span> <span class="fu">BRIERfull.selection</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>,</span></span>
 <span class="r-in"><span>  X.val <span class="op">=</span> <span class="va">X.val</span>, y.val <span class="op">=</span> <span class="va">y.val</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">sel</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_selection</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

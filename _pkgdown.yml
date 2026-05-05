@@ -1,4 +1,5 @@
 url: https://zrayw.github.io/BRIER2/
+llm-docs: false
 template:
   bootstrap: 5
   bslib:
@@ -22,7 +23,7 @@ navbar:
     menu:
     - text: Integration of Multiple External Models
       href: articles/Appendix_Multiple.html
-    - text: Selction of Integration Weight using Bayesian Optimization
+    - text: Selection of Integration Weight using Bayesian Optimization
       href: articles/Appendix_BayesianOptimization.html
     - text: Data Processing of Genetic Risk Prediction using BRIERs
       href: articles/Appendix_Preprocess.html
@@ -57,13 +58,13 @@ articles:
 reference: 
 - title: "BRIER.FULL"
   desc: >
-    Models that integrate individual level external data to individual-level target data
+    Models that integrate individual level external data to individual-level target data.
   contents:
     - BRIERfull
     - BRIERfull.selection
 - title: "BRIER.I"
   desc: >
-    Models that integrate summary-level external data to individual-level target data
+    Models that integrate pretrained external models with individual-level target data.
   contents:
     - BRIERi    
     - BRIERi.cv
@@ -76,12 +77,12 @@ reference:
     - BRIERs.selection
 - title: "Predictions"
   desc: >
-    Make predictions of an fitted BRIER object on the indipendent testing set
+    Make predictions of a fitted BRIER object on an independent testing set
   contents:
     - predict.BRIER  
-    - predict.BRIER.fit  
+    - predict.BRIER.eta
     - coef.BRIER
-    - coef.BRIER.fit
+    - coef.BRIER.eta
 - title: "Data processing"
   desc: >
     Data processing of input data
@@ -95,7 +96,7 @@ reference:
   contents:
     - plot.eta
     - plot.box
-    - evalMetrics
+    - plot.importance
 - title: "Other utilities"
   desc: >
     Additional helper functions.
@@ -104,5 +105,28 @@ reference:
     - ginv_link
     - calcDev
     - calcNullDev
-    - evalMetrics
+    - evalMetric
     - pseudo_validation
+    - calcExtY
+    - calcExtXtY
+- title: "Datasets"
+  desc: >
+    Simulated example datasets.
+  contents:
+    - Data_BRIERfull
+    - Data_BRIERi
+    - Data_BRIERs
+- title: "Internals"
+  desc: >
+    Internal helpers, not intended for end users.
+  contents:
+    - LD_blocks
+    - LD_sigma
+    - cd_glm_fit_ssr
+    - cd_summary_fit
+    - cd_wgaussian_fit_ssr
+    - cd_wglm_fit_ssr
+    - maxlambda_summary
+    - maxprod
+    - unstand_beta
+    - wstandardize_X

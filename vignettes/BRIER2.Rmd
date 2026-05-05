@@ -115,6 +115,7 @@ We begin by loading the example dataset. The object contains one target cohort a
 
 ```{r, echo = TRUE, eval = FALSE}
 data("Data_BRIERfull")
+data <- Data_BRIERfull
 names(data)
 # [1] "target"    "external1" "external2" "external3"
 
@@ -196,7 +197,8 @@ In this section, we provide a toy example illustrating the integration of a sing
 We begin by loading the example dataset. The object contains one target cohort and a matrix of three external models.
 
 ```{r, echo = TRUE, eval = FALSE}
-load("data/Data_BRIERfull.rda")
+data("Data_BRIERi")
+data <- Data_BRIERi
 names(data)
 # [1] "target"        "beta.external"
 X <- data$target$train$X 
@@ -291,7 +293,9 @@ In this section, we provide a toy example illustrating the integration of a sing
 We begin by loading the example dataset. The object contains one target cohort and a matrix of three external models. 
 
 ```{r, echo = TRUE, eval = FALSE}
-load("data/Data_BRIERs.rda")
+data("Data_BRIERs")
+data <- Data_BRIERs
+names(data)
 # [1] "target"        "beta.external"
 X <- data$target$train$X 
 ```
@@ -395,15 +399,46 @@ The $\eta$-curve highlights the implications of integrating varying degrees of e
 The example below illustrates the integration curves obtained when `BRIER2` incorporates external information with low heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s $R^2$ (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight $\eta$ increases and more external information is transferred to the target model, predictive performance improves, as indicated by an increase in Pearson’s $R^2$ and a decrease in MSPE. Performance reaches an optimum at an intermediate value of $\eta$ and may decline slightly thereafter. This pattern indicates that integrating external information improves predictive accuracy and suggests that the relative heterogeneity between the target and external data is low.
 
 ```{r, echo = TRUE, eval = FALSE}
-p <- plot.eta(
-  out, X = X_testing, y = y_testing, eval = "gaussian.pearsonrsq", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+## Extract training data
+X <- data$target$train$X 
+summary <- data$target$train$sumstats
+summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
+XtX.list <- calLD(X, summary)
+beta.external <- data$beta.external[, 1]
+
+## Model fitting and hyper-parameter tuning
+fit <- BRIERs(
+  sumstats = summary, 
+  XtX = XtX.list$XtX, 
+  beta.external = beta.external, 
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 10)))
+)
+X_val <- standardize_X(data$target$validation$X)[[1]]
+y_val <- standardize_X(as.matrix(data$target$validation$y))[[1]]
+fit <- BRIERs.selection(
+  fit, criteria = "gaussian.mspe", 
+  X.val = X_val,
+  y.val = y_val
+)
+
+## Plot predictive performance as a function of eta
+out <- plot.eta(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE, 
+  bootstrap = TRUE
   )
-p
-p <- plot.eta(
-  out, X = X_testing, y = y_testing, eval = "gaussian.mspe", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+out$plot
+
+## Plot predictive performance boxplot
+out <- plot.box(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE
   )
+out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
@@ -420,15 +455,46 @@ p <- plot.eta(
 The example below illustrates the integration curves obtained when `BRIER2` incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s $R^2$ (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight $\eta$ increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s $R^2$ and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.
 
 ```{r, echo = TRUE, eval = FALSE}
-p <- plot.eta(
-  out, X = X_testing, y = y_testing, eval = "gaussian.pearsonrsq", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+## Extract training data
+X <- data$target$train$X 
+summary <- data$target$train$sumstats
+summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
+XtX.list <- calLD(X, summary)
+beta.external <- data$beta.external[, 3]
+
+## Model fitting and hyper-parameter tuning
+fit <- BRIERs(
+  sumstats = summary, 
+  XtX = XtX.list$XtX, 
+  beta.external = beta.external, 
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 10)))
+)
+X_val <- standardize_X(data$target$validation$X)[[1]]
+y_val <- standardize_X(as.matrix(data$target$validation$y))[[1]]
+fit <- BRIERs.selection(
+  fit, criteria = "gaussian.mspe", 
+  X.val = X_val,
+  y.val = y_val
+)
+
+## Plot predictive performance as a function of eta
+out <- plot.eta(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE, 
+  bootstrap = TRUE
   )
-p
-p <- plot.eta(
-  out, X = X_testing, y = y_testing, eval = "gaussian.mspe", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+out$plot
+
+## Plot predictive performance boxplot
+out <- plot.box(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE
   )
+out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
@@ -437,35 +503,6 @@ p <- plot.eta(
        style="width:48%;" />
   <img src="../man/figures/line.eta.mspe_hsq0.07_het.high.png"
        alt="Mean squared prediction error on the testing set as a function of eta"
-       style="width:48%;" />
-</div>
-
-
-**Multiple fitted BRIER2 objects**
-
-A list of fitted BRIER.selection objects can also be supplied to this function. This functionality is particularly useful when multiple external models are available, as it allows users to assess the degree of heterogeneity between each external model and the same target (target) dataset, and to determine which external sources are likely to be beneficial for integration.
-
-In the example below, three BRIER models are fitted by integrating different external models with the same target data. The model corresponding to the dashed light-green curve shows no improvement in predictive Pearson's $R^2$ (left) or mspe (right) across values of $\eta$, indicating substantial heterogeneity with the target data. Consequently, users may reasonably exclude this external model when jointly integrating multiple sources using `BRIER.multi`.
-
-```{r, echo = TRUE, eval = FALSE}
-p <- plot.eta(
-  out.list, X = X_testing, y = y_testing, eval = "gaussian.mspe", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
-  )
-p
-p <- plot.eta(
-  out.list, X = X_testing, y = y_testing, eval = "gaussian.pearsonrsq", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
-  )
-p
-```
-
-<div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.png"
-       alt="Pearson R-squared on the testing set as a function of eta for multiple external models"
-       style="width:48%;" />
-  <img src="../man/figures/line.eta.mspe_hsq0.07_het.png"
-       alt="Mean squared prediction error on the testing set as a function of eta for multiple external models"
        style="width:48%;" />
 </div>
 
@@ -532,20 +569,16 @@ p
 The `plot.importance` function provides a stability-based assessment of variable importance by repeatedly re-validation the fitted model on bootstrap resamples of the validation data. For each replication, the procedure records which predictors enter the model, and it summarizes their selection frequencies across all resamples. The resulting plot displays the predictors ranked by how consistently they are selected, offering an interpretable measure of feature importance that complements effect-size estimates. High-frequency markers indicate stable, reproducible signals that contribute to prediction performance, whereas low-frequency markers may reflect noise or dataset-specific fluctuations. This diagnostic is particularly valuable in high-dimensional genomic settings, where model sparsity and sampling variability can obscure truly informative predictors.
 
 ```{r, echo = TRUE, eval = FALSE}
-p <- plot.importance(out, X = X_validation, y = y_validation, n.top = 10, replications = 100, seed = 1)
-p
+out <- plot.importance(
+  fit, 
+  X = data$target$validation$X, covar.data = data$target$validation$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE
+  )
+out$plot
 ```
 
 ![Bar plot of selection frequencies for the top predictors](../man/figures/bar_top_selection.freq.png){width=50%}
-
-By specifying `n.top = NA`, the `plot.importance` function will output the selection frequency distribution histogram for all prediction.
-
-```{r, echo = TRUE, eval = FALSE}
-p <- plot.importance(out, X = X_validation, y = y_validation, n.top = NA, replications = 100, seed = 1)
-p
-```
-
-![Distribution of predictor selection frequencies across bootstrap resamples](../man/figures/density_selection.freq.png){width=50%}
 
 
 ## 6.3 PRS stratification {#sec-prs_strat}

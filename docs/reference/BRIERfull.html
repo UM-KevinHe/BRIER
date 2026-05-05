@@ -29,7 +29,10 @@ assigned per-cohort weights (eta) which are tuned over a user-specified grid."><
 <li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-appendix"><li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
@@ -62,7 +65,7 @@ assigned per-cohort weights (eta) which are tuned over a user-specified grid.</p
 <span>  <span class="va">y</span>,</span>
 <span>  <span class="va">cohort</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
-<span>  <span class="va">eta.list</span>,</span>
+<span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  trace <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ncores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span>,</span>
@@ -75,17 +78,18 @@ assigned per-cohort weights (eta) which are tuned over a user-specified grid.</p
 
 
 <dl><dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A numeric matrix of predictors (n x p) combining target and external
+<dd><p>A numeric matrix of predictors (n x p) combining all target and external
 cohort observations.</p></dd>
 
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
-<dd><p>A numeric response vector of length n.</p></dd>
+<dd><p>A numeric response vector of length ncombining all target and external
+cohort observations.</p></dd>
 
 
 <dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
-<dd><p>An integer vector of length n indicating cohort membership.
-Use 0 for the target cohort and 1, 2, ... for external cohorts.</p></dd>
+<dd><p>An integer vector of length n indicating which cohort each observation
+belongs to. Use 0 for the target cohort and 1, 2, ... for external cohorts.</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
@@ -100,7 +104,7 @@ all external cohorts with a warning.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to <code>BRIERi_fit</code> (e.g. <code>penalty</code>,
+<dd><p>Additional arguments passed to <code>BRIERi.eta</code> (e.g. <code>penalty</code>,
 <code>alpha</code>, <code>nlambda</code>, <code>penalty.factor</code>).</p></dd>
 
 
@@ -138,7 +142,7 @@ grid in parallel using <code><a href="https://rdrr.io/r/parallel/mclapply.html" 
 <dd><p>The full combinatorial eta grid (matrix, rows are combinations).</p></dd>
 
 <dt>res</dt>
-<dd><p>A list of <code>BRIER.fit</code> objects, one per eta combination.</p></dd>
+<dd><p>A list of <code>BRIER.eta</code> objects, one per eta combination.</p></dd>
 
 <dt>null.dev</dt>
 <dd><p>The null deviance computed on the target cohort only.</p></dd>
@@ -147,7 +151,7 @@ grid in parallel using <code><a href="https://rdrr.io/r/parallel/mclapply.html" 
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="BRIERi.html">BRIERi</a></code>, <code><a href="BRIERi_fit.html">BRIERi_fit</a></code>,
+    <div class="dont-index"><p><code><a href="BRIERi.html">BRIERi</a></code>, <code><a href="BRIERi.eta.html">BRIERi.eta</a></code>,
 <code><a href="BRIERi.selection.html">BRIERi.selection</a></code></p></div>
     </div>
 
