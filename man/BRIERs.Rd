@@ -8,7 +8,7 @@ BRIERs(
   sumstats,
   XtX,
   family = c("gaussian", "binomial", "poisson"),
-  eta.list,
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   beta.external = rep(0, nrow(sumstats)),
   multi.method = c("ind", "PCA", "stacking"),
   optim.args = list(),
@@ -43,7 +43,7 @@ models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.}
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking.}
 
-\item{...}{Additional arguments passed to \code{BRIERs_fit}.}
+\item{...}{Additional arguments passed to \code{BRIERs.eta}.}
 
 \item{trace}{Logical. If TRUE, prints progress messages during fitting.}
 
@@ -61,7 +61,7 @@ An object of class \code{"BRIER"} containing:
 \item{family}{The response family.}
 \item{eta.list}{The list of per-model eta grids.}
 \item{eta.grid}{The full combinatorial eta grid.}
-\item{res}{A list of \code{BRIER.fit} objects, one per eta combination.}
+\item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 \item{null.dev}{Placeholder set to 0 (null deviance not defined for
 summary-stat models).}
 \item{varnames}{The variant names.}
@@ -90,6 +90,6 @@ fit <- BRIERs(
 
 }
 \seealso{
-\code{\link{BRIERs_fit}}, \code{\link{BRIERs.selection}},
+\code{\link{BRIERs.eta}}, \code{\link{BRIERs.selection}},
 \code{\link{BRIERi}}, \code{\link{BRIERfull}}
 }

@@ -17,13 +17,13 @@
 #'   models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families.
-#' @param ... Additional arguments passed to \code{BRIERi_fit}.
+#' @param ... Additional arguments passed to \code{BRIERi.eta}.
 #' @param nfolds Integer. Number of CV folds.
 #' @param fold Optional integer vector of fold assignments (length n). If
 #'   provided, overrides \code{nfolds} and \code{seed}.
 #' @param seed Optional integer seed for reproducible fold assignment.
 #' @param returnY Logical. If TRUE, the per-fold predictions \code{Y} and
-#'   per-fold deviances \code{E} are stored in each \code{BRIER.fit} object.
+#'   per-fold deviances \code{E} are stored in each \code{BRIER.eta} object.
 #' @param trace Logical. If TRUE, prints progress messages during fitting.
 #' @param ncores Integer. Number of cores for parallel fitting.
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
@@ -35,7 +35,7 @@
 #'   \item{y.external}{A matrix of external predictions (n x M).}
 #'   \item{eta.list}{The list of per-model eta grids.}
 #'   \item{eta.grid}{The full combinatorial eta grid.}
-#'   \item{res}{A list of \code{BRIER.fit} objects with CV fields attached
+#'   \item{res}{A list of \code{BRIER.eta} objects with CV fields attached
 #'     (\code{cve}, \code{cvse}, \code{lambda.min}, \code{lambda.min.index}).}
 #'   \item{null.dev}{The null deviance.}
 #'   \item{criteria}{Always \code{"cve"} for CV.}
@@ -170,6 +170,12 @@ BRIERi.cv <- function(
     nfolds <- max(fold)
   }
 
+  null.dev <- calcNullDev(
+    X, y, rep(1, nrow(X)) / nrow(X),
+    if (!is.null(fit.args$penalty.factor)) fit.args$penalty.factor else rep(1, ncol(X)),
+    family
+  )
+
   # -- Prepare fit args --
   fit.args <- list(...)
   fit.args$X <- X
@@ -182,9 +188,9 @@ BRIERi.cv <- function(
 
     if (trace) { cat("Fitting at eta = (", paste(round(eta, 3), collapse = ", "), ")\n") }
 
-    # full data fit — returns a BRIER.fit object
+    # full data fit — returns a BRIER.eta object
     fit.args$eta <- as.numeric(eta)
-    fit_full <- do.call(BRIERi_fit, fit.args)
+    fit_full <- do.call(BRIERi.eta, fit.args)
     lambda <- fit_full$lambda
 
     # CV folds
@@ -212,7 +218,7 @@ BRIERi.cv <- function(
     cvse <- apply(E, 2, sd) / sqrt(n)
     min.idx <- which.min(cve)
 
-    # attach CV results to the BRIER.fit object
+    # attach CV results to the BRIER.eta object
     fit_full$cve            <- cve
     fit_full$cvse           <- cvse
     fit_full$lambda.cv      <- lambda.cv
@@ -276,20 +282,18 @@ BRIERi.cv <- function(
   cat("Best lambda:", round(lambda.min, 3), "\n")
 
   # -- Output: same structure as BRIERi, with CV fields added --
-  null.dev <- calcNullDev(
-    X, y, rep(1, nrow(X)) / nrow(X),
-    if (!is.null(fit.args$penalty.factor)) fit.args$penalty.factor else rep(1, ncol(X)),
-    family
-  )
-
   out <- list(
     y              = y,
     y.external     = y.external,
+    beta.external  = beta.external,
     family         = family,
     eta.list       = eta.list,
     eta.grid       = eta.grid,
-    res            = res,           # list of BRIER.fit objects (with CV fields attached)
+    res            = res,           # list of BRIER.eta objects (with CV fields attached)
     null.dev       = null.dev,
+    n              = nrow(X),
+    p              = ncol(X),
+    M              = M,
 
     # CV-specific fields
     criteria         = "cve",
@@ -329,10 +333,10 @@ cv_fold <- function(i, cv.args, fold) {
   y.test <- cv.args$y[test_idx, , drop = FALSE]
 
   # fit on training fold
-  fit.i <- do.call(BRIERi_fit, fold.args)
+  fit.i <- do.call(BRIERi.eta, fold.args)
 
   # predict on test fold
-  yhat <- predict.BRIER.fit(fit.i, X = X.test, type = "response")
+  yhat <- predict.BRIER.eta(fit.i, X = X.test, type = "response")
   if (is.vector(yhat)) { yhat <- matrix(yhat, ncol = 1) }
 
   # compute loss

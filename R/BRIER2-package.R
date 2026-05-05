@@ -11,4 +11,5 @@
 #' @useDynLib BRIER2, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom stats approx cor glm logLik model.matrix optim prcomp predict qt residuals sd var
+#' @importFrom rlang .data
 "_PACKAGE"

@@ -9,7 +9,7 @@ BRIERfull(
   y,
   cohort,
   family = c("gaussian", "binomial", "poisson"),
-  eta.list,
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
@@ -17,13 +17,14 @@ BRIERfull(
 )
 }
 \arguments{
-\item{X}{A numeric matrix of predictors (n x p) combining target and external
+\item{X}{A numeric matrix of predictors (n x p) combining all target and external
 cohort observations.}
 
-\item{y}{A numeric response vector of length n.}
+\item{y}{A numeric response vector of length ncombining all target and external
+cohort observations.}
 
-\item{cohort}{An integer vector of length n indicating cohort membership.
-Use 0 for the target cohort and 1, 2, ... for external cohorts.}
+\item{cohort}{An integer vector of length n indicating which cohort each observation
+belongs to. Use 0 for the target cohort and 1, 2, ... for external cohorts.}
 
 \item{family}{A string specifying the response distribution: "gaussian",
 "binomial", or "poisson".}
@@ -32,7 +33,7 @@ Use 0 for the target cohort and 1, 2, ... for external cohorts.}
 the eta grid for that cohort. A single numeric vector is replicated for
 all external cohorts with a warning.}
 
-\item{...}{Additional arguments passed to \code{BRIERi_fit} (e.g. \code{penalty},
+\item{...}{Additional arguments passed to \code{BRIERi.eta} (e.g. \code{penalty},
 \code{alpha}, \code{nlambda}, \code{penalty.factor}).}
 
 \item{trace}{Logical. If TRUE, prints progress messages during fitting.}
@@ -51,7 +52,7 @@ An object of class \code{"BRIER"} containing:
 \item{cohort}{The cohort indicator vector.}
 \item{eta.list}{The list of per-cohort eta grids.}
 \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
-\item{res}{A list of \code{BRIER.fit} objects, one per eta combination.}
+\item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 \item{null.dev}{The null deviance computed on the target cohort only.}
 }
 }
@@ -80,6 +81,6 @@ fit <- BRIERfull(
 
 }
 \seealso{
-\code{\link{BRIERi}}, \code{\link{BRIERi_fit}},
+\code{\link{BRIERi}}, \code{\link{BRIERi.eta}},
 \code{\link{BRIERi.selection}}
 }

@@ -23,7 +23,7 @@
 #'   models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking.
-#' @param ... Additional arguments passed to \code{BRIERs_fit}.
+#' @param ... Additional arguments passed to \code{BRIERs.eta}.
 #' @param trace Logical. If TRUE, prints progress messages during fitting.
 #' @param ncores Integer. Number of cores for parallel fitting.
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
@@ -37,13 +37,13 @@
 #'   \item{family}{The response family.}
 #'   \item{eta.list}{The list of per-model eta grids.}
 #'   \item{eta.grid}{The full combinatorial eta grid.}
-#'   \item{res}{A list of \code{BRIER.fit} objects, one per eta combination.}
+#'   \item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 #'   \item{null.dev}{Placeholder set to 0 (null deviance not defined for
 #'     summary-stat models).}
 #'   \item{varnames}{The variant names.}
 #' }
 #'
-#' @seealso \code{\link{BRIERs_fit}}, \code{\link{BRIERs.selection}},
+#' @seealso \code{\link{BRIERs.eta}}, \code{\link{BRIERs.selection}},
 #'   \code{\link{BRIERi}}, \code{\link{BRIERfull}}
 #'
 #' @examples
@@ -63,7 +63,8 @@
 #' @export
 BRIERs <- function(
   sumstats, XtX, family = c("gaussian", "binomial", "poisson"),
-  eta.list, beta.external = rep(0, nrow(sumstats)),
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
+  beta.external = rep(0, nrow(sumstats)),
   multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
   ...,
   trace = FALSE,
@@ -155,7 +156,7 @@ BRIERs <- function(
   single_eta_fit <- function(eta_row, fit.args, trace) {
     if (trace) { cat("Fitting at eta = (", paste(round(eta_row, 3), collapse = ", "), ")\n") }
     fit.args$eta <- as.numeric(eta_row)
-    do.call(BRIERs_fit, fit.args)
+    do.call(BRIERs.eta, fit.args)
   }
 
   # -- Parallel / serial loop --
@@ -183,7 +184,9 @@ BRIERs <- function(
     eta.list       = eta.list,
     eta.grid       = eta.grid,
     res            = res,
-    null.dev = 0,
+    null.dev       = 1,
+    p              = nrow(XtX),
+    M              = M,
     varnames       = varnames
   )
   class(out) <- "BRIER"
@@ -218,16 +221,16 @@ BRIERs <- function(
 #' @param nvar.max An integer specifying the maximum number of selected variables.
 #' @param varnames Optional character vector of variant names (length p).
 #'
-#' @return An object of class \code{"BRIER.fit"} containing model specification,
+#' @return An object of class \code{"BRIER.eta"} containing model specification,
 #'   coefficients, fit statistics, and data. The \code{summary = TRUE} flag
 #'   indicates a summary-stat model (no intercept).
 #'
-#' @seealso \code{\link{BRIERs}}, \code{\link{coef.BRIER.fit}},
-#'   \code{\link{predict.BRIER.fit}}
+#' @seealso \code{\link{BRIERs}}, \code{\link{coef.BRIER.eta}},
+#'   \code{\link{predict.BRIER.eta}}
 #'
 #' @keywords internal
 #' @export
-BRIERs_fit <- function(
+BRIERs.eta <- function(
   XtX, XtY, eta = 0, XtY.external = NULL,
   family = c("gaussian", "binomial", "poisson"),
   penalty = c("LASSO", "MCP", "SCAD"),
@@ -384,22 +387,66 @@ BRIERs_fit <- function(
     XtY.external = XtY.external,
     summary        = TRUE
   )
-  class(out) <- "BRIER.fit"
+  class(out) <- "BRIER.eta"
   out
 }
 
-# -- Internal helper: aggregate external summary predictions --
 
+#' Compute external XtY predictions and aggregate multiple external models
+#'
+#' Compute external-model XtY predictions in the summary-statistics setting and,
+#' when more than one external model is supplied, aggregate them into a single
+#' combined prediction. Aggregation is controlled by \code{multi.method}:
+#' \code{"ind"} keeps each model independent, \code{"PCA"} aggregates via the
+#' first principal component of the normalised external coefficients, and
+#' \code{"stacking"} learns optimal stacking weights by minimising the
+#' summary-statistic least-squares criterion using \code{XtX} and \code{XtY}.
+#'
+#' Used internally by \code{\link{BRIERs}}, but exposed for users who want to
+#' compute external XtY predictions independently of the BRIER fitting
+#' framework.
+#'
+#' @param XtX A p x p sparse LD reference matrix.
+#' @param XtY A numeric vector of marginal correlations (length p).
+#' @param beta.external A p x M matrix of external model coefficients
+#'   (no intercept).
+#' @param multi.method A string: "ind", "PCA", or "stacking".
+#'
+#' @return A list with two elements:
+#' \describe{
+#'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"} and
+#'     \code{"stacking"}, this is a p x 1 aggregated coefficient vector; for
+#'     \code{"ind"}, this is the original input.}
+#'   \item{XtY.external}{A p x M' matrix of external XtY predictions, where
+#'     M' = 1 for \code{"PCA"} and \code{"stacking"} and M' = M for \code{"ind"}.}
+#' }
+#'
+#' @seealso \code{\link{BRIERs}}, \code{\link{calLD}}, \code{\link{calcExtY}}
+#'
+#' @examples
+#' \dontrun{
+#' # XtX: sparse p x p LD matrix
+#' # XtY: length-p marginal correlation vector
+#' # beta.external: p x M external coefficient matrix
+#'
+#' ext <- calcExtXtY(XtX, XtY, beta.external, multi.method = "ind")
+#' dim(ext$XtY.external)
+#' }
+#'
+#' @export
 calcExtXtY <- function(XtX, XtY, beta.external, multi.method) {
   if (multi.method == "PCA") {
     bb <- apply(beta.external, 2, function(x) x / sqrt(sum(x^2)))
     w <- prcomp(t(bb) %*% bb)$rotation[, 1]
     beta.external <- beta.external %*% abs(w)
   } else if (multi.method == "stacking") {
-    w <- solve(crossprod(beta.external, XtX %*% beta.external), crossprod(beta.external, XtY))
+    w <- solve(
+      crossprod(beta.external, XtX %*% beta.external),
+      crossprod(beta.external, XtY)
+    )
     beta.external <- beta.external %*% w
   }
-  
+
   XtY.external <- as.matrix(XtX %*% beta.external)
   list(beta.external = beta.external, XtY.external = XtY.external)
 }

@@ -18,11 +18,11 @@ BRIERfull.selection(
 \item{criteria}{A string specifying the validation criterion. One of:
 \itemize{
 \item \code{"gaussian.mspe"}: mean squared prediction error.
-\item \code{"gaussian.rsq"}: negative R-squared (minimised).
+\item \code{"gaussian.rsq"}: negative R-squared (minimized).
 \item \code{"binomial.dev"}: binomial deviance.
-\item \code{"binomial.mcfrsq"}: McFadden's R-squared (negated, minimised).
-\item \code{"binomial.tjursq"}: Tjur's R-squared (negated, minimised).
-\item \code{"binomial.auc"}: AUC (negated, minimised).
+\item \code{"binomial.mcfrsq"}: negative McFadden's R-squared (minimized).
+\item \code{"binomial.tjursq"}: negative Tjur's R-squared (minimized).
+\item \code{"binomial.auc"}: negative AUC (minimized).
 \item \code{"poisson.dev"}: Poisson deviance.
 }}
 
@@ -39,15 +39,13 @@ the input \code{object} with the following added elements:
 \item{eta.min.index}{The corresponding row index in \code{eta.grid}.}
 \item{lambda.min}{The lambda value minimising the criterion at \code{eta.min}.}
 \item{lambda.min.index}{The corresponding lambda index.}
-\item{eta.lambda}{A data.frame summarising the optimal lambda for each eta.}
+\item{eta.lambda}{A data.frame summarising the optimal lambda for each eta combination.}
 }
 }
 \description{
 Selects the optimal eta combination and lambda value from a fitted
 \code{BRIERfull} object using held-out validation data. Information criteria
-(AIC, BIC, etc.) are not supported for \code{BRIERfull} because external
-observations are integrated via weights, which complicates the effective
-degrees-of-freedom adjustment.
+(AIC, BIC, etc.) are not supported for \code{BRIERfull}.
 }
 \examples{
 \dontrun{
@@ -56,11 +54,11 @@ fit <- BRIERfull(
   eta.list = list(c(0, 0.5, 1, 2)),
   penalty = "LASSO"
 )
-sel <- BRIERfull.selection(
+fit_selection <- BRIERfull.selection(
   fit, criteria = "gaussian.mspe",
   X.val = X.val, y.val = y.val
 )
-coef(sel)
+coef(fit_selection)
 }
 
 }
