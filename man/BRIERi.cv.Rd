@@ -43,7 +43,7 @@ models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.}
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking with binomial or Poisson families.}
 
-\item{...}{Additional arguments passed to \code{BRIERi_fit}.}
+\item{...}{Additional arguments passed to \code{BRIERi.eta}.}
 
 \item{nfolds}{Integer. Number of CV folds.}
 
@@ -53,7 +53,7 @@ provided, overrides \code{nfolds} and \code{seed}.}
 \item{seed}{Optional integer seed for reproducible fold assignment.}
 
 \item{returnY}{Logical. If TRUE, the per-fold predictions \code{Y} and
-per-fold deviances \code{E} are stored in each \code{BRIER.fit} object.}
+per-fold deviances \code{E} are stored in each \code{BRIER.eta} object.}
 
 \item{trace}{Logical. If TRUE, prints progress messages during fitting.}
 
@@ -69,7 +69,7 @@ An object of class \code{c("BRIER.cv", "BRIER")} containing:
 \item{y.external}{A matrix of external predictions (n x M).}
 \item{eta.list}{The list of per-model eta grids.}
 \item{eta.grid}{The full combinatorial eta grid.}
-\item{res}{A list of \code{BRIER.fit} objects with CV fields attached
+\item{res}{A list of \code{BRIER.eta} objects with CV fields attached
 (\code{cve}, \code{cvse}, \code{lambda.min}, \code{lambda.min.index}).}
 \item{null.dev}{The null deviance.}
 \item{criteria}{Always \code{"cve"} for CV.}

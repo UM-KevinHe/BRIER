@@ -45,5 +45,5 @@ Extract coefficients from a fitted \code{BRIER} object (output from
 Defaults to the optimal eta and lambda if selection has been performed.
 }
 \seealso{
-\code{\link{coef.BRIER.fit}}, \code{\link{predict.BRIER}}
+\code{\link{coef.BRIER.eta}}, \code{\link{predict.BRIER}}
 }

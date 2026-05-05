@@ -12,15 +12,16 @@ URL: https://zrayw.github.io/BRIER2/
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 4.0),
-    Matrix
+    R (>= 4.0)
 Imports:
     Rcpp,
-    RcppArmadillo,
     stats,
+    Matrix,
+    ggplot2,
     parallel,
     pROC,
-    rBayesianOptimization
+    rBayesianOptimization,
+    rlang
 LinkingTo:
     Rcpp,
     RcppArmadillo

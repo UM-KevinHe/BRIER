@@ -1,10 +1,10 @@
 #' Coefficients from a single BRIER fit
 #'
-#' Extract coefficients from a fitted \code{BRIER.fit} object at one or more
+#' Extract coefficients from a fitted \code{BRIER.eta} object at one or more
 #' lambda values. Lambda values not in the fitted path are obtained by linear
 #' interpolation between adjacent fitted lambdas.
 #'
-#' @param object An object of class \code{"BRIER.fit"}.
+#' @param object An object of class \code{"BRIER.eta"}.
 #' @param lambda Optional numeric vector of lambda values at which to extract
 #'   coefficients. Must lie within the fitted path. If missing, coefficients are
 #'   returned at the indices given by \code{which}.
@@ -15,12 +15,12 @@
 #'
 #' @return A numeric matrix or vector of coefficients.
 #'
-#' @seealso \code{\link{predict.BRIER.fit}}, \code{\link{coef.BRIER}}
+#' @seealso \code{\link{predict.BRIER.eta}}, \code{\link{coef.BRIER}}
 #'
 #' @export
-coef.BRIER.fit <- function(object, lambda, which = seq_along(object$lambda), drop = TRUE, ...) {
-  if (!inherits(object, "BRIER.fit")) {
-    stop("Object must be of class 'BRIER.fit', got '", class(object)[1], "'.", call. = FALSE)
+coef.BRIER.eta <- function(object, lambda, which = seq_along(object$lambda), drop = TRUE, ...) {
+  if (!inherits(object, "BRIER.eta")) {
+    stop("Object must be of class 'BRIER.eta', got '", class(object)[1], "'.", call. = FALSE)
   }
   if (!missing(lambda)) {
     if (any(lambda > max(object$lambda) | lambda < min(object$lambda))) {
@@ -43,18 +43,18 @@ coef.BRIER.fit <- function(object, lambda, which = seq_along(object$lambda), dro
 
 #' Predict from a single BRIER fit
 #'
-#' Generate predictions from a fitted \code{BRIER.fit} object at one or more
+#' Generate predictions from a fitted \code{BRIER.eta} object at one or more
 #' lambda values. Handles both individual-level fits (with intercept) and
 #' summary-statistic fits (without intercept) automatically.
 #'
-#' @param object An object of class \code{"BRIER.fit"}.
+#' @param object An object of class \code{"BRIER.eta"}.
 #' @param X A numeric matrix of predictors. Required for \code{type} in
 #'   \code{c("link", "response")}.
 #' @param type A string specifying the prediction type:
 #'   \itemize{
 #'     \item \code{"link"}: linear predictor on the link scale.
 #'     \item \code{"response"}: prediction on the response scale (after inverse link).
-#'     \item \code{"coefficients"}: extract coefficients (delegates to \code{coef.BRIER.fit}).
+#'     \item \code{"coefficients"}: extract coefficients (delegates to \code{coef.BRIER.eta}).
 #'     \item \code{"vars"}: indices of selected variables at each lambda.
 #'     \item \code{"nvars"}: number of selected variables at each lambda.
 #'   }
@@ -65,21 +65,21 @@ coef.BRIER.fit <- function(object, lambda, which = seq_along(object$lambda), dro
 #'
 #' @return A numeric vector or matrix of predictions, depending on \code{type}.
 #'
-#' @seealso \code{\link{coef.BRIER.fit}}, \code{\link{predict.BRIER}}
+#' @seealso \code{\link{coef.BRIER.eta}}, \code{\link{predict.BRIER}}
 #'
 #' @export
-predict.BRIER.fit <- function(
+predict.BRIER.eta <- function(
   object, X,
   type = c("link", "response", "coefficients", "vars", "nvars"),
   lambda, which = seq_along(object$lambda),
   ...
 ) {
-  if (!inherits(object, "BRIER.fit")) {
-    stop("Object must be of class 'BRIER.fit'.", call. = FALSE)
+  if (!inherits(object, "BRIER.eta")) {
+    stop("Object must be of class 'BRIER.eta'.", call. = FALSE)
   }
 
   type <- match.arg(type)
-  beta <- coef.BRIER.fit(object, lambda = lambda, which = which, drop = FALSE)
+  beta <- coef.BRIER.eta(object, lambda = lambda, which = which, drop = FALSE)
 
   if (type == "coefficients") return(beta)
   if (type == "nvars")        return(object$k[which])
@@ -143,7 +143,7 @@ predict.BRIER.fit <- function(
 #'   coefficients. If multiple etas are requested, a named list of coefficient
 #'   matrices, one per eta combination.
 #'
-#' @seealso \code{\link{coef.BRIER.fit}}, \code{\link{predict.BRIER}}
+#' @seealso \code{\link{coef.BRIER.eta}}, \code{\link{predict.BRIER}}
 #'
 #' @export
 coef.BRIER <- function(
@@ -198,9 +198,9 @@ coef.BRIER <- function(
     }
     fit <- object$res[[which.eta]]
     if (has.lambda) {
-      return(coef.BRIER.fit(fit, lambda = lambda, drop = drop, ...))
+      return(coef.BRIER.eta(fit, lambda = lambda, drop = drop, ...))
     } else {
-      return(coef.BRIER.fit(fit, which = which.lambda, drop = drop, ...))
+      return(coef.BRIER.eta(fit, which = which.lambda, drop = drop, ...))
     }
   }
 
@@ -216,7 +216,7 @@ coef.BRIER <- function(
       stop(paste0("No eta.lambda entry found for eta.index = ", i, "."), call. = FALSE)
     }
     fit <- object$res[[i]]
-    coef.BRIER.fit(fit, which = lam.idx[1], drop = drop, ...)
+    coef.BRIER.eta(fit, which = lam.idx[1], drop = drop, ...)
   })
 
   names(out) <- apply(object$eta.grid[which.eta, , drop = FALSE], 1, function(row) {
@@ -240,14 +240,14 @@ coef.BRIER <- function(
 #'   Used only when a single \code{which.eta} is selected.
 #' @param which.lambda Optional integer vector of lambda indices.
 #' @param type A string: "link", "response", "coefficients", "vars", or "nvars".
-#'   See \code{\link{predict.BRIER.fit}}.
+#'   See \code{\link{predict.BRIER.eta}}.
 #' @param drop Logical. If TRUE, drop singleton dimensions from the output.
 #' @param ... Unused; present for S3 method compatibility.
 #'
 #' @return If a single eta is requested, a numeric vector or matrix. If
 #'   multiple etas are requested, a named list of predictions.
 #'
-#' @seealso \code{\link{predict.BRIER.fit}}, \code{\link{coef.BRIER}}
+#' @seealso \code{\link{predict.BRIER.eta}}, \code{\link{coef.BRIER}}
 #'
 #' @export
 predict.BRIER <- function(
@@ -307,9 +307,9 @@ predict.BRIER <- function(
     }
     fit <- object$res[[which.eta]]
     if (has.lambda) {
-      return(predict.BRIER.fit(fit, X = X, lambda = lambda, type = type, drop = drop, ...))
+      return(predict.BRIER.eta(fit, X = X, lambda = lambda, type = type, drop = drop, ...))
     } else {
-      return(predict.BRIER.fit(fit, X = X, which = which.lambda, type = type, drop = drop, ...))
+      return(predict.BRIER.eta(fit, X = X, which = which.lambda, type = type, drop = drop, ...))
     }
   }
 
@@ -327,7 +327,7 @@ predict.BRIER <- function(
       stop(paste0("No eta.lambda entry found for eta.index = ", i, "."), call. = FALSE)
     }
     fit <- object$res[[i]]
-    predict.BRIER.fit(fit, X = X, which = lam.idx[1], type = type, drop = drop, ...)
+    predict.BRIER.eta(fit, X = X, which = lam.idx[1], type = type, drop = drop, ...)
   })
 
   names(out) <- apply(object$eta.grid[which.eta, , drop = FALSE], 1, function(row) {

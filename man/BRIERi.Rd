@@ -8,8 +8,8 @@ BRIERi(
   X,
   y,
   family = c("gaussian", "binomial", "poisson"),
-  eta.list,
-  beta.external,
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
+  beta.external = rep(0, ncol(X) + 1),
   multi.method = c("ind", "PCA", "stacking"),
   optim.args = list(),
   ...,
@@ -37,16 +37,16 @@ intercept as the first row.}
 \item{multi.method}{A string specifying how to combine multiple external models:
 \itemize{
 \item \code{"ind"}: keep external models independent (default).
-\item \code{"PCA"}: aggregate via the leading principal component of
+\item \code{"PCA"}: aggregate using the first principal component of
 \code{beta.external}.
-\item \code{"stacking"}: aggregate via stacking weights estimated from
+\item \code{"stacking"}: aggregate through stacking weights estimated from
 the target data.
 }}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking with binomial or Poisson families.}
 
-\item{...}{Additional arguments passed to \code{BRIERi_fit} (e.g.
+\item{...}{Additional arguments passed to \code{BRIERi.eta} (e.g.
 \code{penalty}, \code{alpha}, \code{nlambda}, \code{penalty.factor}).}
 
 \item{trace}{Logical. If TRUE, prints progress messages during fitting.}
@@ -65,14 +65,14 @@ PCA/stacking aggregation).}
 \item{family}{The response family.}
 \item{eta.list}{The list of per-model eta grids.}
 \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
-\item{res}{A list of \code{BRIER.fit} objects, one per eta combination.}
+\item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 \item{null.dev}{The null deviance.}
 }
 }
 \description{
 Fits a penalized regression model that integrates one or more pretrained
 external prediction models with target individual-level data. External
-predictions are blended into the target response via a tunable eta parameter
+predictions are integrated into the target response via a tunable eta parameter
 (one per external model), and lambda is selected over a regularisation path.
 }
 \examples{
@@ -97,7 +97,7 @@ fit <- BRIERi(
 
 }
 \seealso{
-\code{\link{BRIERi_fit}}, \code{\link{BRIERi.cv}},
+\code{\link{BRIERi.eta}}, \code{\link{BRIERi.cv}},
 \code{\link{BRIERi.selection}}, \code{\link{BRIERfull}},
 \code{\link{BRIERs}}
 }

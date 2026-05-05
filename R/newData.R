@@ -35,10 +35,11 @@ newData <- function(X, y, eta, y.external, wt, family, penalty.factor) {
   ## Remove constant columns according to standard deviation
   nz <- which(scale > 1e-6)  # non-constant columns
   if (length(nz) != ncol(X)) {
+    removed <- which(scale <= 1e-6)
     std.X <- std.X[, nz, drop = FALSE]
     center <- center[nz]
     scale <- scale[nz]
-    warning(paste("Constant columns are removed: ", paste(which(scale <= 1e-6), collapse = ", "), sep = ""))
+    warning("Constant columns are removed: ", paste(removed, collapse = ", "), call. = FALSE)
   }
 
   list(

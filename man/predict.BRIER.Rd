@@ -32,7 +32,7 @@ Used only when a single \code{which.eta} is selected.}
 \item{which.lambda}{Optional integer vector of lambda indices.}
 
 \item{type}{A string: "link", "response", "coefficients", "vars", or "nvars".
-See \code{\link{predict.BRIER.fit}}.}
+See \code{\link{predict.BRIER.eta}}.}
 
 \item{drop}{Logical. If TRUE, drop singleton dimensions from the output.}
 
@@ -47,5 +47,5 @@ Generate predictions from a fitted \code{BRIER} object. Defaults to the
 optimal eta and lambda if selection has been performed.
 }
 \seealso{
-\code{\link{predict.BRIER.fit}}, \code{\link{coef.BRIER}}
+\code{\link{predict.BRIER.eta}}, \code{\link{coef.BRIER}}
 }

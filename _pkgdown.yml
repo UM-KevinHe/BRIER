@@ -1,5 +1,4 @@
 url: https://zrayw.github.io/BRIER2/
-llm-docs: no
 template:
   bootstrap: 5
   bslib:
@@ -21,6 +20,12 @@ navbar:
     href: articles/BRIER2.html
   - text: Appendix
     menu:
+    - text: Integration of Multiple External Models
+      href: articles/Appendix_Multiple.html
+    - text: Selction of Integration Weight using Bayesian Optimization
+      href: articles/Appendix_BayesianOptimization.html
+    - text: Data Processing of Genetic Risk Prediction using BRIERs
+      href: articles/Appendix_Preprocess.html
     - text: Model Details
       href: articles/Appendix_Model.html
     - text: Distribution Family and Evaluation Metrics
@@ -42,9 +47,62 @@ articles:
 - title: Appendix
   navbar: Appendix
   contents:
+  - Appendix_Multiple
+  - Appendix_BayesianOptimization
+  - Appendix_Preprocess
   - Appendix_Model
   - Appendix_Distr
   - Appendix_IC
   - Appendix_GWAS
-reference: ~
-
+reference: 
+- title: "BRIER.FULL"
+  desc: >
+    Models that integrate individual level external data to individual-level target data
+  contents:
+    - BRIERfull
+    - BRIERfull.selection
+- title: "BRIER.I"
+  desc: >
+    Models that integrate summary-level external data to individual-level target data
+  contents:
+    - BRIERi    
+    - BRIERi.cv
+    - BRIERi.selection
+- title: "BRIER.S"
+  desc: >
+    Models that integrate summary-level external data to summary-level target data
+  contents:
+    - BRIERs    
+    - BRIERs.selection
+- title: "Predictions"
+  desc: >
+    Make predictions of an fitted BRIER object on the indipendent testing set
+  contents:
+    - predict.BRIER  
+    - predict.BRIER.fit  
+    - coef.BRIER
+    - coef.BRIER.fit
+- title: "Data processing"
+  desc: >
+    Data processing of input data
+  contents:
+    - p2cor
+    - calLD
+    - standardize_X
+- title: "Plotting"
+  desc: >
+    Plotting functions for visualizing the results of BRIER2.
+  contents:
+    - plot.eta
+    - plot.box
+    - evalMetrics
+- title: "Other utilities"
+  desc: >
+    Additional helper functions.
+  contents:
+    - g_link
+    - ginv_link
+    - calcDev
+    - calcNullDev
+    - evalMetrics
+    - pseudo_validation

@@ -2,7 +2,7 @@
 #'
 #' Fits a penalized regression model that integrates one or more pretrained
 #' external prediction models with target individual-level data. External
-#' predictions are blended into the target response via a tunable eta parameter
+#' predictions are integrated into the target response via a tunable eta parameter
 #' (one per external model), and lambda is selected over a regularisation path.
 #'
 #' @param X A numeric matrix of predictors (n x p) for the target cohort.
@@ -18,14 +18,14 @@
 #' @param multi.method A string specifying how to combine multiple external models:
 #'   \itemize{
 #'     \item \code{"ind"}: keep external models independent (default).
-#'     \item \code{"PCA"}: aggregate via the leading principal component of
+#'     \item \code{"PCA"}: aggregate using the first principal component of
 #'       \code{beta.external}.
-#'     \item \code{"stacking"}: aggregate via stacking weights estimated from
+#'     \item \code{"stacking"}: aggregate through stacking weights estimated from
 #'       the target data.
 #'   }
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families.
-#' @param ... Additional arguments passed to \code{BRIERi_fit} (e.g.
+#' @param ... Additional arguments passed to \code{BRIERi.eta} (e.g.
 #'   \code{penalty}, \code{alpha}, \code{nlambda}, \code{penalty.factor}).
 #' @param trace Logical. If TRUE, prints progress messages during fitting.
 #' @param ncores Integer. Number of cores for parallel fitting.
@@ -40,11 +40,11 @@
 #'   \item{family}{The response family.}
 #'   \item{eta.list}{The list of per-model eta grids.}
 #'   \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
-#'   \item{res}{A list of \code{BRIER.fit} objects, one per eta combination.}
+#'   \item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 #'   \item{null.dev}{The null deviance.}
 #' }
 #'
-#' @seealso \code{\link{BRIERi_fit}}, \code{\link{BRIERi.cv}},
+#' @seealso \code{\link{BRIERi.eta}}, \code{\link{BRIERi.cv}},
 #'   \code{\link{BRIERi.selection}}, \code{\link{BRIERfull}},
 #'   \code{\link{BRIERs}}
 #'
@@ -70,7 +70,9 @@
 #'
 #' @export
 BRIERi = function(
-  X, y, family = c("gaussian", "binomial", "poisson"), eta.list, beta.external,
+  X, y, family = c("gaussian", "binomial", "poisson"), 
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
+  beta.external = rep(0, ncol(X) + 1),
   multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
   ...,
   trace = FALSE,
@@ -113,7 +115,7 @@ BRIERi = function(
 
   ## Coerce X to matrix
   if (!inherits(X, "matrix")) {
-    tmp <- try(X = model.matrix( ~ 0 + ., data=X), silent = TRUE)
+    tmp <- try(X <- model.matrix(~ 0 + ., data = X), silent = TRUE)
     if (inherits(tmp, "try-error")) { stop("X must be a matrix or able to be coerced to a matrix", call. = FALSE) }
   }
   if (storage.mode(X) == "integer") { storage.mode(X) <- "double"} 
@@ -180,7 +182,7 @@ BRIERi = function(
   single_eta_fit <- function(eta, fit.args, trace) {
     if (trace) { cat("Fitting at eta =", paste(round(eta, 3), collapse = ", "), "\n") }
     fit.args$eta <- as.numeric(eta)  # vector of length K
-    do.call(BRIERi_fit, fit.args)
+    do.call(BRIERi.eta, fit.args)
   }
 
   ## Parallel fitting BRIER
@@ -202,11 +204,15 @@ BRIERi = function(
   out <- list(
     y = y,
     y.external = y.external,
+    beta.external = beta.external,
     family = family,
     eta.list = eta.list,
     eta.grid = eta.grid,
     res = res,
-    null.dev = null.dev
+    null.dev = null.dev, 
+    n = nrow(X), 
+    p = ncol(X), 
+    M = M
   )
   class(out) <- "BRIER"
   out
@@ -215,10 +221,10 @@ BRIERi = function(
 
 #' Core fitting function for BRIER.I
 #'
-#' Internal workhorse that fits a penalized regression model for a single eta
-#' vector. Called by \code{\link{BRIERi}}, \code{\link{BRIERfull}}, and
-#' \code{\link{BRIERi.cv}}. Performs response/predictor validation,
-#' standardisation, lambda path setup, and dispatches to the appropriate
+#' Internal function that fits a penalized regression model for a single eta
+#' combination vector. Called by \code{\link{BRIERi}}, \code{\link{BRIERfull}},
+#' and \code{\link{BRIERi.cv}}. Performs response/predictor validation,
+#' standardization, lambda path setup, and dispatches to the appropriate
 #' coordinate-descent C++ routine.
 #'
 #' @param X A numeric matrix of predictors (n x p).
@@ -234,7 +240,6 @@ BRIERi = function(
 #' @param penalty A string specifying the penalty: "LASSO", "MCP", or "SCAD".
 #' @param alpha A numeric scalar for the elastic net mixing parameter.
 #' @param gamma A numeric scalar for MCP and SCAD penalties.
-#' @param n.sis Optional. Reserved for future SIS extensions.
 #' @param lambda Optional user-specified lambda sequence.
 #' @param nlambda An integer specifying the number of lambda values.
 #' @param lambda.min A numeric scalar for the minimum lambda ratio.
@@ -245,18 +250,18 @@ BRIERi = function(
 #' @param returnX Logical. If TRUE, the standardised data list is returned in
 #'   the output for diagnostics.
 #'
-#' @return An object of class \code{"BRIER.fit"} containing model specification,
+#' @return An object of class \code{"BRIER.eta"} containing model specification,
 #'   coefficients, fit statistics, and data.
 #'
 #' @seealso \code{\link{BRIERi}}, \code{\link{BRIERfull}},
-#'   \code{\link{coef.BRIER.fit}}, \code{\link{predict.BRIER.fit}}
+#'   \code{\link{coef.BRIER.eta}}, \code{\link{predict.BRIER.eta}}
 #'
 #' @keywords internal
 #' @export
-BRIERi_fit = function(
+BRIERi.eta = function(
   X, y, weights = NULL, eta = 0, y.external = NULL, family = c("gaussian", "binomial", "poisson"), 
   penalty.factor = rep(1, ncol(X)), penalty = c("LASSO", "SCAD", "MCP"), 
-  alpha = 1, gamma = ifelse(penalty == "SCAD", 3.7, 3), n.sis = NULL, 
+  alpha = 1, gamma = ifelse(penalty == "SCAD", 3.7, 3), 
   lambda, nlambda = 100, lambda.min = { if (nrow(X) > ncol(X)) 1e-4 else .05 }, log.lambda = TRUE, 
   max.iter = 1e6, eps = 1e-4, nvar.max = NULL, returnX = FALSE
 ){
@@ -286,7 +291,7 @@ BRIERi_fit = function(
 
   # -- Validation of X --
   if (!inherits(X, "matrix")) {
-    tmp <- try(X = model.matrix( ~ 0 + ., data = X), silent = TRUE)
+    tmp <- try(X <- model.matrix(~ 0 + ., data = X), silent = TRUE)
     if (inherits(tmp, "try-error")) { stop("X must be a matrix or able to be coerced to a matrix", call. = FALSE) }
   }
   if (storage.mode(X) == "integer") storage.mode(X) <- "double"
@@ -356,7 +361,7 @@ BRIERi_fit = function(
   p <- ncol(XX.list$std.X)
   if (is.null(nvar.max)) nvar.max <- p
 
-  # -- Main algorithm BRIERi_fit  --
+  # -- Main algorithm BRIERi.eta  --
   if (missing(lambda)) {
     lambda.seq <- setupLambda(
       XX.list$std.X, XX.list$yy, n, p, weights, XX.list$penalty.factor, alpha,
@@ -454,185 +459,305 @@ BRIERi_fit = function(
   if (returnX){
     out$XX.list <- XX.list
   }
-  class(out) <- "BRIER.fit"
+  class(out) <- "BRIER.eta"
   out
 }
 
-
-calcExtY = function(
-  X, y, beta.external, family, 
-  multi.method, 
+#' Compute external linear predictions and aggregate multiple external models
+#'
+#' Compute external-model linear predictions on a target cohort and, when more
+#' than one external model is supplied, aggregate them into a single combined
+#' prediction. Aggregation is controlled by \code{multi.method}: \code{"ind"}
+#' keeps each model independent, \code{"PCA"} aggregates via the first
+#' principal component of the normalised external coefficients, and
+#' \code{"stacking"} learns optimal stacking weights from the target data via
+#' family-specific likelihood maximisation.
+#'
+#' Used internally by \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, and
+#' \code{\link{BRIERfull}}, but exposed for users who want to compute external
+#' predictions independently of the BRIER fitting framework.
+#'
+#' @param X An n x p numeric matrix of target-cohort predictors.
+#' @param y A numeric response vector of length n.
+#' @param beta.external A (p+1) x M matrix of external model coefficients.
+#'   The first row is the intercept; remaining rows are predictor coefficients.
+#' @param family A string: "gaussian", "binomial", or "poisson".
+#' @param multi.method A string: "ind", "PCA", or "stacking".
+#' @param optim.args A list of arguments passed to \code{optim()} when using
+#'   stacking with binomial or Poisson families. See \code{\link{stacking_binomial}}
+#'   and \code{\link{stacking_poisson}} for available options.
+#'
+#' @return A list with two elements:
+#' \describe{
+#'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"},
+#'     this is a (p+1) x 1 aggregated coefficient vector; for \code{"ind"} and
+#'     \code{"stacking"}, this is the original input.}
+#'   \item{y.external}{The n x M' matrix of external linear predictions on the
+#'     response scale, where M' = 1 for \code{"PCA"} and \code{"stacking"} and
+#'     M' = M for \code{"ind"}.}
+#' }
+#'
+#' @seealso \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, \code{\link{BRIERfull}},
+#'   \code{\link{stacking_gaussian}}, \code{\link{stacking_binomial}},
+#'   \code{\link{stacking_poisson}}
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' n <- 200
+#' p <- 50
+#' X <- matrix(rnorm(n * p), ncol = p)
+#' beta_true <- c(rep(1, 5), rep(0, p - 5))
+#' y <- X %*% beta_true + rnorm(n)
+#'
+#' # one external model (intercept + p coefficients)
+#' beta.external <- matrix(c(0, beta_true * 0.8), ncol = 1)
+#' ext <- calcExtY(X, y, beta.external, family = "gaussian", multi.method = "ind")
+#' head(ext$y.external)
+#' }
+#'
+#' @export
+calcExtY <- function(
+  X, y, beta.external, family,
+  multi.method,
   optim.args = list()
-  ){
-  if (multi.method == "PCA"){ 
-    bb = apply(beta.external, 2, function(x) x / sqrt(sum(x^2)))
-    w = prcomp(t(bb) %*% bb)$rotation[, 1]
-    beta.external = beta.external %*% abs(w)
-  } 
-  pred = X %*% beta.external[-1, , drop = FALSE] + beta.external[1, ]
-  y.external = ginv_link(pred, family)
-  if (multi.method == "stacking"){
-    optim.args$Y = y.external
-    optim.args$z = y
-    if (family == "gaussian"){
-      w = stacking_gaussian(y.external, y)
-    } else if (family == "binomial"){ 
-      fit = do.call(stacking_binomial, optim.args)
-      w = fit$weights
-    } else if (family == "poisson"){ 
-      fit = do.call(stacking_poisson, optim.args)
-      w = fit$weights
-    }
-    y.external = y.external %*% w 
+) {
+  if (multi.method == "PCA") {
+    bb <- apply(beta.external, 2, function(x) x / sqrt(sum(x^2)))
+    w <- prcomp(t(bb) %*% bb)$rotation[, 1]
+    beta.external <- beta.external %*% abs(w)
   }
-  return(list(
-    beta.external = beta.external, 
-    y.external = y.external
-  ))
+  pred <- X %*% beta.external[-1, , drop = FALSE] + beta.external[1, ]
+  y.external <- ginv_link(pred, family)
+  if (multi.method == "stacking") {
+    optim.args$Y <- y.external
+    optim.args$z <- y
+    if (family == "gaussian") {
+      w <- stacking_gaussian(y.external, y)
+    } else if (family == "binomial") {
+      fit <- do.call(stacking_binomial, optim.args)
+      w <- fit$weights
+    } else if (family == "poisson") {
+      fit <- do.call(stacking_poisson, optim.args)
+      w <- fit$weights
+    }
+    y.external <- y.external %*% w
+  }
+  list(
+    beta.external = beta.external,
+    y.external    = y.external
+  )
 }
 
-stacking_gaussian = function(Y, z){ solve(as.matrix(t(Y) %*% Y), crossprod(Y, z))}
 
-stacking_binomial = function(
-  Y, z, 
+#' Stacking weights for Gaussian responses
+#'
+#' Compute closed-form least-squares stacking weights that combine multiple
+#' external prediction models into a single linear combination. The optimal
+#' weights minimise the residual sum of squares between the stacked prediction
+#' Yw and the target response z.
+#'
+#' @param Y An n x M numeric matrix of external predictions on the response
+#'   scale (one column per external model).
+#' @param z A numeric response vector of length n.
+#'
+#' @return A numeric vector of length M of stacking weights.
+#'
+#' @seealso \code{\link{stacking_binomial}}, \code{\link{stacking_poisson}},
+#'   \code{\link{calcExtY}}
+#'
+#' @keywords internal
+stacking_gaussian <- function(Y, z) {
+  solve(as.matrix(t(Y) %*% Y), crossprod(Y, z))
+}
+
+
+#' Stacking weights for binary responses
+#'
+#' Compute stacking weights for combining multiple external prediction models
+#' under a binomial likelihood. Weights are estimated by maximising the
+#' Bernoulli log-likelihood of the stacked prediction Yw against the binary
+#' response z, using \code{\link[stats]{optim}}. Predictions outside
+#' \code{[eps, 1 - eps]} are penalised with a large objective value to keep
+#' the optimisation in the interior of the unit interval.
+#'
+#' @param Y An n x M numeric matrix of external predictions on the probability
+#'   scale (each column in `[0, 1]`).
+#' @param z A numeric vector of binary responses (0/1) of length n.
+#' @param w_init Optional numeric vector of initial weights (length M).
+#'   Defaults to equal weights \code{rep(1/M, M)}.
+#' @param method Optimisation method passed to \code{\link[stats]{optim}}.
+#'   Defaults to \code{"BFGS"}.
+#' @param maxit Maximum number of iterations for \code{optim()}.
+#' @param reltol Relative convergence tolerance for \code{optim()}.
+#' @param eps Numerical tolerance: stacked predictions outside
+#'   \code{[eps, 1 - eps]} are penalised with \code{big}.
+#' @param big Penalty value returned when the stacked prediction falls outside
+#'   the valid range. Should be larger than any plausible negative log-likelihood.
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{weights}{A numeric vector of length M of estimated stacking weights.}
+#'   \item{fitted}{The stacked prediction \code{Y \%*\% weights}.}
+#'   \item{value}{The minimised negative log-likelihood.}
+#'   \item{convergence}{Convergence code from \code{optim()}; 0 indicates success.}
+#'   \item{message}{Convergence message from \code{optim()}.}
+#'   \item{optim}{The full \code{optim()} return object.}
+#' }
+#'
+#' @seealso \code{\link{stacking_gaussian}}, \code{\link{stacking_poisson}},
+#'   \code{\link{calcExtY}}
+#'
+#' @keywords internal
+stacking_binomial <- function(
+  Y, z,
   w_init = NULL, method = "BFGS",
   maxit = 1e6, reltol = 1e-10,
   eps = 1e-6, big = 1e20
 ) {
-  Y = as.matrix(Y)
-  z = as.numeric(z)
+  Y <- as.matrix(Y)
+  z <- as.numeric(z)
 
-  n = nrow(Y)
-  m = ncol(Y)
+  n <- nrow(Y)
+  m <- ncol(Y)
 
   if (length(z) != n) {
-    stop("length(z) must equal nrow(Y)", call. = FALSE)
+    stop("length(z) must equal nrow(Y).", call. = FALSE)
   }
 
   if (any(!(z %in% c(0, 1)))) {
-    stop("z must be binary 0/1")
+    stop("z must be binary 0/1.", call. = FALSE)
   }
 
   if (is.null(w_init)) {
-    # equal weights is often a safer start
-    w_init = rep(1 / m, m)
+    w_init <- rep(1 / m, m)
   }
 
-  obj = function(w, Y, z, eps, big) {
-    mu = as.vector(Y %*% w)
-
-    if (any(mu <= eps) || any(mu >= 1 - eps)) {
-      return(big)
-    }
-
+  obj <- function(w, Y, z, eps, big) {
+    mu <- as.vector(Y %*% w)
+    if (any(mu <= eps) || any(mu >= 1 - eps)) { return(big) }
     -sum(z * log(mu) + (1 - z) * log(1 - mu))
   }
 
-  grad = function(w, Y, z, eps, big) {
-    mu = as.vector(Y %*% w)
-
+  grad <- function(w, Y, z, eps, big) {
+    mu <- as.vector(Y %*% w)
     if (any(mu <= eps) || any(mu >= 1 - eps)) {
       return(rep(NA_real_, ncol(Y)))
     }
-
-    r = -(z - mu) / (mu * (1 - mu))
+    r <- -(z - mu) / (mu * (1 - mu))
     as.vector(crossprod(Y, r))
   }
 
-  fit = optim(
-    par = w_init,
-    fn = obj,
-    gr = grad,
-    Y = Y,
-    z = z,
-    eps = eps,
-    big = big,
+  fit <- optim(
+    par = w_init, fn = obj, gr = grad,
+    Y = Y, z = z, eps = eps, big = big,
     method = method,
     control = list(maxit = maxit, reltol = reltol)
   )
 
-  w_hat = fit$par
-  mu_hat = as.vector(Y %*% w_hat)
+  w_hat <- fit$par
+  mu_hat <- as.vector(Y %*% w_hat)
 
   list(
-    weights = w_hat,
-    fitted = mu_hat,
-    value = fit$value,
+    weights     = w_hat,
+    fitted      = mu_hat,
+    value       = fit$value,
     convergence = fit$convergence,
-    message = fit$message,
-    optim = fit
+    message     = fit$message,
+    optim       = fit
   )
 }
 
-stacking_poisson = function(
-  Y, z, 
+
+#' Stacking weights for Poisson responses
+#'
+#' Compute stacking weights for combining multiple external prediction models
+#' under a Poisson likelihood. Weights are estimated by maximising the Poisson
+#' log-likelihood of the stacked prediction Yw against the count response z,
+#' using \code{\link[stats]{optim}}. Predictions at or below \code{eps} are
+#' penalised with a large objective value to maintain a valid log-link.
+#'
+#' @param Y An n x M numeric matrix of external predictions on the rate scale
+#'   (each column non-negative).
+#' @param z A numeric vector of nonnegative integer counts of length n.
+#' @param w_init Optional numeric vector of initial weights (length M).
+#'   Defaults to equal weights \code{rep(1/M, M)}.
+#' @param method Optimisation method passed to \code{\link[stats]{optim}}.
+#'   Defaults to \code{"BFGS"}.
+#' @param maxit Maximum number of iterations for \code{optim()}.
+#' @param reltol Relative convergence tolerance for \code{optim()}.
+#' @param eps Numerical tolerance: stacked predictions at or below \code{eps}
+#'   are penalised with \code{big}.
+#' @param big Penalty value returned when the stacked prediction falls outside
+#'   the valid range.
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{weights}{A numeric vector of length M of estimated stacking weights.}
+#'   \item{fitted}{The stacked prediction \code{Y \%*\% weights}.}
+#'   \item{value}{The minimised negative log-likelihood.}
+#'   \item{convergence}{Convergence code from \code{optim()}; 0 indicates success.}
+#'   \item{message}{Convergence message from \code{optim()}.}
+#'   \item{optim}{The full \code{optim()} return object.}
+#' }
+#'
+#' @seealso \code{\link{stacking_gaussian}}, \code{\link{stacking_binomial}},
+#'   \code{\link{calcExtY}}
+#'
+#' @keywords internal
+stacking_poisson <- function(
+  Y, z,
   w_init = NULL, method = "BFGS",
   maxit = 1e6, reltol = 1e-10,
   eps = 1e-6, big = 1e20
-  ) {
-  Y = as.matrix(Y)
-  z = as.numeric(z)
+) {
+  Y <- as.matrix(Y)
+  z <- as.numeric(z)
 
-  n = nrow(Y)
-  m = ncol(Y)
+  n <- nrow(Y)
+  m <- ncol(Y)
 
   if (length(z) != n) {
-    stop("length(z) must equal nrow(Y)")
+    stop("length(z) must equal nrow(Y).", call. = FALSE)
   }
 
   if (any(z < 0) || any(abs(z - round(z)) > 1e-8)) {
-    stop("z must be nonnegative integer counts")
+    stop("z must be nonnegative integer counts.", call. = FALSE)
   }
 
   if (is.null(w_init)) {
-    w_init = rep(1 / m, m)
+    w_init <- rep(1 / m, m)
   }
 
-  obj = function(w, Y, z, eps, big) {
-    mu = as.vector(Y %*% w)
-
-    if (any(mu <= eps)) {
-      return(big)
-    }
-
+  obj <- function(w, Y, z, eps, big) {
+    mu <- as.vector(Y %*% w)
+    if (any(mu <= eps)) { return(big) }
     sum(mu - z * log(mu))
   }
 
-  grad = function(w, Y, z, eps, big) {
-    mu = as.vector(Y %*% w)
-
-    if (any(mu <= eps)) {
-      return(rep(NA_real_, ncol(Y)))
-    }
-
-    r = -(z - mu) / mu
+  grad <- function(w, Y, z, eps, big) {
+    mu <- as.vector(Y %*% w)
+    if (any(mu <= eps)) { return(rep(NA_real_, ncol(Y))) }
+    r <- -(z - mu) / mu
     as.vector(crossprod(Y, r))
   }
 
-  fit = optim(
-    par = w_init,
-    fn = obj,
-    gr = grad,
-    Y = Y,
-    z = z,
-    eps = eps,
-    big = big,
+  fit <- optim(
+    par = w_init, fn = obj, gr = grad,
+    Y = Y, z = z, eps = eps, big = big,
     method = method,
     control = list(maxit = maxit, reltol = reltol)
   )
 
-  w_hat = fit$par
-  mu_hat = as.vector(Y %*% w_hat)
+  w_hat <- fit$par
+  mu_hat <- as.vector(Y %*% w_hat)
 
   list(
-    weights = w_hat,
-    fitted = mu_hat,
-    value = fit$value,
+    weights     = w_hat,
+    fitted      = mu_hat,
+    value       = fit$value,
     convergence = fit$convergence,
-    message = fit$message,
-    optim = fit
+    message     = fit$message,
+    optim       = fit
   )
 }
-
-
-

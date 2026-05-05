@@ -151,7 +151,7 @@ validation <- function(i, object, X.val, y.val, criteria) {
     ), call. = FALSE)
   }
 
-  mu.pred <- predict.BRIER.fit(fit, X = X.val, type = "response")
+  mu.pred <- predict.BRIER.eta(fit, X = X.val, type = "response")
   tol <- 1e-8
 
   if (grepl("binomial", criteria)) {

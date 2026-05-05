@@ -4,17 +4,18 @@
 #' one or more external cohorts with a target cohort. External observations are
 #' assigned per-cohort weights (eta) which are tuned over a user-specified grid.
 #'
-#' @param X A numeric matrix of predictors (n x p) combining target and external
+#' @param X A numeric matrix of predictors (n x p) combining all target and external
 #'   cohort observations.
-#' @param y A numeric response vector of length n.
-#' @param cohort An integer vector of length n indicating cohort membership.
-#'   Use 0 for the target cohort and 1, 2, ... for external cohorts.
+#' @param y A numeric response vector of length ncombining all target and external
+#'   cohort observations.
+#' @param cohort An integer vector of length n indicating which cohort each observation 
+#'   belongs to. Use 0 for the target cohort and 1, 2, ... for external cohorts.
 #' @param family A string specifying the response distribution: "gaussian",
 #'   "binomial", or "poisson".
 #' @param eta.list A list of numeric vectors (one per external cohort) specifying
 #'   the eta grid for that cohort. A single numeric vector is replicated for
 #'   all external cohorts with a warning.
-#' @param ... Additional arguments passed to \code{BRIERi_fit} (e.g. \code{penalty},
+#' @param ... Additional arguments passed to \code{BRIERi.eta} (e.g. \code{penalty},
 #'   \code{alpha}, \code{nlambda}, \code{penalty.factor}).
 #' @param trace Logical. If TRUE, prints progress messages during fitting.
 #' @param ncores Integer. Number of cores for parallel fitting.
@@ -29,11 +30,11 @@
 #'   \item{cohort}{The cohort indicator vector.}
 #'   \item{eta.list}{The list of per-cohort eta grids.}
 #'   \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
-#'   \item{res}{A list of \code{BRIER.fit} objects, one per eta combination.}
+#'   \item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 #'   \item{null.dev}{The null deviance computed on the target cohort only.}
 #' }
 #'
-#' @seealso \code{\link{BRIERi}}, \code{\link{BRIERi_fit}},
+#' @seealso \code{\link{BRIERi}}, \code{\link{BRIERi.eta}},
 #'   \code{\link{BRIERi.selection}}
 #'
 #' @examples
@@ -57,7 +58,7 @@
 #' @export
 BRIERfull <- function(
   X, y, cohort, family = c("gaussian", "binomial", "poisson"),
-  eta.list,
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
@@ -106,7 +107,7 @@ BRIERfull <- function(
   if (any(cohort < 0)) { stop("cohort must be >= 0 (0 = target, 1..M = external).", call. = FALSE) }
   ext_cohorts <- sort(unique(cohort[cohort != 0]))
   M <- length(ext_cohorts)
-  if (M == 0) { stop("At least one external cohort (cohort > 0) is required.", call. = FALSE) }
+  if (M == 0) { stop("At least one external cohort (cohort > 0) is required. Please use function BRIERi if you don't want to include external information", call. = FALSE) }
 
   # -- Validate eta.list --
   if (!is.list(eta.list)) {
@@ -165,7 +166,7 @@ BRIERfull <- function(
     }
 
     fit.args$weights <- w
-    fit_full <- do.call(BRIERi_fit, fit.args)
+    fit_full <- do.call(BRIERi.eta, fit.args)
 
     # store eta on the fit object for consistency with BRIERi output
     fit_full$eta <- as.numeric(eta_row)
@@ -179,9 +180,11 @@ BRIERfull <- function(
   }
 
   if (!use_parallel) {
-    res <- lapply(eta.grid.list, FUN = single_eta_fit,
-                  fit.args = fit.args, cohort = cohort,
-                  ext_cohorts = ext_cohorts, trace = trace)
+    res <- lapply(
+      eta.grid.list, FUN = single_eta_fit,
+      fit.args = fit.args, cohort = cohort,
+      ext_cohorts = ext_cohorts, trace = trace
+      )
   } else {
     res <- parallel::mclapply(
       eta.grid.list, FUN = single_eta_fit,
@@ -193,14 +196,18 @@ BRIERfull <- function(
 
   # -- Output: same structure as BRIERi --
   out <- list(
-    y          = y,
-    y.external = NULL,
-    family     = family,
-    cohort     = cohort,
-    eta.list   = eta.list,
-    eta.grid   = eta.grid,
-    res        = res,
-    null.dev   = null.dev
+    y             = y,
+    y.external    = NULL,
+    beta.external = 0,
+    family        = family,
+    cohort        = cohort,
+    eta.list      = eta.list,
+    eta.grid      = eta.grid,
+    res           = res,
+    null.dev      = null.dev, 
+    n             = nrow(X),
+    p             = ncol(X),
+    M             = M
   )
   class(out) <- "BRIER"
   out
