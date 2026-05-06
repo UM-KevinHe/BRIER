@@ -283,11 +283,11 @@ plot.eta <- function(
     y.b <- resolve_y_subset(
       covar.data, idx, pheno.name, adjust.covar, standardize = standardize.y
     )
-    vapply(seq_len(n.eta), function(i) {
-      eta_row <- matrix(object$eta.grid[i, ], nrow = 1)
-      pr <- drop(predict.BRIER(object, X = X.b, eta = eta_row, type = "response"))
-      evalMetric(pr, y.b, criteria)
-    }, numeric(1))
+
+    PR <- predict.BRIER(object, X = X.b, eta = object$eta.grid, type = "response")
+    if (!is.list(PR)) PR <- list(PR)
+    stopifnot(length(PR) == n.eta)
+    vapply(PR, function(pr) evalMetric(drop(pr), y.b, criteria), numeric(1))
   }
 
   # -- Compute criterion (with optional bootstrap) --

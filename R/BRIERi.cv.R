@@ -170,18 +170,20 @@ BRIERi.cv <- function(
     nfolds <- max(fold)
   }
 
-  null.dev <- calcNullDev(
-    X, y, rep(1, nrow(X)) / nrow(X),
-    if (!is.null(fit.args$penalty.factor)) fit.args$penalty.factor else rep(1, ncol(X)),
-    family
-  )
-
   # -- Prepare fit args --
   fit.args <- list(...)
   fit.args$X <- X
   fit.args$y <- y
   fit.args$family <- family
   fit.args$y.external <- y.external
+
+  # -- Null dev --
+
+  null.dev <- calcNullDev(
+    X, y, rep(1, nrow(X)) / nrow(X),
+    if (!is.null(fit.args$penalty.factor)) fit.args$penalty.factor else rep(1, ncol(X)),
+    family
+  )
 
   # -- CV for one eta combination --
   cv_one_eta <- function(eta, fit.args, fold, nfolds, n, trace, returnY) {
