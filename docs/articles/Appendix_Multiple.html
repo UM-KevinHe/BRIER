@@ -80,7 +80,7 @@
 <div class="section level2">
 <h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>In many genetic risk prediction applications, multiple external models are available rather than a single source. For example, the GTEx data set XXX multiple tissue available. Naively integrating each external model with its own integration weight leads to a hyperparameter space that grows exponentially in the number of external sources, making joint tuning computationally prohibitive.</p>
+<p>In many genetic risk prediction applications, multiple external models are available rather than a single source. For example, in genetically regulated expression (GReX) modeling for transcriptome-wide association studies (TWAS), the goal is to predict tissue-specific gene expression from genotype data, and the target tissue of interest is often paired with eQTL summary statistics from many related tissues collected by the GTEx project (e.g., 49 tissues in GTEx v8). Since cis-eQTL effects are often shared across biologically related tissues, leveraging external models trained in non-target tissues can substantially improve predictive performance in the target tissue, particularly for tissues with limited sample size. Naively integrating each external model with its own integration weight, however, leads to a hyperparameter space that grows exponentially in the number of external sources, making joint tuning computationally prohibitive.</p>
 <p>To address this, <code>BRIER2</code> provides three strategies for integrating multiple external models, controlled by the <code>multi.method</code> argument:</p>
 <ul>
 <li>
@@ -91,7 +91,7 @@
 <code>"stacking"</code>: the external models are first combined into a single ensemble model using stacking weights estimated from the target data, and the resulting ensemble is then integrated with the target through a single one-dimensional integration weight <span class="math inline">\(\eta\)</span>. This avoids joint optimization over multiple external-model weights while retaining flexible information borrowing across sources.</li>
 </ul>
 <p>Based on extensive simulation studies and real-data analyses, we recommend the <code>"stacking"</code> strategy. It consistently achieves predictive performance comparable to the gold-standard <code>"ind"</code> approach (which jointly tunes a separate integration weight for each external model) while substantially reducing computational burden. Methodological details for all three strategies are provided in the <a href="Appendix_Model.html">Appendix: Model Details</a>.</p>
-<p>In this vignette, we use <code>BRIERs</code> (summary-level data) as an illustrative example. The same workflow applies to <code>BRIERi</code> (individual-level target data with pre-trained external models), with the only difference being the function name and the form of the inputs.</p>
+<p>In this vignette, we use <code><a href="../reference/BRIERs.html">BRIERs()</a></code> (summary-level data) as an illustrative example. The same workflow applies to <code><a href="../reference/BRIERi.html">BRIERi()</a></code> (individual-level target data with pre-trained external models), with the only difference being the function name and the form of the inputs.</p>
 </div>
 <div class="section level2">
 <h2 id="before-integrating-all-external-models">2. Before integrating all external models<a class="anchor" aria-label="anchor" href="#before-integrating-all-external-models"></a>

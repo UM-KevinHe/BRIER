@@ -18,35 +18,37 @@ bibliography: references.bib
 
 # Distribution family {#sec-distr}
 
-`BRIER2` supports a wide range of distribution families for modeling complex traits, including continuous, binary, count, and survival outcomes, as summarized in Table \@ref(tab:family). For each distribution family, the corresponding evaluation metrics used to assess predictive performance are provided in Table \@ref(tab:metrics) (see Section 10). In `BRIER2`, the model family is specified through the `family` argument in the model fitting functions `BRIERfull`, `BRIERi`, and `BRIERs`, with `"gaussian"` used as the default. In the following sections, we present step-by-step tutorials using Gaussian outcomes as an illustrative example; guidance for other distribution families is provided in [Modeling with Complex Distributions](link).
+`BRIER2` accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in Table \@ref(tab:family). The model family is specified through the `family` argument in the model fitting functions `BRIERfull()`, `BRIERi()`, and `BRIERs()`, with `"gaussian"` as the default. For each family, `BRIER2` provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in [Section 2](#sec-eval) below.
 
-Table: (\#tab:family) Distribution families implemented in `BRIER2` and the corresponding model specification.
+Table: (\#tab:family) Distribution families implemented in `BRIER2` and the corresponding model specification. Here $\mu_i = E(y_i \mid \mathbf{x}_i)$ denotes the conditional mean of the outcome.
 
-| **Outcome Type** | **Family** | **Family Argument** | **$g(\mu_i)$ / model specification** |
+| **Outcome Type** | **Family** | **`family` Argument** | **Model specification** |
 |:--|:--|:--|:--|
-| Continuous | Gaussian | `gaussian` | $\mu_i = \mathbf{x}_i^\top \mathbf{\beta}$ |
-| Case-control | Binomial | `binary` | $\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \mathbf{x}_i^\top \mathbf{\beta}$ |
-| Count | Poisson | `poisson` | $\log(\mu_i) = \mathbf{x}_i^\top \mathbf{\beta}$ |
-| Count | Negative Binomial | `negbin` | $\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \mathbf{x}_i^\top \mathbf{\beta}$ |
-| Time-to-event | Cox Proportional Hazards | `survival` | $\lambda_i(t)=\lambda_0(t)\exp(\mathbf{x}_i^\top \mathbf{\beta})$ |
+| Continuous | Gaussian | `"gaussian"` | $\mu_i = \mathbf{x}_i^\top \boldsymbol{\beta}$ |
+| Case-control | Binomial | `"binomial"` | $\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \mathbf{x}_i^\top \boldsymbol{\beta}$ |
+| Count | Poisson | `"poisson"` | $\log(\mu_i) = \mathbf{x}_i^\top \boldsymbol{\beta}$ |
+| Count (overdispersed) | Negative Binomial | `"negbin"` | $\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \mathbf{x}_i^\top \boldsymbol{\beta}$ |
+| Time-to-event | Cox Proportional Hazards | `"cox"` | $\lambda_i(t)=\lambda_0(t)\exp(\mathbf{x}_i^\top \boldsymbol{\beta})$ |
 
 
-# Evaluation of `BRIER2` model {#sec-eval}
+# Evaluation metrics {#sec-eval}
 
-We provide comprehensive metrics to evaluate fitted `BRIER2` predictive performance on validation or testing datasets, as summarized in Table \@ref(tab:metrics).
+`BRIER2` provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in Table \@ref(tab:metrics). Each metric is selected through the `criteria` argument in the relevant evaluation and tuning functions (e.g., `BRIERi.selection()`, `BRIERs.selection()`, `plot.eta()`, `plot.box()`).
 
-Table: (\#tab:metrics) Evaluation metrics for outcome families implemented in `BRIER2`. Abbreviations: MSPE, mean squared prediction error; PD, predicted deviance; AUC, area under the ROC curve.
+For continuous outcomes, mean squared prediction error (MSPE) and Pearson $R^2$ summarize the absolute and relative agreement between observed and predicted values, respectively. For binary outcomes, predictive deviance reflects calibration, while Tjur's $R^2$ — defined as the difference in mean predicted probability between cases and controls — and the area under the ROC curve (AUC) measure discrimination. For count outcomes, predictive deviance is computed under the Poisson or negative-binomial likelihood. For survival outcomes, predictive deviance is based on the Cox partial likelihood, and Harrell's concordance index (C-index) summarizes the model's ability to correctly rank pairs of subjects by event time.
 
-| **Family** | **Metric** | **Criteria Argument** | **Formula** | **Optimal** |
+Table: (\#tab:metrics) Evaluation metrics for outcome families implemented in `BRIER2`. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.
+
+| **Family** | **Metric** | **`criteria` Argument** | **Formula** | **Optimum** |
 |:--|:--|:--|:--|:--|
-| Continuous | MSPE (PD) | `gaussian.mspe` | $\dfrac{1}{n}\sum_{i=1}^n (y_i-\widehat{y}_i)^2$ | Min |
-| Continuous | Pearson $R^2$ | `gaussian.pearson.rsq` | $\dfrac{\left\{\sum_{i=1}^n (y_i-\bar{y})(\widehat{y}_i-\overline{\widehat{y}})\right\}^2}{\left\{\sum_{i=1}^n (y_i-\bar{y})^2\right\}\left\{\sum_{i=1}^n (\widehat{y}_i-\overline{\widehat{y}})^2\right\}}$ | Max |
-| Binary | PD | `binomial.dev` | $-2\sum_{i=1}^n\left[y_i\log(\widehat{y}_i)+(1-y_i)\log(1-\widehat{y}_i)\right]$ | Min |
-| Binary | Tjur $R^2$ | `binomial.Tjur.rsq` | $\dfrac{1}{n_1}\sum_{i:y_i=1}\widehat{y}_i-\dfrac{1}{n_0}\sum_{i:y_i=0}\widehat{y}_i$ | Max |
-| Binary | AUC | `binomial.AUC` | $\mathrm{Pr}(\widehat{y}_i>\widehat{y}_j \mid y_i=1,\; y_j=0)$ | Max |
-| Count | PD | `poisson.dev` | $2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i-\widehat{y}_i)\right]$ | Min |
-| Count | PD | `negbin.dev` | $2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i+r)\log\!\left(\dfrac{y_i+r}{\widehat{y}_i+r}\right)\right]$ | Min |
-| Survival | PD | `survival.dev` | $-2\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]$ | Min |
-| Survival | C-index | `survival.Cindex` | $\mathrm{Pr}(\widehat{r}_i>\widehat{r}_j \mid T_i<T_j)$ | Max |
+| Gaussian | MSPE | `"gaussian.mspe"` | $\dfrac{1}{n}\sum_{i=1}^n (y_i-\widehat{y}_i)^2$ | Min |
+| Gaussian | Pearson $R^2$ | `"gaussian.rsq"` | $\dfrac{\left\{\sum_{i=1}^n (y_i-\bar{y})(\widehat{y}_i-\overline{\widehat{y}})\right\}^2}{\left\{\sum_{i=1}^n (y_i-\bar{y})^2\right\}\left\{\sum_{i=1}^n (\widehat{y}_i-\overline{\widehat{y}})^2\right\}}$ | Max |
+| Binomial | PD | `"binomial.dev"` | $-2\sum_{i=1}^n\left[y_i\log(\widehat{y}_i)+(1-y_i)\log(1-\widehat{y}_i)\right]$ | Min |
+| Binomial | Tjur's $R^2$ | `"binomial.tjurrsq"` | $\dfrac{1}{n_1}\sum_{i:y_i=1}\widehat{y}_i\;-\;\dfrac{1}{n_0}\sum_{i:y_i=0}\widehat{y}_i$ | Max |
+| Binomial | AUC | `"binomial.AUC"` | $\Pr(\widehat{y}_i>\widehat{y}_j \mid y_i=1,\; y_j=0)$ | Max |
+| Poisson | PD | `"poisson.dev"` | $2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i-\widehat{y}_i)\right]$ | Min |
+| Negative Binomial | PD | `"negbin.dev"` | $2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i+r)\log\!\left(\dfrac{y_i+r}{\widehat{y}_i+r}\right)\right]$ | Min |
+| Cox | PD | `"cox.dev"` | $-2\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]$ | Min |
+| Cox | C-index | `"cox.Cindex"` | $\Pr(\widehat{r}_i>\widehat{r}_j \mid T_i<T_j)$ | Max |
 
-Here $y_i$ denotes the observed outcome, $\widehat{y}_i$ the predicted mean (or risk), and $\widehat{r}_i=\exp(\mathbf{x}_i^\top\mathbf{\beta})$ the predicted relative risk for survival outcomes. For binary outcomes, $n_1$ and $n_0$ denote the numbers of cases and controls, respectively. For negative binomial outcomes, $r$ denotes the dispersion parameter. For survival outcomes, $\mathrm{E}$ denotes individuals with observed events and $\mathrm{R}_i$ the corresponding risk set.
+Here $y_i$ denotes the observed outcome, $\widehat{y}_i$ the predicted mean (or predicted probability for binary outcomes), and $\widehat{r}_i=\exp(\mathbf{x}_i^\top\boldsymbol{\beta})$ the predicted relative risk for survival outcomes. For binary outcomes, $n_1$ and $n_0$ denote the numbers of cases and controls, respectively. For negative-binomial outcomes, $r$ denotes the dispersion parameter. For Cox models, $\mathrm{E}$ denotes the set of individuals with observed events and $\mathrm{R}_i$ the corresponding risk set at the event time of subject $i$.
