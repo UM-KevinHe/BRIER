@@ -417,11 +417,11 @@ We provide a suite of functions for evaluating the predictive performance of fit
 
 We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate `BRIER2` performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).  
 
-### `plot.eta`  
+### Visualizing predictive performance as a function of integration weight $\eta$
 
-In addtion to guiding the selection of integration weight $\eta$ in parameter tuning, the `plot.eta` function visualizes predictive performance under user-specified evaluation metrics as a function of the integration weight $\eta$, if a testing set is provided. This plot is particularly useful for assessing heterogeneity between the target (target) data and external sources.
+The `plot.eta()` function visualizes predictive performance under user-specified evaluation metrics as a function of the integration weight $\eta$, if a testing set is provided. This plot is particularly useful for assessing heterogeneity between the target (target) data and external sources.
 
-For a single external cohort, `plot.eta` returns a `ggplot2` object in which the solid green curve traces predictive performance across candidate values of $\eta$, and a black triangle marks the value of $\eta$ selected during hyperparameter tuning. The shape of this curve carries direct interpretive value: a monotonic improvement followed by a plateau or shallow decline indicates that the external information is well aligned with the target population, while a steady decline suggests that the external source is highly heterogeneous and may not warrant integration.
+For a single external cohort, `plot.eta()` returns a `ggplot2` object in which the solid green curve traces predictive performance across candidate values of $\eta$, and a black triangle marks the value of $\eta$ selected during hyperparameter tuning. The shape of this curve carries direct interpretive value: a monotonic improvement followed by a plateau or shallow decline indicates that the external information is well aligned with the target population, while a steady decline suggests that the external source is highly heterogeneous and may not warrant integration.
 
 For multiple external cohorts ($M > 1$), the integration weight becomes a vector $(\eta_1, \ldots, \eta_M)$ and a one-dimensional curve is no longer adequate. In this case, `plot.eta` does not return a `ggplot2` object and instead outputs a summary table of evaluation metrics across all candidate $\eta$ combinations. Users can visualize these results using standard heatmap tools (e.g., `ggplot2::geom_tile`, `lattice::levelplot`, or `graphics::image`) to identify regions of the $\eta$-space that yield the best predictive accuracy.
 
@@ -544,9 +544,9 @@ out$plot
 </div>
 
 
-### `plot.box`  
+### Visualizing predictive performance between the target, external, and BRIER model
 
-The `plot.box` function provides a complementary perspective for evaluating `BRIER` models. It visualizes the distribution of predictive performance across bootstrap resamples using boxplots, thereby capturing variability introduced by sampling randomness. Below, we illustrate `plot.box` under settings where the external information exhibits low and high heterogeneity relative to the target (target) data.
+The `plot.box()` function provides a complementary perspective for evaluating `BRIER` models. It visualizes the distribution of predictive performance across bootstrap resamples using boxplots, thereby capturing variability introduced by sampling randomness. Below, we illustrate `plot.box()` under settings where the external information exhibits low and high heterogeneity relative to the target (target) data.
 
 **Integrating low heterogeneous external information**
 
@@ -611,7 +611,7 @@ out$plot
 
 ## 6.2 Variable importance {#sec-importance}
 
-The `plot.importance` function provides a stability-based assessment of variable importance by repeatedly re-validation the fitted model on bootstrap resamples of the validation data. For each replication, the procedure records which predictors enter the model, and it summarizes their selection frequencies across all resamples. The resulting plot displays the predictors ranked by how consistently they are selected, offering an interpretable measure of feature importance that complements effect-size estimates. High-frequency markers indicate stable, reproducible signals that contribute to prediction performance, whereas low-frequency markers may reflect noise or dataset-specific fluctuations. This diagnostic is particularly valuable in high-dimensional genomic settings, where model sparsity and sampling variability can obscure truly informative predictors.
+The `plot.importance()` function provides a stability-based assessment of variable importance by repeatedly re-validation the fitted model on bootstrap resamples of the validation data. For each replication, the procedure records which predictors enter the model, and it summarizes their selection frequencies across all resamples. The resulting plot displays the predictors ranked by how consistently they are selected, offering an interpretable measure of feature importance that complements effect-size estimates. High-frequency markers indicate stable, reproducible signals that contribute to prediction performance, whereas low-frequency markers may reflect noise or dataset-specific fluctuations. This diagnostic is particularly valuable in high-dimensional genomic settings, where model sparsity and sampling variability can obscure truly informative predictors.
 
 ```{r, echo = TRUE, eval = FALSE}
 out <- plot.importance(
