@@ -162,18 +162,49 @@ fit <- BRIERfull.selection(
   X.val = data$target$validation$X,
   y.val = data$target$validation$y
 )
-
+# Best eta: ( 0.774, 0.167 )
+# Best lambda: 0.752 
 ```
 
-Function `plot.eta` can be used to guide and visualize the selection of the best performing integration weight $\eta$, according to different evaluation metrics used in the validation set. The below figure displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$. The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.
+Function `plot.eta` can be used to guide and visualize the selection of the best performing integration weight $\eta$, according to different evaluation metrics used in the validation set. For multiple external cohorts (>1), `plot.eta` do not generate ggplot objects for plotting but only generate summary results. The user could visualize using XXX as illustrated below. The below figure displays the heat map of predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta_1$ and $\eta_2$. The optimal integration weight is identified as the value of $\eta$ combination that minimizes the evaluation criterion.
+
+The function `plot.eta` can be used to guide and visualize the selection of the best-performing integration weight $\eta$, using different evaluation metrics computed on the validation set. When only a single external cohort is provided, `plot.eta` returns a `ggplot2` object that displays predictive performance as a function of $\eta$. When multiple external cohorts are provided (>1), the integration weight becomes a vector $(\eta_1, \eta_2, \ldots, \eta_M)$, and a one-dimensional curve is no longer sufficient to summarize predictive performance. In this case, `plot.eta` does not return a `ggplot2` object and instead outputs a summary table containing the evaluation metric across all candidate $\eta$ combinations. Users can then visualize these results using standard heatmap tools (e.g., `ggplot2::geom_tile`, `lattice::levelplot`, or `graphics::image`), as illustrated below.
+
+The figure below displays a heatmap of predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a joint function of $\eta_1$ and $\eta_2$. The optimal integration weight is identified as the combination $(\eta_1, \eta_2)$ that minimizes the evaluation criterion.
 
 ```{r, echo = TRUE, eval = FALSE}
-plot.eta(fit)
+out <- plot.eta(fit)
+head(out$summary.df)
+#       eta_1 eta_2      criteria   metric metric.lo metric.hi
+# 1 0.0000000     0 gaussian.mspe 137.9169        NA        NA
+# 2 0.1000000     0 gaussian.mspe 135.6191        NA        NA
+# 3 0.1668101     0 gaussian.mspe 133.8548        NA        NA
+# 4 0.2782559     0 gaussian.mspe 131.5709        NA        NA
+# 5 0.4641589     0 gaussian.mspe 129.7242        NA        NA
+# 6 0.7742637     0 gaussian.mspe 129.2638        NA        NA
+
+df <- out$summary.df
+df$eta_1_lab <- factor(round(df$eta_1, 1))
+df$eta_2_lab <- factor(round(df$eta_2, 1))
+best <- df[which.min(df$metric), ]
+p <- ggplot(df, aes(x = eta_1_lab, y = eta_2_lab, fill = metric)) +
+  geom_tile(color = "white") +
+  geom_point(
+    data = best, aes(x = eta_1_lab, y = eta_2_lab),
+    shape = 17, size = 5, color = "black", inherit.aes = FALSE
+  ) +
+  scale_fill_gradient(low = "#31a354", high = "#f7fcb9", name = "MSPE") +
+  labs(x = expression(eta[1]), y = expression(eta[2])) +
+  theme_classic(base_size = 13, base_family = "serif") +
+  theme(
+    panel.grid = element_blank()
+  )
+p
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png"
-       alt="Mean squared prediction error on the validation set as a function of $\eta$"
+  <img src="../man/figures/heatmap.eta_ext1.2_BRIERfull_gaussian.mspe.png"
+       alt="Heatmap of mean squared prediction error on the validation set as a joint function of (eta_1,eta_2)"
        style="width:48%;" />
 </div>
 
@@ -228,8 +259,8 @@ For grid search, `BRIERi` provides three criterion to evaluate each candidate pa
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERi.cv(X, y, beta.external = beta.external, eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 10))))
-# Best eta: 2.154 
-# Best lambda: 0.212 
+# Best eta: 10 
+# Best lambda: 0.239 
 ```
 
 `BRIERi.selection` can also select the optimal hyper-parameters if an independent validation set is provided. Below displays an example of using MSPE as evaluation metric for continuous outcome. Additional evaluation metrics for different outcomes are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).  
@@ -240,8 +271,8 @@ fit <- BRIERi.selection(
   X.val = data$target$validation$X,
   y.val = data$target$validation$y
 )
-# Best eta:  10 
-# Best lambda: 0.184 
+# Best eta:  2.154 
+# Best lambda: 0.38 
 ```
 
 For continuous, binary, and count outcomes, users can also utilize information-based criteria to tune the optimal hyperparameters \((\eta, \lambda)\). We implemented Bayesian information criteria (BIC), Mallow's $C_p$ ($C_p$), and generalized cross validation (GCV;). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in [Appendix: Information Criteria for Hyper-parameter Tuning](Appendix_IC.html).
@@ -253,21 +284,22 @@ fit <- BRIERi.selection(
   fit, criteria = "BIC"
 )
 # Best eta:  10 
-# Best lambda: 0.742 
+# Best lambda: 0.69
 ```
 
-The function `plot.eta` can be used to guide and visualize the selection of the optimal integration weight $\eta$ based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$, while the right panel shows the corresponding information-criterion curve (e.g., Cp). The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.
+The function `plot.eta` can be used to guide and visualize the selection of the optimal integration weight $\eta$ based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$, while the right panel shows the corresponding information-criterion curve (e.g., BIC). The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.
 
 ```{r, echo = TRUE, eval = FALSE}
-plot.eta(out)
+out <- plot.eta(fit)
+out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png"
+  <img src="../man/figures/line.eta_ext1_BRIERi_gaussian.mspe.png"
        alt="Mean squared prediction error on the validation set as a function of eta"
        style="width:48%;" />
-  <img src="../man/figures/line.eta.Cp_val_hsq0.07_het.high.png"
-       alt="Cp criterion as a function of eta"
+  <img src="../man/figures/line.eta_ext1_BRIERi_BIC.png"
+       alt="Bayesian information riterion as a function of eta"
        style="width:48%;" />
 </div>
 
@@ -344,7 +376,7 @@ fit <- BRIERs.selection(
   y.val = y_val
 )
 # Best eta: 10 
-# Best lambda: 0 
+# Best lambda: 0.021 
 ```
 
 When an independent validation set is not available, users may rely on information-based criteria to tune the optimal hyperparameters \((\eta, \lambda)\). We implemented Generalized information criteria (GIC; specified by argument `criteria = "GIC"`), Mallow's $C_p$ ($C_p$; specified by argument `criteria = "Cp"`), and pseudo-validation (GCV; specified by argument `criteria = "pseu.val"`). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in [Appendix: Information Criteria for Hyper-parameter Tuning](Appendix_IC.html).
@@ -353,24 +385,25 @@ Based on extensive simulation studies and real-data applications, we recommend $
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERs.selection(
-  fit, criteria = "Cp", 
+  fit, criteria = "GIC", 
   TN = nrow(X), h2 = 0.2
 )
-# Best eta: 1.292 
-# Best lambda: 0.029 
+# Best eta: 10 
+# Best lambda: 0.064  
 ```
 
 The function `plot.eta` can be used to guide and visualize the selection of the optimal integration weight $\eta$ based on predictive performance under different evaluation metrics from an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$, while the right panel shows the corresponding information-criterion curve (e.g., GIC). The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.
 
 ```{r, echo = TRUE, eval = FALSE}
-plot.eta(out)
+out <- plot.eta(fit)
+out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.gaussian.mspe_val_hsq0.07_het.med.png"
+  <img src="../man/figures/line.eta_ext1_BRIERs_gaussian.mspe.png"
        alt="Mean squared prediction error on the validation set as a function of eta"
        style="width:48%;" />
-  <img src="../man/figures/line.eta.GIC_val_hsq0.07_het.med.png"
+  <img src="../man/figures/line.eta_ext1_BRIERs_GIC.png"
        alt="Generalized information criterion as a function of eta"
        style="width:48%;" />
 </div>
@@ -378,21 +411,23 @@ plot.eta(out)
 
 # 6. Downstream Analysis {#sec-downstream}
 
-In this section, we introduce a suite of downstream analysis tools designed to facilitate performance evaluation, model diagnostics, and biological interpretation. These functions operate on a parameter-tuned `BRIER.selection` object generated from any of the three selection procedures (`BRIERfull.selection`, `BRIERi.selection` or `BRIERs.selection`). It outputs a list containing a ggplot2 object, and the original data for plotting.
+We provide a suite of functions for evaluating the predictive performance of fitted `BRIER2` models. To accommodate complex outcomes from different distribution families, a comprehensive set of evaluation metrics is supported, including predictive deviance for general outcomes, AUC for binary outcomes, and C-index for survival outcomes. Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html). We illustrate the usage of this plotting functions using fitted BRIER models from summary statistics using `BRIERs()`
 
 ## 6.1 Evaluation of `BRIER2` model {#sec-eval}
 
-We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate `BRIER2` performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the [Appendix](LINK).  
+We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate `BRIER2` performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).  
 
 ### `plot.eta`  
 
-Except guiding the selection of integration weight $\eta$ in parameter tuning, the `plot.eta` function visualizes predictive performance under user-specified evaluation metrics as a function of the integration weight $\eta$, if a testing set is provided. This plot is particularly useful for assessing heterogeneity between the target (target) data and external sources.
+In addtion to guiding the selection of integration weight $\eta$ in parameter tuning, the `plot.eta` function visualizes predictive performance under user-specified evaluation metrics as a function of the integration weight $\eta$, if a testing set is provided. This plot is particularly useful for assessing heterogeneity between the target (target) data and external sources.
 
-Specifically, `plot.eta` display the predictive performance evaluated on an independent testing set as a function of the integration weight parameter $\eta$, shown as the solid green curve. The light blue dotted line represents the predictive performance of the external model alone, and the black triangle marks the best $\eta$ selected during hyper-parameter tuning. 
+For a single external cohort, `plot.eta` returns a `ggplot2` object in which the solid green curve traces predictive performance across candidate values of $\eta$, and a black triangle marks the value of $\eta$ selected during hyperparameter tuning. The shape of this curve carries direct interpretive value: a monotonic improvement followed by a plateau or shallow decline indicates that the external information is well aligned with the target population, while a steady decline suggests that the external source is highly heterogeneous and may not warrant integration.
 
-In genetic applications such as polygenic risk score (PRS) evaluation, outcome measures often require adjustment for environmental or clinical confounders. In these settings, users should provide a `data.frame` containing the testing-set phenotype, along with the column names corresponding to the trait of interest and relevant confounders. The `standardize.y` option controls whether the phenotype is standardized after confounder adjustment. To further mitigate randomness in performance evaluation, bootstrap resampling is supported and can be used to obtain more stable estimates of predictive accuracy.
+For multiple external cohorts ($M > 1$), the integration weight becomes a vector $(\eta_1, \ldots, \eta_M)$ and a one-dimensional curve is no longer adequate. In this case, `plot.eta` does not return a `ggplot2` object and instead outputs a summary table of evaluation metrics across all candidate $\eta$ combinations. Users can visualize these results using standard heatmap tools (e.g., `ggplot2::geom_tile`, `lattice::levelplot`, or `graphics::image`) to identify regions of the $\eta$-space that yield the best predictive accuracy.
 
-The $\eta$-curve highlights the implications of integrating varying degrees of external information into the construction of the integration model on the target population. As a result, it effectively portrays the levels of heterogeneity between datasets and provides guidance on the optimal degree of prior information incorporation. 
+In genetic applications such as polygenic risk score (PRS) evaluation, outcomes often need to be adjusted for environmental or clinical confounders prior to assessment. In these settings, users may pass a `data.frame` to the `covar.data` argument containing the testing-set phenotype together with relevant covariates, and specify the trait and confounder column names. The `standardize.data` option controls whether the phenotype is standardized after confounder adjustment. To further reduce variability in performance estimates introduced by sampling, `plot.eta` supports bootstrap resampling, which yields more stable estimates of predictive accuracy and a corresponding uncertainty band around the $\eta$-curve.
+
+Taken together, the $\eta$-curve clarifies how varying degrees of external information transfer affect predictive performance on the target population. It provides a visual summary of cross-cohort heterogeneity and helps practitioners gauge the appropriate degree of information borrowing for their application.
 
 **Integrating low heterogeneous external information**
 
@@ -421,7 +456,7 @@ fit <- BRIERs.selection(
   y.val = y_val
 )
 
-## Plot predictive performance as a function of eta
+## Plot mspe as a function of eta
 out <- plot.eta(
   fit, 
   X = data$target$testing$X, covar.data = data$target$testing$y, 
@@ -431,21 +466,22 @@ out <- plot.eta(
   )
 out$plot
 
-## Plot predictive performance boxplot
-out <- plot.box(
+## Plot Pearson R2 as a function of eta
+out <- plot.eta(
   fit, 
   X = data$target$testing$X, covar.data = data$target$testing$y, 
-  criteria = "gaussian.mspe", 
-  standardize.data = TRUE
+  criteria = "gaussian.rsq", 
+  standardize.data = TRUE, 
+  bootstrap = TRUE
   )
 out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.low.png"
+  <img src="../man/figures/line.eta.rsq_ext1_BRIERs_test.png"
        alt="Pearson R-squared on the testing set as a function of eta"
        style="width:48%;" />
-  <img src="../man/figures/line.eta.mspe_hsq0.07_het.low.png"
+  <img src="../man/figures/line.eta.mspe_ext1_BRIERs_test.png"
        alt="Mean squared prediction error on the testing set as a function of eta "
        style="width:48%;" />
 </div>
@@ -477,7 +513,7 @@ fit <- BRIERs.selection(
   y.val = y_val
 )
 
-## Plot predictive performance as a function of eta
+## Plot mspe as a function of eta
 out <- plot.eta(
   fit, 
   X = data$target$testing$X, covar.data = data$target$testing$y, 
@@ -487,22 +523,23 @@ out <- plot.eta(
   )
 out$plot
 
-## Plot predictive performance boxplot
-out <- plot.box(
+## Plot Pearson R2 as a function of eta
+out <- plot.eta(
   fit, 
   X = data$target$testing$X, covar.data = data$target$testing$y, 
-  criteria = "gaussian.mspe", 
-  standardize.data = TRUE
+  criteria = "gaussian.rsq", 
+  standardize.data = TRUE, 
+  bootstrap = TRUE
   )
 out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/line.eta.pearsonR_hsq0.07_het.high.png"
+  <img src="../man/figures/line.eta.rsq_ext3_BRIERs_test.png"
        alt="Pearson R-squared on the testing set as a function of eta"
        style="width:48%;" />
-  <img src="../man/figures/line.eta.mspe_hsq0.07_het.high.png"
-       alt="Mean squared prediction error on the testing set as a function of eta"
+  <img src="../man/figures/line.eta.mspe_ext3_BRIERs_test.png"
+       alt="Mean squared prediction error on the testing set as a function of eta "
        style="width:48%;" />
 </div>
 
@@ -516,23 +553,27 @@ The `plot.box` function provides a complementary perspective for evaluating `BRI
 In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson $R^2$ and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the `BRIER2` model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.
 
 ```{r, echo = TRUE, eval = FALSE}
-p <- plot.box(
-  out, X = X_testing, y = y_testing, eval = "gaussian.pearsonrsq", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+out <- plot.box(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE
   )
-p
-p <- plot.box(
-  out, X = X_testing, y = y_testing, eval = "gaussian.mspe", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+out$plot
+out <- plot.box(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.rsq", 
+  standardize.data = TRUE
   )
-p
+out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.low.png"
+  <img src="../man/figures/boxplot.rsq_ext1_BRIERs_test.png"
        alt="Boxplots of Pearson R-squared on the testing set"
        style="width:48%;" />
-  <img src="../man/figures/boxplot.mspe_SCAD_1_hsq0.07_het.low.png"
+  <img src="../man/figures/boxplot.mspe_ext1_BRIERs_test.png"
        alt="Boxplots of mean squared prediction error on the testing set"
        style="width:48%;" />
 </div>
@@ -542,23 +583,27 @@ p
 In contrast, the example below illustrates a setting where the external model performs poorly relative to the target-only model (lower Pearson $R^2$ and higher MSPE), indicating substantial heterogeneity between the target and external data. As the integration weight increases, incorporating external information does not improve (and may even degrade) predictive performance. This pattern suggests that the external source is not well matched to the target population and may be excluded from joint integration.
 
 ```{r, echo = TRUE, eval = FALSE}
-p <- plot.box(
-  out, X = X_testing, y = y_testing, eval = "gaussian.pearsonrsq", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+out <- plot.box(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.mspe", 
+  standardize.data = TRUE
   )
-p
-p <- plot.box(
-  out, X = X_testing, y = y_testing, eval = "gaussian.mspe", pheno.name = "trait", adjust.covar = c("age", "sex"), 
-  standardize.y = T, bootstrap.size = 0.8*nrow(X_testing), bootstrap.n = 100
+out$plot
+out <- plot.box(
+  fit, 
+  X = data$target$testing$X, covar.data = data$target$testing$y, 
+  criteria = "gaussian.rsq", 
+  standardize.data = TRUE
   )
-p
+out$plot
 ```
 
 <div style="display: flex; justify-content: space-between;">
-  <img src="../man/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.high.png"
+  <img src="../man/figures/boxplot.rsq_ext3_BRIERs_test.png"
        alt="Boxplots of Pearson R-squared on the testing set"
        style="width:48%;" />
-  <img src="../man/figures/boxplot.mspe_SCAD_1_hsq0.07_het.high.png"
+  <img src="../man/figures/boxplot.mspe_ext3_BRIERs_test.png"
        alt="Boxplots of mean squared prediction error on the testing set"
        style="width:48%;" />
 </div>
@@ -578,16 +623,21 @@ out <- plot.importance(
 out$plot
 ```
 
-![Bar plot of selection frequencies for the top predictors](../man/figures/bar_top_selection.freq.png){width=50%}
+![Bar plot of selection frequencies for the top predictors](../man/figures/bar.importance_ext1_BRIERs.png){width=50%}
 
 
 ## 6.3 PRS stratification {#sec-prs_strat}
 
-The `plot.strat` presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the target, external only model and `BRIER2` integration. These plots further visualize the discrimination power of each model. In the plots, we compare the median distance between the upper and lower percentile stratification of the observed outcome distribution, and show the distance in the title of the plots. [HOW TO QUANTIFY THIS]
+The `plot.strat` function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated `BRIER2` model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.
 
 ```{r, echo = TRUE, eval = FALSE}
-p <- plot.strat(out, X = X_testing, y = y_testing, lower = 0.4, upper = 0.4)
-p
+out <- plot.strat(  
+  fit, 
+  lower = 0.4, upper = 0.4,
+  X = data$target$validation$X, covar.data = data$target$validation$y, 
+  standardize.data = TRUE
+  )
+out$plot
 ```
 
 ![Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER2 models](../man/figures/density_testing_stratification.png){width=50%}
