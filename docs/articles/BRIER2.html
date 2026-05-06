@@ -204,12 +204,42 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, </span>
 <span>  X.val <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span>,</span>
 <span>  y.val <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Function <code>plot.eta</code> can be used to guide and visualize the selection of the best performing integration weight <span class="math inline">\(\eta\)</span>, according to different evaluation metrics used in the validation set. The below figure displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of <span class="math inline">\(\eta\)</span>. The optimal integration weight is identified as the value of <span class="math inline">\(\eta\)</span> that minimizes (or maximizes, depending on the metric) the evaluation criterion.</p>
+<span><span class="op">)</span></span>
+<span><span class="co"># Best eta: ( 0.774, 0.167 )</span></span>
+<span><span class="co"># Best lambda: 0.752 </span></span></code></pre></div>
+<p>Function <code>plot.eta</code> can be used to guide and visualize the selection of the best performing integration weight <span class="math inline">\(\eta\)</span>, according to different evaluation metrics used in the validation set. For multiple external cohorts (&gt;1), <code>plot.eta</code> do not generate ggplot objects for plotting but only generate summary results. The user could visualize using XXX as illustrated below. The below figure displays the heat map of predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of <span class="math inline">\(\eta_1\)</span> and <span class="math inline">\(\eta_2\)</span>. The optimal integration weight is identified as the value of <span class="math inline">\(\eta\)</span> combination that minimizes the evaluation criterion.</p>
+<p>The function <code>plot.eta</code> can be used to guide and visualize the selection of the best-performing integration weight <span class="math inline">\(\eta\)</span>, using different evaluation metrics computed on the validation set. When only a single external cohort is provided, <code>plot.eta</code> returns a <code>ggplot2</code> object that displays predictive performance as a function of <span class="math inline">\(\eta\)</span>. When multiple external cohorts are provided (&gt;1), the integration weight becomes a vector <span class="math inline">\((\eta_1, \eta_2, \ldots, \eta_M)\)</span>, and a one-dimensional curve is no longer sufficient to summarize predictive performance. In this case, <code>plot.eta</code> does not return a <code>ggplot2</code> object and instead outputs a summary table containing the evaluation metric across all candidate <span class="math inline">\(\eta\)</span> combinations. Users can then visualize these results using standard heatmap tools (e.g., <code><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">ggplot2::geom_tile</a></code>, <code><a href="https://rdrr.io/pkg/lattice/man/levelplot.html" class="external-link">lattice::levelplot</a></code>, or <code><a href="https://rdrr.io/r/graphics/image.html" class="external-link">graphics::image</a></code>), as illustrated below.</p>
+<p>The figure below displays a heatmap of predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a joint function of <span class="math inline">\(\eta_1\)</span> and <span class="math inline">\(\eta_2\)</span>. The optimal integration weight is identified as the combination <span class="math inline">\((\eta_1, \eta_2)\)</span> that minimizes the evaluation criterion.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">summary.df</span><span class="op">)</span></span>
+<span><span class="co">#       eta_1 eta_2      criteria   metric metric.lo metric.hi</span></span>
+<span><span class="co"># 1 0.0000000     0 gaussian.mspe 137.9169        NA        NA</span></span>
+<span><span class="co"># 2 0.1000000     0 gaussian.mspe 135.6191        NA        NA</span></span>
+<span><span class="co"># 3 0.1668101     0 gaussian.mspe 133.8548        NA        NA</span></span>
+<span><span class="co"># 4 0.2782559     0 gaussian.mspe 131.5709        NA        NA</span></span>
+<span><span class="co"># 5 0.4641589     0 gaussian.mspe 129.7242        NA        NA</span></span>
+<span><span class="co"># 6 0.7742637     0 gaussian.mspe 129.2638        NA        NA</span></span>
+<span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">out</span><span class="op">$</span><span class="va">summary.df</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">eta_1_lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">eta_1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">eta_2_lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">eta_2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">best</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">metric</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">eta_1_lab</span>, y <span class="op">=</span> <span class="va">eta_2_lab</span>, fill <span class="op">=</span> <span class="va">metric</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_tile</span><span class="op">(</span>color <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span></span>
+<span>    data <span class="op">=</span> <span class="va">best</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">eta_1_lab</span>, y <span class="op">=</span> <span class="va">eta_2_lab</span><span class="op">)</span>,</span>
+<span>    shape <span class="op">=</span> <span class="fl">17</span>, size <span class="op">=</span> <span class="fl">5</span>, color <span class="op">=</span> <span class="st">"black"</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_fill_gradient</span><span class="op">(</span>low <span class="op">=</span> <span class="st">"#31a354"</span>, high <span class="op">=</span> <span class="st">"#f7fcb9"</span>, name <span class="op">=</span> <span class="st">"MSPE"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_classic</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span>, base_family <span class="op">=</span> <span class="st">"serif"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span></span>
+<span>    panel.grid <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">p</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png" alt="Mean squared prediction error on the validation set as a function of $\eta$" style="width:48%;"></p>
+<p><img src="../reference/figures/heatmap.eta_ext1.2_BRIERfull_gaussian.mspe.png" alt="Heatmap of mean squared prediction error on the validation set as a joint function of (eta_1,eta_2)" style="width:48%;"></p>
 </div>
 </div>
 </div>
@@ -258,8 +288,8 @@ A collection of downstream analysis and visualization tools is provided to facil
 <p>For grid search, <code>BRIERi</code> provides three criterion to evaluate each candidate pair of hyperparameters <span class="math inline">\((\eta, \lambda)\)</span>: cross-validation, evaluation on an independent validation set, and information-based criteria. The function <code>BRIERi.cv</code> performs cross-validation on the training data, using the predicted deviance as evaluation criteria, with the specific deviance definition provided in <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.cv.html">BRIERi.cv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, beta.external <span class="op">=</span> <span class="va">beta.external</span>, eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># Best eta: 2.154 </span></span>
-<span><span class="co"># Best lambda: 0.212 </span></span></code></pre></div>
+<span><span class="co"># Best eta: 10 </span></span>
+<span><span class="co"># Best lambda: 0.239 </span></span></code></pre></div>
 <p><code>BRIERi.selection</code> can also select the optimal hyper-parameters if an independent validation set is provided. Below displays an example of using MSPE as evaluation metric for continuous outcome. Additional evaluation metrics for different outcomes are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.selection.html">BRIERi.selection</a></span><span class="op">(</span></span>
@@ -267,8 +297,8 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  X.val <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span>,</span>
 <span>  y.val <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co"># Best eta:  10 </span></span>
-<span><span class="co"># Best lambda: 0.184 </span></span></code></pre></div>
+<span><span class="co"># Best eta:  2.154 </span></span>
+<span><span class="co"># Best lambda: 0.38 </span></span></code></pre></div>
 <p>For continuous, binary, and count outcomes, users can also utilize information-based criteria to tune the optimal hyperparameters <span class="math inline">\((\eta, \lambda)\)</span>. We implemented Bayesian information criteria (BIC), Mallow’s <span class="math inline">\(C_p\)</span> (<span class="math inline">\(C_p\)</span>), and generalized cross validation (GCV;). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in <a href="Appendix_IC.html">Appendix: Information Criteria for Hyper-parameter Tuning</a>.</p>
 <p>Based on extensive simulation studies and real-data applications, we recommend <code>BIC</code>, as it consistently achieves better predictive performance.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -276,12 +306,13 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"BIC"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co"># Best eta:  10 </span></span>
-<span><span class="co"># Best lambda: 0.742 </span></span></code></pre></div>
-<p>The function <code>plot.eta</code> can be used to guide and visualize the selection of the optimal integration weight <span class="math inline">\(\eta\)</span> based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of <span class="math inline">\(\eta\)</span>, while the right panel shows the corresponding information-criterion curve (e.g., Cp). The optimal integration weight is identified as the value of <span class="math inline">\(\eta\)</span> that minimizes (or maximizes, depending on the metric) the evaluation criterion.</p>
+<span><span class="co"># Best lambda: 0.69</span></span></code></pre></div>
+<p>The function <code>plot.eta</code> can be used to guide and visualize the selection of the optimal integration weight <span class="math inline">\(\eta\)</span> based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of <span class="math inline">\(\eta\)</span>, while the right panel shows the corresponding information-criterion curve (e.g., BIC). The optimal integration weight is identified as the value of <span class="math inline">\(\eta\)</span> that minimizes (or maximizes, depending on the metric) the evaluation criterion.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.gaussian.mspe_val_hsq0.07_het.high.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.Cp_val_hsq0.07_het.high.png" alt="Cp criterion as a function of eta" style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta_ext1_BRIERi_gaussian.mspe.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta_ext1_BRIERi_BIC.png" alt="Bayesian information riterion as a function of eta" style="width:48%;"></p>
 </div>
 </div>
 </div>
@@ -346,40 +377,42 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  y.val <span class="op">=</span> <span class="va">y_val</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co"># Best eta: 10 </span></span>
-<span><span class="co"># Best lambda: 0 </span></span></code></pre></div>
+<span><span class="co"># Best lambda: 0.021 </span></span></code></pre></div>
 <p>When an independent validation set is not available, users may rely on information-based criteria to tune the optimal hyperparameters <span class="math inline">\((\eta, \lambda)\)</span>. We implemented Generalized information criteria (GIC; specified by argument <code>criteria = "GIC"</code>), Mallow’s <span class="math inline">\(C_p\)</span> (<span class="math inline">\(C_p\)</span>; specified by argument <code>criteria = "Cp"</code>), and pseudo-validation (GCV; specified by argument <code>criteria = "pseu.val"</code>). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in <a href="Appendix_IC.html">Appendix: Information Criteria for Hyper-parameter Tuning</a>.</p>
 <p>Based on extensive simulation studies and real-data applications, we recommend <span class="math inline">\(Cp\)</span> or <span class="math inline">\(GIC\)</span>, as it consistently achieves better predictive performance.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.selection.html">BRIERs.selection</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"Cp"</span>, </span>
+<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"GIC"</span>, </span>
 <span>  TN <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, h2 <span class="op">=</span> <span class="fl">0.2</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co"># Best eta: 1.292 </span></span>
-<span><span class="co"># Best lambda: 0.029 </span></span></code></pre></div>
+<span><span class="co"># Best eta: 10 </span></span>
+<span><span class="co"># Best lambda: 0.064  </span></span></code></pre></div>
 <p>The function <code>plot.eta</code> can be used to guide and visualize the selection of the optimal integration weight <span class="math inline">\(\eta\)</span> based on predictive performance under different evaluation metrics from an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of <span class="math inline">\(\eta\)</span>, while the right panel shows the corresponding information-criterion curve (e.g., GIC). The optimal integration weight is identified as the value of <span class="math inline">\(\eta\)</span> that minimizes (or maximizes, depending on the metric) the evaluation criterion.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.gaussian.mspe_val_hsq0.07_het.med.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.GIC_val_hsq0.07_het.med.png" alt="Generalized information criterion as a function of eta" style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta_ext1_BRIERs_gaussian.mspe.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta_ext1_BRIERs_GIC.png" alt="Generalized information criterion as a function of eta" style="width:48%;"></p>
 </div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="sec-downstream">6. Downstream Analysis<a class="anchor" aria-label="anchor" href="#sec-downstream"></a>
 </h2>
-<p>In this section, we introduce a suite of downstream analysis tools designed to facilitate performance evaluation, model diagnostics, and biological interpretation. These functions operate on a parameter-tuned <code>BRIER.selection</code> object generated from any of the three selection procedures (<code>BRIERfull.selection</code>, <code>BRIERi.selection</code> or <code>BRIERs.selection</code>). It outputs a list containing a ggplot2 object, and the original data for plotting.</p>
+<p>We provide a suite of functions for evaluating the predictive performance of fitted <code>BRIER2</code> models. To accommodate complex outcomes from different distribution families, a comprehensive set of evaluation metrics is supported, including predictive deviance for general outcomes, AUC for binary outcomes, and C-index for survival outcomes. Additional details are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>. We illustrate the usage of this plotting functions using fitted BRIER models from summary statistics using <code><a href="../reference/BRIERs.html">BRIERs()</a></code></p>
 <div class="section level3">
 <h3 id="sec-eval">6.1 Evaluation of <code>BRIER2</code> model<a class="anchor" aria-label="anchor" href="#sec-eval"></a>
 </h3>
-<p>We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate <code>BRIER2</code> performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the <a href="LINK">Appendix</a>.</p>
+<p>We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate <code>BRIER2</code> performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="section level4">
 <h4 id="plot-eta">
 <code>plot.eta</code><a class="anchor" aria-label="anchor" href="#plot-eta"></a>
 </h4>
-<p>Except guiding the selection of integration weight <span class="math inline">\(\eta\)</span> in parameter tuning, the <code>plot.eta</code> function visualizes predictive performance under user-specified evaluation metrics as a function of the integration weight <span class="math inline">\(\eta\)</span>, if a testing set is provided. This plot is particularly useful for assessing heterogeneity between the target (target) data and external sources.</p>
-<p>Specifically, <code>plot.eta</code> display the predictive performance evaluated on an independent testing set as a function of the integration weight parameter <span class="math inline">\(\eta\)</span>, shown as the solid green curve. The light blue dotted line represents the predictive performance of the external model alone, and the black triangle marks the best <span class="math inline">\(\eta\)</span> selected during hyper-parameter tuning.</p>
-<p>In genetic applications such as polygenic risk score (PRS) evaluation, outcome measures often require adjustment for environmental or clinical confounders. In these settings, users should provide a <code>data.frame</code> containing the testing-set phenotype, along with the column names corresponding to the trait of interest and relevant confounders. The <code>standardize.y</code> option controls whether the phenotype is standardized after confounder adjustment. To further mitigate randomness in performance evaluation, bootstrap resampling is supported and can be used to obtain more stable estimates of predictive accuracy.</p>
-<p>The <span class="math inline">\(\eta\)</span>-curve highlights the implications of integrating varying degrees of external information into the construction of the integration model on the target population. As a result, it effectively portrays the levels of heterogeneity between datasets and provides guidance on the optimal degree of prior information incorporation.</p>
+<p>In addtion to guiding the selection of integration weight <span class="math inline">\(\eta\)</span> in parameter tuning, the <code>plot.eta</code> function visualizes predictive performance under user-specified evaluation metrics as a function of the integration weight <span class="math inline">\(\eta\)</span>, if a testing set is provided. This plot is particularly useful for assessing heterogeneity between the target (target) data and external sources.</p>
+<p>For a single external cohort, <code>plot.eta</code> returns a <code>ggplot2</code> object in which the solid green curve traces predictive performance across candidate values of <span class="math inline">\(\eta\)</span>, and a black triangle marks the value of <span class="math inline">\(\eta\)</span> selected during hyperparameter tuning. The shape of this curve carries direct interpretive value: a monotonic improvement followed by a plateau or shallow decline indicates that the external information is well aligned with the target population, while a steady decline suggests that the external source is highly heterogeneous and may not warrant integration.</p>
+<p>For multiple external cohorts (<span class="math inline">\(M &gt; 1\)</span>), the integration weight becomes a vector <span class="math inline">\((\eta_1, \ldots, \eta_M)\)</span> and a one-dimensional curve is no longer adequate. In this case, <code>plot.eta</code> does not return a <code>ggplot2</code> object and instead outputs a summary table of evaluation metrics across all candidate <span class="math inline">\(\eta\)</span> combinations. Users can visualize these results using standard heatmap tools (e.g., <code><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">ggplot2::geom_tile</a></code>, <code><a href="https://rdrr.io/pkg/lattice/man/levelplot.html" class="external-link">lattice::levelplot</a></code>, or <code><a href="https://rdrr.io/r/graphics/image.html" class="external-link">graphics::image</a></code>) to identify regions of the <span class="math inline">\(\eta\)</span>-space that yield the best predictive accuracy.</p>
+<p>In genetic applications such as polygenic risk score (PRS) evaluation, outcomes often need to be adjusted for environmental or clinical confounders prior to assessment. In these settings, users may pass a <code>data.frame</code> to the <code>covar.data</code> argument containing the testing-set phenotype together with relevant covariates, and specify the trait and confounder column names. The <code>standardize.data</code> option controls whether the phenotype is standardized after confounder adjustment. To further reduce variability in performance estimates introduced by sampling, <code>plot.eta</code> supports bootstrap resampling, which yields more stable estimates of predictive accuracy and a corresponding uncertainty band around the <span class="math inline">\(\eta\)</span>-curve.</p>
+<p>Taken together, the <span class="math inline">\(\eta\)</span>-curve clarifies how varying degrees of external information transfer affect predictive performance on the target population. It provides a visual summary of cross-cohort heterogeneity and helps practitioners gauge the appropriate degree of information borrowing for their application.</p>
 <p><strong>Integrating low heterogeneous external information</strong></p>
 <p>The example below illustrates the integration curves obtained when <code>BRIER2</code> incorporates external information with low heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance improves, as indicated by an increase in Pearson’s <span class="math inline">\(R^2\)</span> and a decrease in MSPE. Performance reaches an optimum at an intermediate value of <span class="math inline">\(\eta\)</span> and may decline slightly thereafter. This pattern indicates that integrating external information improves predictive accuracy and suggests that the relative heterogeneity between the target and external data is low.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
@@ -405,7 +438,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  y.val <span class="op">=</span> <span class="va">y_val</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Plot predictive performance as a function of eta</span></span>
+<span><span class="co">## Plot mspe as a function of eta</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -415,16 +448,17 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span>
 <span></span>
-<span><span class="co">## Plot predictive performance boxplot</span></span>
-<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
+<span><span class="co">## Plot Pearson R2 as a function of eta</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
-<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, </span>
-<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.rsq"</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>  bootstrap <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.pearsonR_hsq0.07_het.low.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_hsq0.07_het.low.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta.rsq_ext1_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_ext1_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:48%;"></p>
 </div>
 <p><strong>Integrating high heterogeneous external information</strong></p>
 <p>The example below illustrates the integration curves obtained when <code>BRIER2</code> incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s <span class="math inline">\(R^2\)</span> and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.</p>
@@ -451,7 +485,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  y.val <span class="op">=</span> <span class="va">y_val</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Plot predictive performance as a function of eta</span></span>
+<span><span class="co">## Plot mspe as a function of eta</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -461,16 +495,17 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span>
 <span></span>
-<span><span class="co">## Plot predictive performance boxplot</span></span>
-<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
+<span><span class="co">## Plot Pearson R2 as a function of eta</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
-<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, </span>
-<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.rsq"</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>  bootstrap <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.pearsonR_hsq0.07_het.high.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_hsq0.07_het.high.png" alt="Mean squared prediction error on the testing set as a function of eta" style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta.rsq_ext3_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_ext3_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:48%;"></p>
 </div>
 </div>
 <div class="section level4">
@@ -481,34 +516,42 @@ A collection of downstream analysis and visualization tools is provided to facil
 <p><strong>Integrating low heterogeneous external information</strong></p>
 <p>In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson <span class="math inline">\(R^2\)</span> and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the <code>BRIER2</code> model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
-<span>  <span class="va">out</span>, X <span class="op">=</span> <span class="va">X_testing</span>, y <span class="op">=</span> <span class="va">y_testing</span>, eval <span class="op">=</span> <span class="st">"gaussian.pearsonrsq"</span>, pheno.name <span class="op">=</span> <span class="st">"trait"</span>, adjust.covar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, </span>
-<span>  standardize.y <span class="op">=</span> <span class="cn">T</span>, bootstrap.size <span class="op">=</span> <span class="fl">0.8</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_testing</span><span class="op">)</span>, bootstrap.n <span class="op">=</span> <span class="fl">100</span></span>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>, </span>
+<span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="va">p</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
-<span>  <span class="va">out</span>, X <span class="op">=</span> <span class="va">X_testing</span>, y <span class="op">=</span> <span class="va">y_testing</span>, eval <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, pheno.name <span class="op">=</span> <span class="st">"trait"</span>, adjust.covar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, </span>
-<span>  standardize.y <span class="op">=</span> <span class="cn">T</span>, bootstrap.size <span class="op">=</span> <span class="fl">0.8</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_testing</span><span class="op">)</span>, bootstrap.n <span class="op">=</span> <span class="fl">100</span></span>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>, </span>
+<span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.rsq"</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="va">p</span></span></code></pre></div>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.low.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:48%;"><img src="../reference/figures/boxplot.mspe_SCAD_1_hsq0.07_het.low.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:48%;"></p>
+<p><img src="../reference/figures/boxplot.rsq_ext1_BRIERs_test.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:48%;"><img src="../reference/figures/boxplot.mspe_ext1_BRIERs_test.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:48%;"></p>
 </div>
 <p><strong>Integrating high heterogeneous external information</strong></p>
 <p>In contrast, the example below illustrates a setting where the external model performs poorly relative to the target-only model (lower Pearson <span class="math inline">\(R^2\)</span> and higher MSPE), indicating substantial heterogeneity between the target and external data. As the integration weight increases, incorporating external information does not improve (and may even degrade) predictive performance. This pattern suggests that the external source is not well matched to the target population and may be excluded from joint integration.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
-<span>  <span class="va">out</span>, X <span class="op">=</span> <span class="va">X_testing</span>, y <span class="op">=</span> <span class="va">y_testing</span>, eval <span class="op">=</span> <span class="st">"gaussian.pearsonrsq"</span>, pheno.name <span class="op">=</span> <span class="st">"trait"</span>, adjust.covar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, </span>
-<span>  standardize.y <span class="op">=</span> <span class="cn">T</span>, bootstrap.size <span class="op">=</span> <span class="fl">0.8</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_testing</span><span class="op">)</span>, bootstrap.n <span class="op">=</span> <span class="fl">100</span></span>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>, </span>
+<span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="va">p</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
-<span>  <span class="va">out</span>, X <span class="op">=</span> <span class="va">X_testing</span>, y <span class="op">=</span> <span class="va">y_testing</span>, eval <span class="op">=</span> <span class="st">"gaussian.mspe"</span>, pheno.name <span class="op">=</span> <span class="st">"trait"</span>, adjust.covar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, </span>
-<span>  standardize.y <span class="op">=</span> <span class="cn">T</span>, bootstrap.size <span class="op">=</span> <span class="fl">0.8</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_testing</span><span class="op">)</span>, bootstrap.n <span class="op">=</span> <span class="fl">100</span></span>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>, </span>
+<span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.rsq"</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="va">p</span></span></code></pre></div>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/boxplot.pearsonR_SCAD_1_hsq0.07_het.high.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:48%;"><img src="../reference/figures/boxplot.mspe_SCAD_1_hsq0.07_het.high.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:48%;"></p>
+<p><img src="../reference/figures/boxplot.rsq_ext3_BRIERs_test.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:48%;"><img src="../reference/figures/boxplot.mspe_ext3_BRIERs_test.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:48%;"></p>
 </div>
 </div>
 </div>
@@ -525,16 +568,21 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div class="figure">
-<img src="../reference/figures/bar_top_selection.freq.png" style="width:50.0%" alt=""><p class="caption">Bar plot of selection frequencies for the top predictors</p>
+<img src="../reference/figures/bar.importance_ext1_BRIERs.png" style="width:50.0%" alt=""><p class="caption">Bar plot of selection frequencies for the top predictors</p>
 </div>
 </div>
 <div class="section level3">
 <h3 id="sec-prs_strat">6.3 PRS stratification<a class="anchor" aria-label="anchor" href="#sec-prs_strat"></a>
 </h3>
-<p>The <code>plot.strat</code> presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the target, external only model and <code>BRIER2</code> integration. These plots further visualize the discrimination power of each model. In the plots, we compare the median distance between the upper and lower percentile stratification of the observed outcome distribution, and show the distance in the title of the plots. [HOW TO QUANTIFY THIS]</p>
+<p>The <code>plot.strat</code> function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated <code>BRIER2</code> model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot.strat</span><span class="op">(</span><span class="va">out</span>, X <span class="op">=</span> <span class="va">X_testing</span>, y <span class="op">=</span> <span class="va">y_testing</span>, lower <span class="op">=</span> <span class="fl">0.4</span>, upper <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
-<span><span class="va">p</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">plot.strat</span><span class="op">(</span>  </span>
+<span>  <span class="va">fit</span>, </span>
+<span>  lower <span class="op">=</span> <span class="fl">0.4</span>, upper <span class="op">=</span> <span class="fl">0.4</span>,</span>
+<span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span>, </span>
+<span>  standardize.data <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div class="figure">
 <img src="../reference/figures/density_testing_stratification.png" style="width:50.0%" alt=""><p class="caption">Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER2 models</p>
 </div>
