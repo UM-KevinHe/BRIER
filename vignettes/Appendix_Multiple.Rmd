@@ -17,7 +17,7 @@ bibliography: references.bib
 
 # 1. Introduction
 
-In many genetic risk prediction applications, multiple external models are available rather than a single source. For example, the GTEx data set XXX multiple tissue available. Naively integrating each external model with its own integration weight leads to a hyperparameter space that grows exponentially in the number of external sources, making joint tuning computationally prohibitive.
+In many genetic risk prediction applications, multiple external models are available rather than a single source. For example, in genetically regulated expression (GReX) modeling for transcriptome-wide association studies (TWAS), the goal is to predict tissue-specific gene expression from genotype data, and the target tissue of interest is often paired with eQTL summary statistics from many related tissues collected by the GTEx project (e.g., 49 tissues in GTEx v8). Since cis-eQTL effects are often shared across biologically related tissues, leveraging external models trained in non-target tissues can substantially improve predictive performance in the target tissue, particularly for tissues with limited sample size. Naively integrating each external model with its own integration weight, however, leads to a hyperparameter space that grows exponentially in the number of external sources, making joint tuning computationally prohibitive.
 
 To address this, `BRIER2` provides three strategies for integrating multiple external models, controlled by the `multi.method` argument:
 
@@ -27,7 +27,7 @@ To address this, `BRIER2` provides three strategies for integrating multiple ext
 
 Based on extensive simulation studies and real-data analyses, we recommend the `"stacking"` strategy. It consistently achieves predictive performance comparable to the gold-standard `"ind"` approach (which jointly tunes a separate integration weight for each external model) while substantially reducing computational burden. Methodological details for all three strategies are provided in the [Appendix: Model Details](Appendix_Model.html).
 
-In this vignette, we use `BRIERs` (summary-level data) as an illustrative example. The same workflow applies to `BRIERi` (individual-level target data with pre-trained external models), with the only difference being the function name and the form of the inputs.
+In this vignette, we use `BRIERs()` (summary-level data) as an illustrative example. The same workflow applies to `BRIERi()` (individual-level target data with pre-trained external models), with the only difference being the function name and the form of the inputs.
 
 
 # 2. Before integrating all external models
