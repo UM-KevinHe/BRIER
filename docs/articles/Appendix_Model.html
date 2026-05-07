@@ -78,8 +78,7 @@
     
     
 <div class="section level2">
-<h2 id="brier-full">
-<code>BRIER.FULL</code><a class="anchor" aria-label="anchor" href="#brier-full"></a>
+<h2 id="brier-full">1. <code>BRIER.FULL</code><a class="anchor" aria-label="anchor" href="#brier-full"></a>
 </h2>
 <p>The <code>BRIER.FULL</code> procedure aims to minimize the following objective function:</p>
 <p><span class="math display">\[
@@ -209,8 +208,7 @@ f^{(\mathbf{\beta})}(i_k \mid \mathcal{R}_k)
 </div>
 </div>
 <div class="section level2">
-<h2 id="brier-i">
-<code>BRIER.I</code><a class="anchor" aria-label="anchor" href="#brier-i"></a>
+<h2 id="brier-i">2. <code>BRIER.I</code><a class="anchor" aria-label="anchor" href="#brier-i"></a>
 </h2>
 <p>The <code>BRIER.I</code> procedure minimizes the following objective:</p>
 <p><span class="math display">\[
@@ -286,8 +284,7 @@ D_{\mathrm{KL}}(\check{f}_m \parallel f)
 </div>
 </div>
 <div class="section level2">
-<h2 id="brier-s">
-<code>BRIER.S</code><a class="anchor" aria-label="anchor" href="#brier-s"></a>
+<h2 id="brier-s">3. <code>BRIER.S</code><a class="anchor" aria-label="anchor" href="#brier-s"></a>
 </h2>
 <p>The <code>BRIER.S</code> procedure minimizes the following objective function, constructed from summary-level data using the squared Mahalanobis distance:</p>
 <p><span class="math display">\[
@@ -324,12 +321,12 @@ Q_{\mathbf{\eta}}(\mathbf{\beta})
 <p>measures the discrepancy between the target working model and the <span class="math inline">\(m\)</span>-th external trained model.</p>
 </div>
 <div class="section level2">
-<h2 id="integration-of-multiple-external-models">Integration of multiple external models<a class="anchor" aria-label="anchor" href="#integration-of-multiple-external-models"></a>
+<h2 id="ensemble-method-to-integration-of-multiple-external-models">4. Ensemble method to integration of multiple external models<a class="anchor" aria-label="anchor" href="#ensemble-method-to-integration-of-multiple-external-models"></a>
 </h2>
 <p>Suppose <span class="math inline">\(K\)</span> external studies each provide a trained model with estimated coefficients <span class="math inline">\(\check{\mathbf{\beta}}_{1}, \dots, \check{\mathbf{\beta}}_{K}\)</span>. In principle, the original <code>BRIER</code> framework can be extended to incorporate multiple sources of external information by introducing one tuning parameter for each external model. However, the resulting hyperparameter space grows exponentially with <span class="math inline">\(K\)</span>, substantially increasing the computational burden of tuning parameter selection. To address this challenge, we propose a simple ensemble-based strategy that first combines the <span class="math inline">\(K\)</span> external models into a single composite external model, which is then integrated with the local target data through the corresponding <code>BRIER</code> objective.</p>
 <div class="section level3">
-<h3 id="brieri-multi">
-<code>BRIERi.multi</code><a class="anchor" aria-label="anchor" href="#brieri-multi"></a>
+<h3 id="brieri">
+<code>BRIERi</code><a class="anchor" aria-label="anchor" href="#brieri"></a>
 </h3>
 <p>When individual-level local data <span class="math inline">\(\{\mathbf{X}, \mathbf{Y}\}\)</span> are available, each external model <span class="math inline">\(\check{\mathbf{\beta}}_{k}\)</span> induces a model-implied linear predictor</p>
 <p><span class="math display">\[
@@ -344,7 +341,7 @@ Q_{\mathbf{\eta}}(\mathbf{\beta})
 g^{-1}(\mathbf{\nu}_{k}),
 \]</span></p>
 <p>where <span class="math inline">\(g(\cdot)\)</span> is the link function of the generalized linear model.</p>
-<p>To combine the <span class="math inline">\(K\)</span> external models, <code>BRIERi.multi</code> constructs an ensemble estimator by linearly aggregating their implied linear predictors. Specifically, we estimate ensemble weights <span class="math inline">\(\{\omega_k\}_{k=1}^K\)</span> by fitting</p>
+<p>To combine the <span class="math inline">\(K\)</span> external models, <code>BRIERi</code> constructs an ensemble estimator by linearly aggregating their implied linear predictors. Specifically, we estimate ensemble weights <span class="math inline">\(\{\omega_k\}_{k=1}^K\)</span> by fitting</p>
 <p><span class="math display">\[
 g(\mathbf{Y})
 =
@@ -360,8 +357,8 @@ g(\mathbf{Y})
 <p>This aggregated coefficient vector can then be directly incorporated into the <code>BRIER.I</code> objective, reducing the dimensionality of the hyperparameter space while retaining predictive information across all external sources.</p>
 </div>
 <div class="section level3">
-<h3 id="briers-multi">
-<code>BRIERs.multi</code><a class="anchor" aria-label="anchor" href="#briers-multi"></a>
+<h3 id="briers">
+<code>BRIERs</code><a class="anchor" aria-label="anchor" href="#briers"></a>
 </h3>
 <p>When only summary-level local data are available, the individual-level quantities <span class="math inline">\(\{\mathbf{X}, \mathbf{Y}\}\)</span> cannot be accessed. Instead, we assume availability of the summary-level proxy statistics</p>
 <p><span class="math display">\[
@@ -370,7 +367,7 @@ g(\mathbf{Y})
 \mathbf{R} = \frac{1}{n}\mathbf{X}^{\top}\mathbf{X},
 \]</span></p>
 <p>where <span class="math inline">\(\mathbf{r}\)</span> denotes the score vector and <span class="math inline">\(\mathbf{R}\)</span> denotes the LD (correlation) matrix estimated from the local data.</p>
-<p>In this setting, <code>BRIERs.multi</code> extends the ensemble framework of <code>BRIERi.multi</code> by estimating the ensemble weights using a least-squares proxy objective that depends only on <span class="math inline">\(\mathbf{r}\)</span> and <span class="math inline">\(\mathbf{R}\)</span>. Let</p>
+<p>In this setting, <code>BRIERs</code> extends the ensemble framework of <code>BRIERi</code> by estimating the ensemble weights using a least-squares proxy objective that depends only on <span class="math inline">\(\mathbf{r}\)</span> and <span class="math inline">\(\mathbf{R}\)</span>. Let</p>
 <p><span class="math display">\[
 \mathbf{B}
 =
@@ -406,7 +403,7 @@ g(\mathbf{Y})
 =
 \sum_{k=1}^{K} \widehat{w}_k\,\check{\mathbf{\beta}}_{k}.
 \]</span></p>
-<p>This aggregated coefficient vector can be plugged directly into the <code>BRIER.S</code> objective, enabling information borrowing from multiple external models without requiring individual-level local data or an independent validation set. <code>BRIERs.multi</code> therefore provides a computationally efficient and privacy-preserving approach for multi-study integration under summary-level constraints.</p>
+<p>This aggregated coefficient vector can be plugged directly into the <code>BRIER.S</code> objective, enabling information borrowing from multiple external models without requiring individual-level local data or an independent validation set. <code>BRIERs</code> therefore provides a computationally efficient and privacy-preserving approach for multi-study integration under summary-level constraints.</p>
 <div id="refs" class="references hanging-indent">
 <div id="ref-wang2023_coxkl">
 <p>Wang, Di, Wen Ye, Ji Zhu, Gongjun Xu, Wenjing Tang, Marisa Zawistowski, Lars Fritsche, and Kevin He. 2023. “Incorporating External Risk Information with the Cox Model Under Population Heterogeneity: Applications to Trans-Ancestry Polygenic Hazard Scores.” arXiv preprint arXiv:2302.11123.</p>

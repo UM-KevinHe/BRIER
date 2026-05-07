@@ -9,20 +9,20 @@ A list named \code{Data_BRIERfull} with four components:
 \describe{
 \item{target}{
 Target cohort. Contains training, validation, and testing data.
-The training sample size is 100, and the validation and testing sample
-sizes are both 100.
+The training sample size is 150, and the validation and testing sample
+sizes are both 150.
 }
 \item{external1}{
 First external cohort. Contains training and validation data.
-The training sample size is 300, and the validation sample size is 100.
+The training sample size is 300, and the validation sample size is 150.
 }
 \item{external2}{
 Second external cohort. Contains training and validation data.
-The training sample size is 300, and the validation sample size is 100.
+The training sample size is 300, and the validation sample size is 150.
 }
 \item{external3}{
 Third external cohort. Contains training and validation data.
-The training sample size is 300, and the validation sample size is 100.
+The training sample size is 300, and the validation sample size is 150.
 }
 }
 
@@ -47,13 +47,13 @@ The true coefficient values are:
 \code{c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)}.
 }
 \item{external1}{
-\code{c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)}.
+\code{c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)}.
 }
 \item{external2}{
-\code{c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)}.
+\code{c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)}.
 }
 \item{external3}{
-\code{c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)}.
+\code{c(1.9, 2.4, 0.1, 0.6, 1.1, -1.9, -2.4, -0.1, -0.6, -1.1)}.
 }
 }
 }
