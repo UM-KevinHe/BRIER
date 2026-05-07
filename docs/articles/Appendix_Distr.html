@@ -80,9 +80,9 @@
 <div class="section level2">
 <h2 id="sec-distr">Distribution family<a class="anchor" aria-label="anchor" href="#sec-distr"></a>
 </h2>
-<p><code>BRIER2</code> accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in Table @ref(tab:family). The model family is specified through the <code>family</code> argument in the model fitting functions <code><a href="../reference/BRIERfull.html">BRIERfull()</a></code>, <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, and <code><a href="../reference/BRIERs.html">BRIERs()</a></code>, with <code>"gaussian"</code> as the default. For each family, <code>BRIER2</code> provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in <a href="#sec-eval">Section 2</a> below.</p>
+<p><code>BRIER2</code> accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in the Table below. The model family is specified through the <code>family</code> argument in the model fitting functions <code><a href="../reference/BRIERfull.html">BRIERfull()</a></code>, <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, and <code><a href="../reference/BRIERs.html">BRIERs()</a></code>, with <code>"gaussian"</code> as the default. For each family, <code>BRIER2</code> provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in <a href="#sec-eval">Section 2</a> below.</p>
 <table class="table">
-<caption>(#tab:family) Distribution families implemented in <code>BRIER2</code> and the corresponding model specification. Here <span class="math inline">\(\mu_i = E(y_i \mid \mathbf{x}_i)\)</span> denotes the conditional mean of the outcome.</caption>
+<caption>Distribution families implemented in <code>BRIER2</code> and the corresponding model specification. Here <span class="math inline">\(\mu_i = E(y_i \mid \mathbf{x}_i)\)</span> denotes the conditional mean of the outcome.</caption>
 <colgroup>
 <col width="25%">
 <col width="25%">
@@ -100,31 +100,31 @@
 <td align="left">Continuous</td>
 <td align="left">Gaussian</td>
 <td align="left"><code>"gaussian"</code></td>
-<td align="left"><span class="math inline">\(\mu_i = \mathbf{x}_i^\top \boldsymbol{\beta}\)</span></td>
+<td align="left"><span class="math inline">\(\mu_i = \mathbf{x}_i^\top \mathbf{\beta}\)</span></td>
 </tr>
 <tr class="even">
 <td align="left">Case-control</td>
 <td align="left">Binomial</td>
 <td align="left"><code>"binomial"</code></td>
-<td align="left"><span class="math inline">\(\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \mathbf{x}_i^\top \boldsymbol{\beta}\)</span></td>
+<td align="left"><span class="math inline">\(\log\!\left(\dfrac{\mu_i}{1-\mu_i}\right) = \mathbf{x}_i^\top \mathbf{\beta}\)</span></td>
 </tr>
 <tr class="odd">
 <td align="left">Count</td>
 <td align="left">Poisson</td>
 <td align="left"><code>"poisson"</code></td>
-<td align="left"><span class="math inline">\(\log(\mu_i) = \mathbf{x}_i^\top \boldsymbol{\beta}\)</span></td>
+<td align="left"><span class="math inline">\(\log(\mu_i) = \mathbf{x}_i^\top \mathbf{\beta}\)</span></td>
 </tr>
 <tr class="even">
 <td align="left">Count (overdispersed)</td>
 <td align="left">Negative Binomial</td>
 <td align="left"><code>"negbin"</code></td>
-<td align="left"><span class="math inline">\(\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \mathbf{x}_i^\top \boldsymbol{\beta}\)</span></td>
+<td align="left"><span class="math inline">\(\log\!\left(\dfrac{\mu_i}{\mu_i+r}\right) = \mathbf{x}_i^\top \mathbf{\beta}\)</span></td>
 </tr>
 <tr class="odd">
 <td align="left">Time-to-event</td>
 <td align="left">Cox Proportional Hazards</td>
 <td align="left"><code>"cox"</code></td>
-<td align="left"><span class="math inline">\(\lambda_i(t)=\lambda_0(t)\exp(\mathbf{x}_i^\top \boldsymbol{\beta})\)</span></td>
+<td align="left"><span class="math inline">\(\lambda_i(t)=\lambda_0(t)\exp(\mathbf{x}_i^\top \mathbf{\beta})\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -132,10 +132,10 @@
 <div class="section level2">
 <h2 id="sec-eval">Evaluation metrics<a class="anchor" aria-label="anchor" href="#sec-eval"></a>
 </h2>
-<p><code>BRIER2</code> provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in Table @ref(tab:metrics). Each metric is selected through the <code>criteria</code> argument in the relevant evaluation and tuning functions (e.g., <code><a href="../reference/BRIERi.selection.html">BRIERi.selection()</a></code>, <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code>, <code><a href="../reference/plot.eta.html">plot.eta()</a></code>, <code><a href="../reference/plot.box.html">plot.box()</a></code>).</p>
+<p><code>BRIER2</code> provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in the Table below. Each metric is selected through the <code>criteria</code> argument in the relevant evaluation and tuning functions (e.g., <code><a href="../reference/BRIERi.selection.html">BRIERi.selection()</a></code>, <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code>, <code><a href="../reference/plot.eta.html">plot.eta()</a></code>, <code><a href="../reference/plot.box.html">plot.box()</a></code>).</p>
 <p>For continuous outcomes, mean squared prediction error (MSPE) and Pearson <span class="math inline">\(R^2\)</span> summarize the absolute and relative agreement between observed and predicted values, respectively. For binary outcomes, predictive deviance reflects calibration, while Tjur’s <span class="math inline">\(R^2\)</span> — defined as the difference in mean predicted probability between cases and controls — and the area under the ROC curve (AUC) measure discrimination. For count outcomes, predictive deviance is computed under the Poisson or negative-binomial likelihood. For survival outcomes, predictive deviance is based on the Cox partial likelihood, and Harrell’s concordance index (C-index) summarizes the model’s ability to correctly rank pairs of subjects by event time.</p>
 <table class="table">
-<caption>(#tab:metrics) Evaluation metrics for outcome families implemented in <code>BRIER2</code>. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.</caption>
+<caption>Evaluation metrics for outcome families implemented in <code>BRIER2</code>. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.</caption>
 <colgroup>
 <col width="20%">
 <col width="20%">
@@ -170,7 +170,7 @@
 <td align="left">Binomial</td>
 <td align="left">PD</td>
 <td align="left"><code>"binomial.dev"</code></td>
-<td align="left"><span class="math inline">\(-2\sum_{i=1}^n\left[y_i\log(\widehat{y}_i)+(1-y_i)\log(1-\widehat{y}_i)\right]\)</span></td>
+<td align="left"><span class="math inline">\(-\dfrac{2}{n}\sum_{i=1}^n\left[y_i\log(\widehat{y}_i)+(1-y_i)\log(1-\widehat{y}_i)\right]\)</span></td>
 <td align="left">Min</td>
 </tr>
 <tr class="even">
@@ -192,21 +192,21 @@
 <td align="left">Poisson</td>
 <td align="left">PD</td>
 <td align="left"><code>"poisson.dev"</code></td>
-<td align="left"><span class="math inline">\(2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i-\widehat{y}_i)\right]\)</span></td>
+<td align="left"><span class="math inline">\(\dfrac{2}{n}\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i-\widehat{y}_i)\right]\)</span></td>
 <td align="left">Min</td>
 </tr>
 <tr class="odd">
 <td align="left">Negative Binomial</td>
 <td align="left">PD</td>
 <td align="left"><code>"negbin.dev"</code></td>
-<td align="left"><span class="math inline">\(2\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i+r)\log\!\left(\dfrac{y_i+r}{\widehat{y}_i+r}\right)\right]\)</span></td>
+<td align="left"><span class="math inline">\(\dfrac{2}{n}\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i+r)\log\!\left(\dfrac{y_i+r}{\widehat{y}_i+r}\right)\right]\)</span></td>
 <td align="left">Min</td>
 </tr>
 <tr class="even">
 <td align="left">Cox</td>
 <td align="left">PD</td>
 <td align="left"><code>"cox.dev"</code></td>
-<td align="left"><span class="math inline">\(-2\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]\)</span></td>
+<td align="left"><span class="math inline">\(-\dfrac{2}{n}\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]\)</span></td>
 <td align="left">Min</td>
 </tr>
 <tr class="odd">

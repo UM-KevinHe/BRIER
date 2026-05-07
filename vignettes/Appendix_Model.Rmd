@@ -16,7 +16,7 @@ bibliography: references.bib
 ---
 
 
-# `BRIER.FULL`
+# 1. `BRIER.FULL`
 
 The `BRIER.FULL` procedure aims to minimize the following objective function:
 
@@ -122,7 +122,7 @@ $$
 
 
 
-# `BRIER.I`
+# 2. `BRIER.I`
 
 The `BRIER.I` procedure minimizes the following objective:
 
@@ -210,7 +210,7 @@ D_{\mathrm{KL}}(\check{f}_m \parallel f)
 $$
 
 
-# `BRIER.S`
+# 3. `BRIER.S`
 
 The `BRIER.S` procedure minimizes the following objective function, constructed from summary-level data using the squared Mahalanobis distance:
 
@@ -253,13 +253,13 @@ $$
 measures the discrepancy between the target working model and the $m$-th external trained model.
 
 
-# Integration of multiple external models
+# 4. Ensemble method to integration of multiple external models
 
 Suppose $K$ external studies each provide a trained model with estimated coefficients
 $\check{\mathbf{\beta}}_{1}, \dots, \check{\mathbf{\beta}}_{K}$.
 In principle, the original `BRIER` framework can be extended to incorporate multiple sources of external information by introducing one tuning parameter for each external model. However, the resulting hyperparameter space grows exponentially with $K$, substantially increasing the computational burden of tuning parameter selection. To address this challenge, we propose a simple ensemble-based strategy that first combines the $K$ external models into a single composite external model, which is then integrated with the local target data through the corresponding `BRIER` objective.
 
-## `BRIERi.multi`
+## `BRIERi`
 
 When individual-level local data $\{\mathbf{X}, \mathbf{Y}\}$ are available, each external model $\check{\mathbf{\beta}}_{k}$ induces a model-implied linear predictor
 
@@ -279,7 +279,7 @@ $$
 
 where $g(\cdot)$ is the link function of the generalized linear model.
 
-To combine the $K$ external models, `BRIERi.multi` constructs an ensemble estimator by linearly aggregating their implied linear predictors. Specifically, we estimate ensemble weights $\{\omega_k\}_{k=1}^K$ by fitting
+To combine the $K$ external models, `BRIERi` constructs an ensemble estimator by linearly aggregating their implied linear predictors. Specifically, we estimate ensemble weights $\{\omega_k\}_{k=1}^K$ by fitting
 
 $$
 g(\mathbf{Y})
@@ -299,7 +299,7 @@ $$
 
 This aggregated coefficient vector can then be directly incorporated into the `BRIER.I` objective, reducing the dimensionality of the hyperparameter space while retaining predictive information across all external sources.
 
-## `BRIERs.multi`
+## `BRIERs`
 
 When only summary-level local data are available, the individual-level quantities $\{\mathbf{X}, \mathbf{Y}\}$ cannot be accessed. Instead, we assume availability of the summary-level proxy statistics
 
@@ -311,7 +311,7 @@ $$
 
 where $\mathbf{r}$ denotes the score vector and $\mathbf{R}$ denotes the LD (correlation) matrix estimated from the local data.
 
-In this setting, `BRIERs.multi` extends the ensemble framework of `BRIERi.multi` by estimating the ensemble weights using a least-squares proxy objective that depends only on $\mathbf{r}$ and $\mathbf{R}$. Let
+In this setting, `BRIERs` extends the ensemble framework of `BRIERi` by estimating the ensemble weights using a least-squares proxy objective that depends only on $\mathbf{r}$ and $\mathbf{R}$. Let
 
 $$
 \mathbf{B}
@@ -357,7 +357,7 @@ $$
 \sum_{k=1}^{K} \widehat{w}_k\,\check{\mathbf{\beta}}_{k}.
 $$
 
-This aggregated coefficient vector can be plugged directly into the `BRIER.S` objective, enabling information borrowing from multiple external models without requiring individual-level local data or an independent validation set. `BRIERs.multi` therefore provides a computationally efficient and privacy-preserving approach for multi-study integration under summary-level constraints.
+This aggregated coefficient vector can be plugged directly into the `BRIER.S` objective, enabling information borrowing from multiple external models without requiring individual-level local data or an independent validation set. `BRIERs` therefore provides a computationally efficient and privacy-preserving approach for multi-study integration under summary-level constraints.
 
 
 

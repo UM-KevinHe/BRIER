@@ -24,20 +24,20 @@
 #' \describe{
 #'   \item{target}{
 #'     Target cohort. Contains training, validation, and testing data.
-#'     The training sample size is 100, and the validation and testing sample
-#'     sizes are both 100.
+#'     The training sample size is 150, and the validation and testing sample
+#'     sizes are both 150.
 #'   }
 #'   \item{external1}{
 #'     First external cohort. Contains training and validation data.
-#'     The training sample size is 300, and the validation sample size is 100.
+#'     The training sample size is 300, and the validation sample size is 150.
 #'   }
 #'   \item{external2}{
 #'     Second external cohort. Contains training and validation data.
-#'     The training sample size is 300, and the validation sample size is 100.
+#'     The training sample size is 300, and the validation sample size is 150.
 #'   }
 #'   \item{external3}{
 #'     Third external cohort. Contains training and validation data.
-#'     The training sample size is 300, and the validation sample size is 100.
+#'     The training sample size is 300, and the validation sample size is 150.
 #'   }
 #' }
 #'
@@ -62,13 +62,13 @@
 #'     `c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)`.
 #'   }
 #'   \item{external1}{
-#'     `c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)`.
+#'     `c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)`.
 #'   }
 #'   \item{external2}{
-#'     `c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)`.
+#'     `c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)`.
 #'   }
 #'   \item{external3}{
-#'     `c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)`.
+#'     `c(1.9, 2.4, 0.1, 0.6, 1.1, -1.9, -2.4, -0.1, -0.6, -1.1)`.
 #'   }
 #' }
 #'
@@ -107,11 +107,11 @@ NULL
 #' \describe{
 #'   \item{target}{
 #'     Target cohort. Contains training, validation, and testing data.
-#'     The training sample size is 100, and the validation and testing sample
-#'     sizes are both 100.
+#'     The training sample size is 150, and the validation and testing sample
+#'     sizes are both 150.
 #'   }
 #'   \item{beta.external}{
-#'     A matrix of trained coefficients for the three external cohorts
+#'     A matrix of trained coefficients for the three external cohorts.
 #'   }
 #' }
 #'
@@ -130,19 +130,19 @@ NULL
 #'   }
 #' }
 #'
-#' The true coefficient values are:
+#' The true coefficient values used to simulate the source cohorts are:
 #' \describe{
 #'   \item{target}{
 #'     `c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)`.
 #'   }
 #'   \item{external1}{
-#'     `c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)`.
+#'     `c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)`.
 #'   }
 #'   \item{external2}{
-#'     `c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)`.
+#'     `c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)`.
 #'   }
 #'   \item{external3}{
-#'     `c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)`.
+#'     `c(1.9, 2.4, 0.1, 0.6, 1.1, -1.9, -2.4, -0.1, -0.6, -1.1)`.
 #'   }
 #' }
 #'
@@ -181,11 +181,11 @@ NULL
 #' \describe{
 #'   \item{target}{
 #'     Target cohort. Contains training, validation, and testing data.
-#'     The training sample size is 100, and the validation and testing sample
-#'     sizes are both 100.
+#'     The training sample size is 150, and the validation and testing sample
+#'     sizes are both 150.
 #'   }
 #'   \item{beta.external}{
-#'     A matrix of trained coefficients for the three external cohorts
+#'     A matrix of trained coefficients for the three external cohorts.
 #'   }
 #' }
 #'
@@ -204,19 +204,19 @@ NULL
 #'   }
 #' }
 #'
-#' The true coefficient values are:
+#' The true coefficient values used to simulate the source cohorts are:
 #' \describe{
 #'   \item{target}{
 #'     `c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)`.
 #'   }
 #'   \item{external1}{
-#'     `c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)`.
+#'     `c(0.5, 1, 1.5, 2, 2.5, -0.5, -1, -1.5, -2, -2.5)`.
 #'   }
 #'   \item{external2}{
-#'     `c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)`.
+#'     `c(1.2, 1.7, 0.8, 1.3, 1.8, -1.2, -1.7, -0.8, -1.3, -1.8)`.
 #'   }
 #'   \item{external3}{
-#'     `c(1.5, 2, 0.5, 1, 1.5, -1.5, -2, -0.5, -1, -1.5)`.
+#'     `c(1.9, 2.4, 0.1, 0.6, 1.1, -1.9, -2.4, -0.1, -0.6, -1.1)`.
 #'   }
 #' }
 #'

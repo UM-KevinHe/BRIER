@@ -154,7 +154,6 @@ Tuning the integration weights $\eta$ is more challenging due to the heterogenei
 
 For grid search, `BRIERfull.selection()` evaluates model performance over user-specified candidate values of $\eta$ and the corresponding data-driven regularization path for $\lambda$. When an independent validation set is available, the function selects the optimal hyperparameter combination $(\{\eta_m\}_{m=1}^M, \lambda)$ according to a user-specified validation metric. The example below illustrates the use of mean squared prediction error (MSPE) as the evaluation metric for a continuous outcome. Additional evaluation metrics for different outcome types are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).
 
-
 ```{r, echo = TRUE, eval = FALSE}
 
 fit <- BRIERfull.selection(
@@ -162,11 +161,9 @@ fit <- BRIERfull.selection(
   X.val = data$target$validation$X,
   y.val = data$target$validation$y
 )
-# Best eta: ( 0.774, 0.167 )
-# Best lambda: 0.752 
+# Best eta: ( 0.464, 0.278 )
+# Best lambda: 0.575 
 ```
-
-Function `plot.eta` can be used to guide and visualize the selection of the best performing integration weight $\eta$, according to different evaluation metrics used in the validation set. For multiple external cohorts (>1), `plot.eta` do not generate ggplot objects for plotting but only generate summary results. The user could visualize using XXX as illustrated below. The below figure displays the heat map of predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta_1$ and $\eta_2$. The optimal integration weight is identified as the value of $\eta$ combination that minimizes the evaluation criterion.
 
 The function `plot.eta` can be used to guide and visualize the selection of the best-performing integration weight $\eta$, using different evaluation metrics computed on the validation set. When only a single external cohort is provided, `plot.eta` returns a `ggplot2` object that displays predictive performance as a function of $\eta$. When multiple external cohorts are provided (>1), the integration weight becomes a vector $(\eta_1, \eta_2, \ldots, \eta_M)$, and a one-dimensional curve is no longer sufficient to summarize predictive performance. In this case, `plot.eta` does not return a `ggplot2` object and instead outputs a summary table containing the evaluation metric across all candidate $\eta$ combinations. Users can then visualize these results using standard heatmap tools (e.g., `ggplot2::geom_tile`, `lattice::levelplot`, or `graphics::image`), as illustrated below.
 
@@ -176,12 +173,12 @@ The figure below displays a heatmap of predictive performance (here, MSPE for a 
 out <- plot.eta(fit)
 head(out$summary.df)
 #       eta_1 eta_2      criteria   metric metric.lo metric.hi
-# 1 0.0000000     0 gaussian.mspe 137.9169        NA        NA
-# 2 0.1000000     0 gaussian.mspe 135.6191        NA        NA
-# 3 0.1668101     0 gaussian.mspe 133.8548        NA        NA
-# 4 0.2782559     0 gaussian.mspe 131.5709        NA        NA
-# 5 0.4641589     0 gaussian.mspe 129.7242        NA        NA
-# 6 0.7742637     0 gaussian.mspe 129.2638        NA        NA
+# 1 0.0000000     0 gaussian.mspe 131.5424        NA        NA
+# 2 0.1000000     0 gaussian.mspe 117.4442        NA        NA
+# 3 0.1668101     0 gaussian.mspe 114.0269        NA        NA
+# 4 0.2782559     0 gaussian.mspe 112.3408        NA        NA
+# 5 0.4641589     0 gaussian.mspe 112.7791        NA        NA
+# 6 0.7742637     0 gaussian.mspe 113.9923        NA        NA
 
 df <- out$summary.df
 df$eta_1_lab <- factor(round(df$eta_1, 1))
@@ -258,9 +255,13 @@ Tuning the integration weights $\eta$ is more challenging due to the heterogenei
 For grid search, `BRIERi` provides three criterion to evaluate each candidate pair of hyperparameters $(\eta, \lambda)$: cross-validation, evaluation on an independent validation set, and information-based criteria. The function `BRIERi.cv` performs cross-validation on the training data, using the predicted deviance as evaluation criteria, with the specific deviance definition provided in [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).
 
 ```{r, echo = TRUE, eval = FALSE}
-fit <- BRIERi.cv(X, y, beta.external = beta.external, eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 10))))
-# Best eta: 10 
-# Best lambda: 0.239 
+fit <- BRIERi.cv(
+  X, y, beta.external = beta.external, 
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 10))), 
+  seed = 1
+)
+# Best eta: 5.995 
+# Best lambda: 0.403 
 ```
 
 `BRIERi.selection` can also select the optimal hyper-parameters if an independent validation set is provided. Below displays an example of using MSPE as evaluation metric for continuous outcome. Additional evaluation metrics for different outcomes are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).  
@@ -271,8 +272,8 @@ fit <- BRIERi.selection(
   X.val = data$target$validation$X,
   y.val = data$target$validation$y
 )
-# Best eta:  2.154 
-# Best lambda: 0.38 
+# Best eta:  3.594 
+# Best lambda: 0.181
 ```
 
 For continuous, binary, and count outcomes, users can also utilize information-based criteria to tune the optimal hyperparameters \((\eta, \lambda)\). We implemented Bayesian information criteria (BIC), Mallow's $C_p$ ($C_p$), and generalized cross validation (GCV;). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in [Appendix: Information Criteria for Hyper-parameter Tuning](Appendix_IC.html).
@@ -284,7 +285,7 @@ fit <- BRIERi.selection(
   fit, criteria = "BIC"
 )
 # Best eta:  10 
-# Best lambda: 0.69
+# Best lambda: 0.561
 ```
 
 The function `plot.eta` can be used to guide and visualize the selection of the optimal integration weight $\eta$ based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$, while the right panel shows the corresponding information-criterion curve (e.g., BIC). The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.
@@ -345,7 +346,7 @@ For genetic risk prediction using GWAS summary statistics, `BRIER2` also provide
 
 ## 5.2 Fitting `BRIERs`
 
-The function `BRIERs()` fits a sequence of generalized linear models on the external cohort weighted response through a list of integration weight $\eta$. Larger values of $\eta$ allow the model to integrate more information from the external cohort. The user should rely on prior knowledge or problem-specific considerations to determine an appropriate range of $\eta$'s. We highly recommend to specify the exact outcome family as it is important for downstream analysis.
+The function `BRIERs()` fits a sequence of generalized linear models on the external cohort weighted response through a list of integration weight $\eta$. Larger values of $\eta$ allow the model to integrate more information from the external cohort. The user should rely on prior knowledge or problem-specific considerations to determine an appropriate range of $\eta$'s. We strongly recommend specifying the exact outcome family of the cohort from which the summary statistics are derived, as it is important for downstream analysis.
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERs(
@@ -375,8 +376,8 @@ fit <- BRIERs.selection(
   X.val = X_val,
   y.val = y_val
 )
-# Best eta: 10 
-# Best lambda: 0.021 
+# Best eta: 5.995 
+# Best lambda: 0.011 
 ```
 
 When an independent validation set is not available, users may rely on information-based criteria to tune the optimal hyperparameters \((\eta, \lambda)\). We implemented Generalized information criteria (GIC; specified by argument `criteria = "GIC"`), Mallow's $C_p$ ($C_p$; specified by argument `criteria = "Cp"`), and pseudo-validation (GCV; specified by argument `criteria = "pseu.val"`). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in [Appendix: Information Criteria for Hyper-parameter Tuning](Appendix_IC.html).
@@ -389,7 +390,7 @@ fit <- BRIERs.selection(
   TN = nrow(X), h2 = 0.2
 )
 # Best eta: 10 
-# Best lambda: 0.064  
+# Best lambda: 0.045  
 ```
 
 The function `plot.eta` can be used to guide and visualize the selection of the optimal integration weight $\eta$ based on predictive performance under different evaluation metrics from an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$, while the right panel shows the corresponding information-criterion curve (e.g., GIC). The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.
