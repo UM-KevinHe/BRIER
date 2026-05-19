@@ -1,0 +1,16 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  Appendix_BayesianOptimization: Appendix_BayesianOptimization.html
+  Appendix_Distr: Appendix_Distr.html
+  Appendix_GWAS: Appendix_GWAS.html
+  Appendix_IC: Appendix_IC.html
+  Appendix_Model: Appendix_Model.html
+  Appendix_Multiple: Appendix_Multiple.html
+  Appendix_Preprocess: Appendix_Preprocess.html
+  BRIER: BRIER.html
+last_built: 2026-05-19T20:36Z
+urls:
+  reference: https://zrayw.github.io/BRIER/reference
+  article: https://zrayw.github.io/BRIER/articles
