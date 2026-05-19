@@ -4,9 +4,9 @@
 
 BRIER2 is an R package for integrative prediction modeling in statistical genetics and biomedical applications. It improves prediction in a target cohort by borrowing information from external cohorts, pretrained external models, or summary-level association statistics. The package supports high-dimensional regularized modeling under multiple data-access settings.
 
-Main documentation: https://zrayw.github.io/BRIER2/
-Function reference: https://zrayw.github.io/BRIER2/reference/index.html
-Get started: https://zrayw.github.io/BRIER2/articles/BRIER2.html
+Main documentation: https://kevinhe.github.io/BRIER2/
+Function reference: https://kevinhe.github.io/BRIER2/reference/index.html
+Get started: https://kevinhe.github.io/BRIER2/articles/BRIER2.html
 
 ## Decision tree
 
@@ -168,11 +168,11 @@ Use SNP-specific sample sizes when available. Construct LD from a matched refere
 
 ## Articles
 
-- Get started: https://zrayw.github.io/BRIER2/articles/BRIER2.html
-- Model details: https://zrayw.github.io/BRIER2/articles/Appendix_Model.html
-- Distribution family and evaluation metrics: https://zrayw.github.io/BRIER2/articles/Appendix_Distr.html
-- Information criteria for hyperparameter tuning: https://zrayw.github.io/BRIER2/articles/Appendix_IC.html
-- Recovering summary-level input from GWAS results: https://zrayw.github.io/BRIER2/articles/Appendix_GWAS.html
+- Get started: https://kevinhe.github.io/BRIER2/articles/BRIER2.html
+- Model details: https://kevinhe.github.io/BRIER2/articles/Appendix_Model.html
+- Distribution family and evaluation metrics: https://kevinhe.github.io/BRIER2/articles/Appendix_Distr.html
+- Information criteria for hyperparameter tuning: https://kevinhe.github.io/BRIER2/articles/Appendix_IC.html
+- Recovering summary-level input from GWAS results: https://kevinhe.github.io/BRIER2/articles/Appendix_GWAS.html
 
 ## Common pitfalls
 

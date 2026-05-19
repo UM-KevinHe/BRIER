@@ -1,4 +1,4 @@
-url: https://zrayw.github.io/BRIER/
+url: https://um-kevinhe.github.io/BRIER/
 llm-docs: false
 template:
   bootstrap: 5
@@ -39,7 +39,7 @@ navbar:
     href: reference/index.html
   right:
   - icon: fa-github fa-lg
-    href: https://github.com/zrayw/BRIER
+    href: https://github.com/um-kevinhe/BRIER
     aria-label: GitHub repository
 articles:
 - title: Get started

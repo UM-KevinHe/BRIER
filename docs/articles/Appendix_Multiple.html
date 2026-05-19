@@ -55,7 +55,7 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/um-kevinhe/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -99,7 +99,7 @@
 <p>Users may have access to multiple external models, but it is often undesirable to include all of them in the final integration. Some external models may be well aligned with the target data and improve predictive performance, whereas others may be highly heterogeneous and provide little or no benefit. As a diagnostic step, we recommend integrating each external model individually with the target data and evaluating predictive performance on a testing set. The function <code>plot.eta</code> (see <a href="BRIER.html#sec-eval">Section 6.1 of the main vignette</a>) can then be used to visualize predictive performance as a function of the integration weight <span class="math inline">\(\eta\)</span>, providing a direct read on the degree of heterogeneity between the target data and each external source.</p>
 <p>The example below fits three single-external-model <code>BRIERs</code> integrations, each pairing the same target dataset with a different external model from the built-in dataset <code>Data_BRIERs</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://zrayw.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://um-kevinhe.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Data_BRIERs"</span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">Data_BRIERs</span></span>
