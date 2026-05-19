@@ -57,7 +57,7 @@
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/um-kevinhe/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -68,12 +68,12 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="description">Description<a class="anchor" aria-label="anchor" href="#description"></a>
 </h1></div>
-<p><code>BRIER2</code> is a comprehensive Bregman-divergence–based integration framework for <strong>improving genetic risk prediction</strong> of complex traits in a <strong>local target</strong> cohort by leveraging information <strong>from external sources</strong> under diverse data-availability settings. It flexibly accommodates a broad range of outcome types, including continuous, binary, count, and time-to-event traits. The framework is implemented through three principled functions, <code>BRIER.FULL</code>, <code>BRIER.I</code>, and <code>BRIER.S</code>, which address the major data-access constraints encountered in biomedical and statistical-genetics research.</p>
+<p><code>BRIER</code> is a comprehensive Bregman-divergence–based integration framework for <strong>improving genetic risk prediction</strong> of complex traits in a <strong>local target</strong> cohort by leveraging information <strong>from external sources</strong> under diverse data-availability settings. It flexibly accommodates a broad range of outcome types, including continuous, binary, count, and time-to-event traits. The framework is implemented through three principled functions, <code>BRIER.FULL</code>, <code>BRIER.I</code>, and <code>BRIER.S</code>, which address the major data-access constraints encountered in biomedical and statistical-genetics research.</p>
 </div>
 <div class="section level1">
 <h1 id="writing-r-code-with-an-ai-assistant">Writing R code with an AI assistant?<a class="anchor" aria-label="anchor" href="#writing-r-code-with-an-ai-assistant"></a>
 </h1>
-<p>An AI-optimized reference is published at <strong><a href="https://zrayw.github.io/BRIER2/llms.txt" class="uri">https://zrayw.github.io/BRIER2/llms.txt</a></strong> (following the <a href="https://llmstxt.org/" class="external-link">llms.txt</a> convention). Point your AI at that URL, or paste its contents into the chat, to give the assistant a compact map of the package — decision tree, parameter reference, worked examples, and common pitfalls — without ingesting the full website.</p>
+<p>An AI-optimized reference is published at <strong><a href="https://um-kevinhe.github.io/BRIER/llms.txt" class="uri">https://um-kevinhe.github.io/BRIER/llms.txt</a></strong> (following the <a href="https://llmstxt.org/" class="external-link">llms.txt</a> convention). Point your AI at that URL, or paste its contents into the chat, to give the assistant a compact map of the package — decision tree, parameter reference, worked examples, and common pitfalls — without ingesting the full website.</p>
 </div>
 <div class="section level1">
 <h1 id="models">Models<a class="anchor" aria-label="anchor" href="#models"></a>
@@ -140,7 +140,7 @@ Constructing PRS from GWAS summary statistics [4] <br> Building GReX models from
 <div class="section level1">
 <h1 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h1>
-<p><code>BRIER2</code> extends the flexibility and scalability of risk-prediction modeling, with a particular emphasis on high-dimensional genetic applications:</p>
+<p><code>BRIER</code> extends the flexibility and scalability of risk-prediction modeling, with a particular emphasis on high-dimensional genetic applications:</p>
 <ul>
 <li><strong>Flexibility to integrate external information according to different data access and privacy constraints</strong></li>
 <li>
@@ -173,17 +173,17 @@ Constructing PRS from GWAS summary statistics [4] <br> Building GReX models from
 Requires <strong>R ≥ 4.0.0</strong>.</p>
 </blockquote>
 <p>Install from CRAN:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"BRIER2"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"BRIER"</span>)</span></code></pre></div>
 <p>Or install the development version from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">require</span>(<span class="st">"devtools"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">require</span>(<span class="st">"remotes"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"UM-KevinHe/BRIER2"</span>)</span></code></pre></div>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"UM-KevinHe/BRIER"</span>)</span></code></pre></div>
 <p><br></p>
 </div>
 <div class="section level1">
 <h1 id="detailed-tutorial">Detailed Tutorial<a class="anchor" aria-label="anchor" href="#detailed-tutorial"></a>
 </h1>
-<p>Full package documentation and parameter explanations: <a href="https://zrayw.github.io/BRIER2/">here</a></p>
+<p>Full package documentation and parameter explanations: <a href="https://um-kevinhe.github.io/BRIER/">here</a></p>
 </div>
 <div class="section level1">
 <h1 id="getting-help">Getting Help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
