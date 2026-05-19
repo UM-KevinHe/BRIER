@@ -1,7 +1,7 @@
 
 # Description
 
-`BRIER2` is a comprehensive Bregman-divergence–based integration framework for **improving genetic risk prediction** of complex traits in a **local target** cohort 
+`BRIER` is a comprehensive Bregman-divergence–based integration framework for **improving genetic risk prediction** of complex traits in a **local target** cohort 
 by leveraging information **from external sources** under diverse data-availability settings. 
 It flexibly accommodates a broad range of outcome types, including continuous, binary, count, and time-to-event traits. 
 The framework is implemented through three principled functions, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`, 
@@ -10,7 +10,7 @@ which address the major data-access constraints encountered in biomedical and st
 # Writing R code with an AI assistant?
 
 An AI-optimized reference is published at
-**<https://zrayw.github.io/BRIER2/llms.txt>**
+**<https://um-kevinhe.github.io/BRIER/llms.txt>**
 (following the [llms.txt](https://llmstxt.org/) convention).
 Point your AI at that URL, or paste its contents into the chat, to give the
 assistant a compact map of the package — decision tree, parameter reference,
@@ -73,7 +73,7 @@ worked examples, and common pitfalls — without ingesting the full website.
 
 # Features
 
-`BRIER2` extends the flexibility and scalability of risk-prediction modeling, with a particular emphasis on high-dimensional genetic applications:
+`BRIER` extends the flexibility and scalability of risk-prediction modeling, with a particular emphasis on high-dimensional genetic applications:
 
 - **Flexibility to integrate external information according to different data access and privacy constraints**
 - **Support various distribution families for complex traits**  
@@ -95,20 +95,20 @@ Several features to improve practical concerns in genetic applications:
 
 Install from CRAN:
 
-    install.packages("BRIER2")
+    install.packages("BRIER")
 
 Or install the development version from GitHub:
 
     require("devtools")
     require("remotes")
-    remotes::install_github("UM-KevinHe/BRIER2")
+    remotes::install_github("UM-KevinHe/BRIER")
 
 <br>
 
 
 # Detailed Tutorial
 
-Full package documentation and parameter explanations: [here](https://zrayw.github.io/BRIER2/)
+Full package documentation and parameter explanations: [here](https://um-kevinhe.github.io/BRIER/)
 
 
 # Getting Help

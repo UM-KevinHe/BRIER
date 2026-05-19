@@ -16,7 +16,7 @@ summary-statistics (BRIERs), and full individual-level external data
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://zrayw.github.io/BRIER2/}
+  \item \url{https://kevinhe.github.io/BRIER/}
 }
 
 }
