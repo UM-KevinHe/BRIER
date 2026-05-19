@@ -19,7 +19,7 @@ bibliography: references.bib
 
 In many genetic risk prediction applications, multiple external models are available rather than a single source. For example, in genetically regulated expression (GReX) modeling for transcriptome-wide association studies (TWAS), the goal is to predict tissue-specific gene expression from genotype data, and the target tissue of interest is often paired with eQTL summary statistics from many related tissues collected by the GTEx project (e.g., 49 tissues in GTEx v8). Since cis-eQTL effects are often shared across biologically related tissues, leveraging external models trained in non-target tissues can substantially improve predictive performance in the target tissue, particularly for tissues with limited sample size. Naively integrating each external model with its own integration weight, however, leads to a hyperparameter space that grows exponentially in the number of external sources, making joint tuning computationally prohibitive.
 
-To address this, `BRIER2` provides three strategies for integrating multiple external models, controlled by the `multi.method` argument:
+To address this, `BRIER` provides three strategies for integrating multiple external models, controlled by the `multi.method` argument:
 
 - `"ind"`: each external model is assigned its own independent integration weight $\eta_m$. This is the most flexible option, but the hyperparameter space grows multiplicatively with the number of external sources, so it is only computationally practical when the number of external models is small (typically $M \leq 3$).
 - `"pca"`: the external coefficient matrix is reduced to a small number of leading principal components, and only the top components are retained for integration. This collapses the multidimensional penalty space into a low-dimensional one and reduces tuning cost.
@@ -32,12 +32,12 @@ In this vignette, we use `BRIERs()` (summary-level data) as an illustrative exam
 
 # 2. Before integrating all external models
 
-Users may have access to multiple external models, but it is often undesirable to include all of them in the final integration. Some external models may be well aligned with the target data and improve predictive performance, whereas others may be highly heterogeneous and provide little or no benefit. As a diagnostic step, we recommend integrating each external model individually with the target data and evaluating predictive performance on a testing set. The function `plot.eta` (see [Section 6.1 of the main vignette](BRIER2.html#sec-eval)) can then be used to visualize predictive performance as a function of the integration weight $\eta$, providing a direct read on the degree of heterogeneity between the target data and each external source.
+Users may have access to multiple external models, but it is often undesirable to include all of them in the final integration. Some external models may be well aligned with the target data and improve predictive performance, whereas others may be highly heterogeneous and provide little or no benefit. As a diagnostic step, we recommend integrating each external model individually with the target data and evaluating predictive performance on a testing set. The function `plot.eta` (see [Section 6.1 of the main vignette](BRIER.html#sec-eval)) can then be used to visualize predictive performance as a function of the integration weight $\eta$, providing a direct read on the degree of heterogeneity between the target data and each external source.
 
 The example below fits three single-external-model `BRIERs` integrations, each pairing the same target dataset with a different external model from the built-in dataset `Data_BRIERs`:
 
 ```{r, echo = TRUE, eval = FALSE}
-library(BRIER2)
+library(BRIER)
 
 data("Data_BRIERs")
 data <- Data_BRIERs
@@ -148,12 +148,12 @@ fit <- BRIERs.selection(
 )
 ```
 
-See [Section 5.3 of the main vignette](BRIER2.html#sec-BRIERs) for a full discussion of the available tuning criteria.
+See [Section 5.3 of the main vignette](BRIER.html#sec-BRIERs) for a full discussion of the available tuning criteria.
 
 
 # 4. Evaluating the integrated model
 
-Once `BRIERs.selection()` has identified the optimal $(\eta, \lambda)$, the same downstream evaluation tools described in [Section 6 of the main vignette](BRIER2.html#sec-downstream) can be applied without modification. Below, we illustrate `plot.eta` and `plot.box` evaluated on an independent testing set:
+Once `BRIERs.selection()` has identified the optimal $(\eta, \lambda)$, the same downstream evaluation tools described in [Section 6 of the main vignette](BRIER.html#sec-downstream) can be applied without modification. Below, we illustrate `plot.eta` and `plot.box` evaluated on an independent testing set:
 
 ```{r, echo = TRUE, eval = FALSE}
 ## Predictive performance as a function of eta on the testing set
@@ -198,4 +198,4 @@ When individual-level target data are available together with multiple pre-train
 - the multi-external coefficient matrix is passed through the same `beta.external` argument, with one column per external model and an intercept row included;
 - hyperparameter tuning uses `BRIERi.selection()` and additionally supports cross-validation (`BRIERi.cv()`) in addition to validation-set and information-criterion-based tuning.
 
-See [Section 4 of the main vignette](BRIER2.html#sec-BRIERi) for the single-external-model `BRIERi` workflow; the multi-external-model extension follows the same pattern as Sections 3–4 of this appendix.
+See [Section 4 of the main vignette](BRIER.html#sec-BRIERi) for the single-external-model `BRIERi` workflow; the multi-external-model extension follows the same pattern as Sections 3–4 of this appendix.

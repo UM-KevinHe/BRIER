@@ -1,12 +1,12 @@
 ---
-title: "BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression"
+title: "BRIER: Bregman-divergence-based Regularized Integrative Estimator in Regression"
 output:
   bookdown::html_document2:
     toc: true
     toc_depth: 6
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression}
+  %\VignetteIndexEntry{BRIER: Bregman-divergence-based Regularized Integrative Estimator in Regression}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -31,11 +31,11 @@ knitr::opts_chunk$set(
 
 Genetic risk prediction plays an increasingly important role in precision medicine by quantifying how inherited genetic variation contributes to complex traits. Approaches such as polygenic risk scores (PRS) for disease risk stratification, drug response prediction for individualized treatment, and genetically regulated expression (GReX) models for linking genetic variation to transcriptomic architecture illustrate the expanding influence of statistical genetics on biomedical research and its emerging role in clinical translation.
 
-Despite these advances, prediction performance remains limited in clinically underrepresented populations with scarce data. To address these gaps, we previously introduced `BRIER` [LINK TO BRIER1], which integrates a well-powered external model with either individual- or summary-level data from a target cohort using a Bregman divergence framework. Here, we introduce `BRIER2`, a comprehensive update of the previous version. 
+Despite these advances, prediction performance remains limited in clinically underrepresented populations with scarce data. To address these gaps, we previously introduced `BRIER` [LINK TO BRIER1], which integrates a well-powered external model with either individual- or summary-level data from a target cohort using a Bregman divergence framework. Here, we introduce `BRIER`, a comprehensive update of the previous version. 
 
 ## 1.2 Key Modules
 
-`BRIER2` implements a flexible Bregman-divergence based integration framework to improve prediction of complex traits in a target local cohort by leveraging information from external sources under diverse data-availability settings. The framework is implemented through three principled module functions, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`. Below, we briefly describe the setting for which each function is designed and provide worked examples illustrating their use.
+`BRIER` implements a flexible Bregman-divergence based integration framework to improve prediction of complex traits in a target local cohort by leveraging information from external sources under diverse data-availability settings. The framework is implemented through three principled module functions, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`. Below, we briefly describe the setting for which each function is designed and provide worked examples illustrating their use.
 
 `BRIER.FULL` is designed for settings in which **individual-level data** are available in both the target cohort and the external cohort. In particular, both the outcome \(y\) and predictor matrix \(X\) are observed for samples from each data source.
 
@@ -43,24 +43,24 @@ Despite these advances, prediction performance remains limited in clinically und
 
 `BRIER.S` is designed for settings where only summary statistics (e.g. GWAS summary statistics and LD matrix) are available in both target and external cohorts. This module is particularly useful for constructing predictors such as polygenic risk scores (PRS) \citep{li2022_bright} from GWAS summary statistics, or genetically regulated expression (GReX) models from eQTL summary statistics \citep{zhang2022_summit}.
 
-We provide a flowchart outlining the `BRIER2` pipeline and its major components.
+We provide a flowchart outlining the `BRIER` pipeline and its major components.
 
-![Flowchart of the BRIER2 package](../man/figures/Figure1.png){width=100%}
+![Flowchart of the BRIER package](../man/figures/Figure1.png){width=100%}
 
 ## 1.3 Features
 
-`BRIER2` provides a comprehensive and flexible framework for integrative genetic risk modeling, with the following key features:
+`BRIER` provides a comprehensive and flexible framework for integrative genetic risk modeling, with the following key features:
 
 - **Flexibility to integrate external information according to different data access and privacy constraints**
-  `BRIER2` flexibly integrates external information with target data across a wide range of data-availability scenarios, including individual-level data, summary statistics, and pre-trained external models.
+  `BRIER` flexibly integrates external information with target data across a wide range of data-availability scenarios, including individual-level data, summary statistics, and pre-trained external models.
 - **Support various distribution families from complex traits**  
-  `BRIER2` supports a wide range of distribution families to accommodate continuous, binomial, count, and time-to-event outcomes.
+  `BRIER` supports a wide range of distribution families to accommodate continuous, binomial, count, and time-to-event outcomes.
 - **A suite of hyperparameter tuning tools.**  
   Provide information-criterion based hyperparameter tuning for core modeling functions (`BRIERi.selection`, and `BRIERs.selection`) without requiring an independent validation set.
 - **Integration of multiple external models.**  
   Ensemble-based weighting of multiple external models enables scalable integration of multiple information sources without inflating the hyperparameter space, substantially reducing computational burden.
 
-In addition, `BRIER2` includes several features designed to improve practical usability in genetic applications:
+In addition, `BRIER` includes several features designed to improve practical usability in genetic applications:
 
 - **Improved computational efficiency.**  
   Core components are fully optimized using Rcpp and support multi-core parallel computing, resulting in substantial runtime improvements for large-scale genetic analyses.
@@ -74,7 +74,7 @@ In addition, `BRIER2` includes several features designed to improve practical us
 
 # 2. Installation {#sec-install}
 
-`BRIER2` requires the following R packages: `Rcpp`,`RcppArmadillo`, `Matrix`, `pROC`. These can be installed with
+`BRIER` requires the following R packages: `Rcpp`,`RcppArmadillo`, `Matrix`, `pROC`. These can be installed with
 ```{r, echo = TRUE, eval = FALSE}
 install.packages(
     c("Rcpp", "RcppArmadillo", "Matrix", "BEDMatrix", "pROC"),
@@ -84,12 +84,12 @@ install.packages(
 
 The package can then be installed from GitHub using:
 ```{r, echo = TRUE, eval = FALSE}
-remotes::install_github("UM-KevinHe/BRIER2", ref = "main")
+remotes::install_github("UM-KevinHe/BRIER", ref = "main")
 ```
 
 After installation, load the package with:
 ```{r, echo = TRUE, eval = FALSE}
-library(BRIER2)
+library(BRIER)
 ```
 
 
@@ -148,9 +148,9 @@ fit <- BRIERfull(
 
 ## 3.3 Hyperparameters tuning
 
-The \texttt{BRIER2} framework involves two classes of hyperparameters: the regularization parameter $\lambda$ and the integration weights $\{\eta_m\}_{m=1}^M$. For the regularization parameter $\lambda$, we adopt the classic regularization path strategy implemented in package \texttt{ncvreg} \citep{Breheny2011_ncvreg}, and provide a data-driven sequence of $\lambda$ for each $\eta$ value.
+The \texttt{BRIER} framework involves two classes of hyperparameters: the regularization parameter $\lambda$ and the integration weights $\{\eta_m\}_{m=1}^M$. For the regularization parameter $\lambda$, we adopt the classic regularization path strategy implemented in package \texttt{ncvreg} \citep{Breheny2011_ncvreg}, and provide a data-driven sequence of $\lambda$ for each $\eta$ value.
 
-Tuning the integration weights $\eta$ is more challenging due to the heterogeneity between the target and external data sources. `BRIER2` provides two strategies for tuning $\eta$: grid search and Bayesian optimization, implemented through the `rBayesianOptimization` package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in [Appendix: Selection of integration weight using Bayesian Optimization](Appendix_BayesianOptimization.html).
+Tuning the integration weights $\eta$ is more challenging due to the heterogeneity between the target and external data sources. `BRIER` provides two strategies for tuning $\eta$: grid search and Bayesian optimization, implemented through the `rBayesianOptimization` package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in [Appendix: Selection of integration weight using Bayesian Optimization](Appendix_BayesianOptimization.html).
 
 For grid search, `BRIERfull.selection()` evaluates model performance over user-specified candidate values of $\eta$ and the corresponding data-driven regularization path for $\lambda$. When an independent validation set is available, the function selects the optimal hyperparameter combination $(\{\eta_m\}_{m=1}^M, \lambda)$ according to a user-specified validation metric. The example below illustrates the use of mean squared prediction error (MSPE) as the evaluation metric for a continuous outcome. Additional evaluation metrics for different outcome types are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).
 
@@ -208,7 +208,7 @@ p
 
 # 4. `BRIERi`: modeling with individual-level target data and trained external models {#sec-BRIERi}
 
-External individual-level data are often inaccessible due to privacy regulations or institutional agreements. Instead, external information may only be available in the form of trained prediction models, typically represented by estimated regression coefficients $\check{\beta}$. In this setting, `BRIER2` integrates external model information with individual-level target data through function `BRIERi()`.
+External individual-level data are often inaccessible due to privacy regulations or institutional agreements. Instead, external information may only be available in the form of trained prediction models, typically represented by estimated regression coefficients $\check{\beta}$. In this setting, `BRIER` integrates external model information with individual-level target data through function `BRIERi()`.
 
 To use `BRIERi()`, users need to provide:
 
@@ -248,9 +248,9 @@ fit <- BRIERi(
 
 ## 4.3 Hyperparameters tuning
 
-The \texttt{BRIER2} framework involves two classes of hyperparameters: the regularization parameter $\lambda$ and the integration weights $\{\eta_m\}_{m=1}^M$. For the regularization parameter $\lambda$, we adopt the classic regularization path strategy implemented in package \texttt{ncvreg} \citep{Breheny2011_ncvreg}, and provide a data-driven sequence of $\lambda$ for each $\eta$ value.
+The \texttt{BRIER} framework involves two classes of hyperparameters: the regularization parameter $\lambda$ and the integration weights $\{\eta_m\}_{m=1}^M$. For the regularization parameter $\lambda$, we adopt the classic regularization path strategy implemented in package \texttt{ncvreg} \citep{Breheny2011_ncvreg}, and provide a data-driven sequence of $\lambda$ for each $\eta$ value.
 
-Tuning the integration weights $\eta$ is more challenging due to the heterogeneity between the target and external data sources. `BRIER2` provides two strategies for tuning $\eta$: grid search and Bayesian optimization, implemented through the `rBayesianOptimization` package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in [Appendix: Selection of integration weight using Bayesian Optimization](Appendix_BayesianOptimization.html).
+Tuning the integration weights $\eta$ is more challenging due to the heterogeneity between the target and external data sources. `BRIER` provides two strategies for tuning $\eta$: grid search and Bayesian optimization, implemented through the `rBayesianOptimization` package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in [Appendix: Selection of integration weight using Bayesian Optimization](Appendix_BayesianOptimization.html).
 
 For grid search, `BRIERi` provides three criterion to evaluate each candidate pair of hyperparameters $(\eta, \lambda)$: cross-validation, evaluation on an independent validation set, and information-based criteria. The function `BRIERi.cv` performs cross-validation on the training data, using the predicted deviance as evaluation criteria, with the specific deviance definition provided in [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).
 
@@ -342,7 +342,7 @@ XtX.list <- calLD(X, summary)
 beta.external <- data$beta.external[, 1]
 ```
 
-For genetic risk prediction using GWAS summary statistics, `BRIER2` also provides the helper function `PreprocessS()` for standard preprocessing in `BRIERs` modeling. Details are provided in [Appendix: Data Processing of Genetic Risk Prediction using BRIERs](Appendix_Appendix_Preprocess.html).
+For genetic risk prediction using GWAS summary statistics, `BRIER` also provides the helper function `PreprocessS()` for standard preprocessing in `BRIERs` modeling. Details are provided in [Appendix: Data Processing of Genetic Risk Prediction using BRIERs](Appendix_Appendix_Preprocess.html).
 
 ## 5.2 Fitting `BRIERs`
 
@@ -360,9 +360,9 @@ fit <- BRIERs(
 
 ## 5.3 Hyperparameters tuning
 
-The \texttt{BRIER2} framework involves two classes of hyperparameters: the regularization parameter $\lambda$ and the integration weights $\{\eta_m\}_{m=1}^M$. For the regularization parameter $\lambda$, we adopt the classic regularization path strategy implemented in package \texttt{ncvreg} \citep{Breheny2011_ncvreg}, and provide a data-driven sequence of $\lambda$ for each $\eta$ value.
+The \texttt{BRIER} framework involves two classes of hyperparameters: the regularization parameter $\lambda$ and the integration weights $\{\eta_m\}_{m=1}^M$. For the regularization parameter $\lambda$, we adopt the classic regularization path strategy implemented in package \texttt{ncvreg} \citep{Breheny2011_ncvreg}, and provide a data-driven sequence of $\lambda$ for each $\eta$ value.
 
-Tuning the integration weights $\eta$ is more challenging due to the heterogeneity between the target and external data sources. `BRIER2` provides two strategies for tuning $\eta$: grid search and Bayesian optimization, implemented through the `rBayesianOptimization` package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in [Appendix: Selection of integration weight using Bayesian Optimization](Appendix_BayesianOptimization.html).
+Tuning the integration weights $\eta$ is more challenging due to the heterogeneity between the target and external data sources. `BRIER` provides two strategies for tuning $\eta$: grid search and Bayesian optimization, implemented through the `rBayesianOptimization` package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in [Appendix: Selection of integration weight using Bayesian Optimization](Appendix_BayesianOptimization.html).
 
 For grid search, `BRIERs` provides two criterion to evaluate each candidate pair of hyperparameters $(\eta, \lambda)$: evaluation on an independent validation set, and information-based criteria. 
 
@@ -412,11 +412,11 @@ out$plot
 
 # 6. Downstream Analysis {#sec-downstream}
 
-We provide a suite of functions for evaluating the predictive performance of fitted `BRIER2` models. To accommodate complex outcomes from different distribution families, a comprehensive set of evaluation metrics is supported, including predictive deviance for general outcomes, AUC for binary outcomes, and C-index for survival outcomes. Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html). We illustrate the usage of this plotting functions using fitted BRIER models from summary statistics using `BRIERs()`
+We provide a suite of functions for evaluating the predictive performance of fitted `BRIER` models. To accommodate complex outcomes from different distribution families, a comprehensive set of evaluation metrics is supported, including predictive deviance for general outcomes, AUC for binary outcomes, and C-index for survival outcomes. Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html). We illustrate the usage of this plotting functions using fitted BRIER models from summary statistics using `BRIERs()`
 
-## 6.1 Evaluation of `BRIER2` model {#sec-eval}
+## 6.1 Evaluation of `BRIER` model {#sec-eval}
 
-We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate `BRIER2` performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).  
+We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate `BRIER` performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the [Appendix: Distribution Family and Evaluation Metrics](Appendix_Distr.html).  
 
 ### Visualizing predictive performance as a function of integration weight $\eta$
 
@@ -432,7 +432,7 @@ Taken together, the $\eta$-curve clarifies how varying degrees of external infor
 
 **Integrating low heterogeneous external information**
 
-The example below illustrates the integration curves obtained when `BRIER2` incorporates external information with low heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s $R^2$ (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight $\eta$ increases and more external information is transferred to the target model, predictive performance improves, as indicated by an increase in Pearson’s $R^2$ and a decrease in MSPE. Performance reaches an optimum at an intermediate value of $\eta$ and may decline slightly thereafter. This pattern indicates that integrating external information improves predictive accuracy and suggests that the relative heterogeneity between the target and external data is low.
+The example below illustrates the integration curves obtained when `BRIER` incorporates external information with low heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s $R^2$ (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight $\eta$ increases and more external information is transferred to the target model, predictive performance improves, as indicated by an increase in Pearson’s $R^2$ and a decrease in MSPE. Performance reaches an optimum at an intermediate value of $\eta$ and may decline slightly thereafter. This pattern indicates that integrating external information improves predictive accuracy and suggests that the relative heterogeneity between the target and external data is low.
 
 ```{r, echo = TRUE, eval = FALSE}
 ## Extract training data
@@ -489,7 +489,7 @@ out$plot
 
 **Integrating high heterogeneous external information**
 
-The example below illustrates the integration curves obtained when `BRIER2` incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s $R^2$ (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight $\eta$ increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s $R^2$ and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.
+The example below illustrates the integration curves obtained when `BRIER` incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s $R^2$ (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight $\eta$ increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s $R^2$ and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.
 
 ```{r, echo = TRUE, eval = FALSE}
 ## Extract training data
@@ -551,7 +551,7 @@ The `plot.box()` function provides a complementary perspective for evaluating `B
 
 **Integrating low heterogeneous external information**
 
-In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson $R^2$ and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the `BRIER2` model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.
+In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson $R^2$ and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the `BRIER` model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.
 
 ```{r, echo = TRUE, eval = FALSE}
 out <- plot.box(
@@ -629,7 +629,7 @@ out$plot
 
 ## 6.3 PRS stratification {#sec-prs_strat}
 
-The `plot.strat` function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated `BRIER2` model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.
+The `plot.strat` function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated `BRIER` model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.
 
 ```{r, echo = TRUE, eval = FALSE}
 out <- plot.strat(  
@@ -641,7 +641,7 @@ out <- plot.strat(
 out$plot
 ```
 
-![Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER2 models](../man/figures/density_testing_stratification.png){width=50%}
+![Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER models](../man/figures/density_testing_stratification.png){width=50%}
 
 
 ## 6.4 Performing TWAS on trait of interest {#sec-TWAS}

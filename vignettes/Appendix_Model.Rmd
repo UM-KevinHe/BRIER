@@ -78,7 +78,7 @@ c(y_i,\phi)
 \right].
 $$
 
-Table: (\#tab:glm-family) Exponential-family distributions implemented in `BRIER2`, including cumulant functions $b(\theta)$ and canonical link functions $g(\mu)$.
+Table: (\#tab:glm-family) Exponential-family distributions implemented in `BRIER`, including cumulant functions $b(\theta)$ and canonical link functions $g(\mu)$.
 
 | **Family** | $\mathbf{b(\theta)}$ | $\mathbf{\mu=b'(\theta)}$ | $\mathbf{\mathrm{Var}(Y)}$ | **$g(\mu)$** |
 |:--|:--|:--|:--|:--|
