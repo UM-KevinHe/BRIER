@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Integration of Multiple External Models • BRIER2</title>
+<title>Integration of Multiple External Models • BRIER</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -27,7 +27,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BRIER2</a>
+    <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
@@ -39,7 +39,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
-<li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/BRIER.html">Get started</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
@@ -55,7 +55,7 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER2" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -81,7 +81,7 @@
 <h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>In many genetic risk prediction applications, multiple external models are available rather than a single source. For example, in genetically regulated expression (GReX) modeling for transcriptome-wide association studies (TWAS), the goal is to predict tissue-specific gene expression from genotype data, and the target tissue of interest is often paired with eQTL summary statistics from many related tissues collected by the GTEx project (e.g., 49 tissues in GTEx v8). Since cis-eQTL effects are often shared across biologically related tissues, leveraging external models trained in non-target tissues can substantially improve predictive performance in the target tissue, particularly for tissues with limited sample size. Naively integrating each external model with its own integration weight, however, leads to a hyperparameter space that grows exponentially in the number of external sources, making joint tuning computationally prohibitive.</p>
-<p>To address this, <code>BRIER2</code> provides three strategies for integrating multiple external models, controlled by the <code>multi.method</code> argument:</p>
+<p>To address this, <code>BRIER</code> provides three strategies for integrating multiple external models, controlled by the <code>multi.method</code> argument:</p>
 <ul>
 <li>
 <code>"ind"</code>: each external model is assigned its own independent integration weight <span class="math inline">\(\eta_m\)</span>. This is the most flexible option, but the hyperparameter space grows multiplicatively with the number of external sources, so it is only computationally practical when the number of external models is small (typically <span class="math inline">\(M \leq 3\)</span>).</li>
@@ -96,10 +96,10 @@
 <div class="section level2">
 <h2 id="before-integrating-all-external-models">2. Before integrating all external models<a class="anchor" aria-label="anchor" href="#before-integrating-all-external-models"></a>
 </h2>
-<p>Users may have access to multiple external models, but it is often undesirable to include all of them in the final integration. Some external models may be well aligned with the target data and improve predictive performance, whereas others may be highly heterogeneous and provide little or no benefit. As a diagnostic step, we recommend integrating each external model individually with the target data and evaluating predictive performance on a testing set. The function <code>plot.eta</code> (see <a href="BRIER2.html#sec-eval">Section 6.1 of the main vignette</a>) can then be used to visualize predictive performance as a function of the integration weight <span class="math inline">\(\eta\)</span>, providing a direct read on the degree of heterogeneity between the target data and each external source.</p>
+<p>Users may have access to multiple external models, but it is often undesirable to include all of them in the final integration. Some external models may be well aligned with the target data and improve predictive performance, whereas others may be highly heterogeneous and provide little or no benefit. As a diagnostic step, we recommend integrating each external model individually with the target data and evaluating predictive performance on a testing set. The function <code>plot.eta</code> (see <a href="BRIER.html#sec-eval">Section 6.1 of the main vignette</a>) can then be used to visualize predictive performance as a function of the integration weight <span class="math inline">\(\eta\)</span>, providing a direct read on the degree of heterogeneity between the target data and each external source.</p>
 <p>The example below fits three single-external-model <code>BRIERs</code> integrations, each pairing the same target dataset with a different external model from the built-in dataset <code>Data_BRIERs</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://zrayw.github.io/BRIER2/">BRIER2</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://zrayw.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Data_BRIERs"</span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">Data_BRIERs</span></span>
@@ -192,13 +192,13 @@
 <span>  X.val <span class="op">=</span> <span class="va">X_val</span>,</span>
 <span>  y.val <span class="op">=</span> <span class="va">y_val</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>See <a href="BRIER2.html#sec-BRIERs">Section 5.3 of the main vignette</a> for a full discussion of the available tuning criteria.</p>
+<p>See <a href="BRIER.html#sec-BRIERs">Section 5.3 of the main vignette</a> for a full discussion of the available tuning criteria.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="evaluating-the-integrated-model">4. Evaluating the integrated model<a class="anchor" aria-label="anchor" href="#evaluating-the-integrated-model"></a>
 </h2>
-<p>Once <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code> has identified the optimal <span class="math inline">\((\eta, \lambda)\)</span>, the same downstream evaluation tools described in <a href="BRIER2.html#sec-downstream">Section 6 of the main vignette</a> can be applied without modification. Below, we illustrate <code>plot.eta</code> and <code>plot.box</code> evaluated on an independent testing set:</p>
+<p>Once <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code> has identified the optimal <span class="math inline">\((\eta, \lambda)\)</span>, the same downstream evaluation tools described in <a href="BRIER.html#sec-downstream">Section 6 of the main vignette</a> can be applied without modification. Below, we illustrate <code>plot.eta</code> and <code>plot.box</code> evaluated on an independent testing set:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Predictive performance as a function of eta on the testing set</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span></span>
@@ -234,7 +234,7 @@
 <li>the multi-external coefficient matrix is passed through the same <code>beta.external</code> argument, with one column per external model and an intercept row included;</li>
 <li>hyperparameter tuning uses <code><a href="../reference/BRIERi.selection.html">BRIERi.selection()</a></code> and additionally supports cross-validation (<code><a href="../reference/BRIERi.cv.html">BRIERi.cv()</a></code>) in addition to validation-set and information-criterion-based tuning.</li>
 </ul>
-<p>See <a href="BRIER2.html#sec-BRIERi">Section 4 of the main vignette</a> for the single-external-model <code>BRIERi</code> workflow; the multi-external-model extension follows the same pattern as Sections 3–4 of this appendix.</p>
+<p>See <a href="BRIER.html#sec-BRIERi">Section 4 of the main vignette</a> for the single-external-model <code>BRIERi</code> workflow; the multi-external-model extension follows the same pattern as Sections 3–4 of this appendix.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

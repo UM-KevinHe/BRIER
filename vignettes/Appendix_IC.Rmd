@@ -15,7 +15,7 @@ editor_options:
 bibliography: references.bib
 ---
   
-We implement a comprehensive set of information criteria to tune the integration weight $\eta$ and the sparsity penalty parameter $\lambda$in `BRIER.I` and `BRIER.S`. In this article, we introduce detailed formulation of the information criteria implemented in `BRIER2`
+We implement a comprehensive set of information criteria to tune the integration weight $\eta$ and the sparsity penalty parameter $\lambda$in `BRIER.I` and `BRIER.S`. In this article, we introduce detailed formulation of the information criteria implemented in `BRIER`
 
 
 # BRIERi.selection
@@ -147,7 +147,7 @@ Under this formulation, the effective degrees of freedom of the fitted model can
 =
   \frac{\mathrm{df}(\widetilde{\mathbf{Y}})}{1+\eta},
 \end{equation}
-where $\mathrm{df}(\widetilde{\mathbf{Y}})$ denotes the degrees of freedom associated with the weighted response, and $\eta$ is integration weight. In `BRIER2`, we implement two approaches to estimate the degrees of freedom for penalized models. The first approach adopts a simple and computationally efficient estimator that uses the number of active predictors, i.e., the number of nonzero regression coefficients in the fitted model, as an estimate of the degrees of freedom. This estimator has been shown to be consistent for LASSO-type problems under suitable regularity conditions \citep{zou2007_df.lasso}. The second approach implements a more general degrees-of-freedom estimator based on the generalized information criterion (GIC) \citep{zhang2010_gic}. Specifically, the degrees of freedom are defined as
+where $\mathrm{df}(\widetilde{\mathbf{Y}})$ denotes the degrees of freedom associated with the weighted response, and $\eta$ is integration weight. In `BRIER`, we implement two approaches to estimate the degrees of freedom for penalized models. The first approach adopts a simple and computationally efficient estimator that uses the number of active predictors, i.e., the number of nonzero regression coefficients in the fitted model, as an estimate of the degrees of freedom. This estimator has been shown to be consistent for LASSO-type problems under suitable regularity conditions \citep{zou2007_df.lasso}. The second approach implements a more general degrees-of-freedom estimator based on the generalized information criterion (GIC) \citep{zhang2010_gic}. Specifically, the degrees of freedom are defined as
 \begin{equation}
 \label{eq:df_gic}
 \mathrm{df}_{\lambda}

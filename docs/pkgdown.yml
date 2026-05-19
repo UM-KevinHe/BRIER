@@ -9,8 +9,8 @@ articles:
   Appendix_Model: Appendix_Model.html
   Appendix_Multiple: Appendix_Multiple.html
   Appendix_Preprocess: Appendix_Preprocess.html
-  BRIER2: BRIER2.html
-last_built: 2026-05-07T22:24Z
+  BRIER: BRIER.html
+last_built: 2026-05-19T20:31Z
 urls:
-  reference: https://zrayw.github.io/BRIER2/reference
-  article: https://zrayw.github.io/BRIER2/articles
+  reference: https://zrayw.github.io/BRIER/reference
+  article: https://zrayw.github.io/BRIER/articles

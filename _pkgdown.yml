@@ -1,4 +1,4 @@
-url: https://zrayw.github.io/BRIER2/
+url: https://zrayw.github.io/BRIER/
 llm-docs: false
 template:
   bootstrap: 5
@@ -18,7 +18,7 @@ navbar:
   - text: Home
     href: index.html
   - text: Get started
-    href: articles/BRIER2.html
+    href: articles/BRIER.html
   - text: Appendix
     menu:
     - text: Integration of Multiple External Models
@@ -39,12 +39,12 @@ navbar:
     href: reference/index.html
   right:
   - icon: fa-github fa-lg
-    href: https://github.com/zrayw/BRIER2
+    href: https://github.com/zrayw/BRIER
     aria-label: GitHub repository
 articles:
 - title: Get started
   navbar: ~
-  contents: BRIER2
+  contents: BRIER
 - title: Appendix
   navbar: Appendix
   contents:
@@ -92,7 +92,7 @@ reference:
     - standardize_X
 - title: "Plotting"
   desc: >
-    Plotting functions for visualizing the results of BRIER2.
+    Plotting functions for visualizing the results of BRIER.
   contents:
     - plot.eta
     - plot.box

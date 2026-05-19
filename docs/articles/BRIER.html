@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression • BRIER2</title>
+<title>BRIER: Bregman-divergence-based Regularized Integrative Estimator in Regression • BRIER</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -19,7 +19,7 @@
 <link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="BRIER: Bregman-divergence-based Regularized Integrative Estimator in Regression">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -27,7 +27,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BRIER2</a>
+    <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
@@ -39,7 +39,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
-<li class="active nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../articles/BRIER.html">Get started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
@@ -55,7 +55,7 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER2" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -65,14 +65,14 @@
 
 
 
-<script src="BRIER2_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+<script src="BRIER_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>BRIER2: Bregman-divergence-based Regularized Integrative Estimator in Regression</h1>
+      <h1>BRIER: Bregman-divergence-based Regularized Integrative Estimator in Regression</h1>
             
       
 
-      <div class="d-none name"><code>BRIER2.Rmd</code></div>
+      <div class="d-none name"><code>BRIER.Rmd</code></div>
     </div>
 
     
@@ -84,29 +84,29 @@
 <h3 id="background">1.1 Background<a class="anchor" aria-label="anchor" href="#background"></a>
 </h3>
 <p>Genetic risk prediction plays an increasingly important role in precision medicine by quantifying how inherited genetic variation contributes to complex traits. Approaches such as polygenic risk scores (PRS) for disease risk stratification, drug response prediction for individualized treatment, and genetically regulated expression (GReX) models for linking genetic variation to transcriptomic architecture illustrate the expanding influence of statistical genetics on biomedical research and its emerging role in clinical translation.</p>
-<p>Despite these advances, prediction performance remains limited in clinically underrepresented populations with scarce data. To address these gaps, we previously introduced <code>BRIER</code> [LINK TO BRIER1], which integrates a well-powered external model with either individual- or summary-level data from a target cohort using a Bregman divergence framework. Here, we introduce <code>BRIER2</code>, a comprehensive update of the previous version.</p>
+<p>Despite these advances, prediction performance remains limited in clinically underrepresented populations with scarce data. To address these gaps, we previously introduced <code>BRIER</code> [LINK TO BRIER1], which integrates a well-powered external model with either individual- or summary-level data from a target cohort using a Bregman divergence framework. Here, we introduce <code>BRIER</code>, a comprehensive update of the previous version.</p>
 </div>
 <div class="section level3">
 <h3 id="key-modules">1.2 Key Modules<a class="anchor" aria-label="anchor" href="#key-modules"></a>
 </h3>
-<p><code>BRIER2</code> implements a flexible Bregman-divergence based integration framework to improve prediction of complex traits in a target local cohort by leveraging information from external sources under diverse data-availability settings. The framework is implemented through three principled module functions, <code>BRIER.FULL</code>, <code>BRIER.I</code>, and <code>BRIER.S</code>. Below, we briefly describe the setting for which each function is designed and provide worked examples illustrating their use.</p>
+<p><code>BRIER</code> implements a flexible Bregman-divergence based integration framework to improve prediction of complex traits in a target local cohort by leveraging information from external sources under diverse data-availability settings. The framework is implemented through three principled module functions, <code>BRIER.FULL</code>, <code>BRIER.I</code>, and <code>BRIER.S</code>. Below, we briefly describe the setting for which each function is designed and provide worked examples illustrating their use.</p>
 <p><code>BRIER.FULL</code> is designed for settings in which <strong>individual-level data</strong> are available in both the target cohort and the external cohort. In particular, both the outcome <span class="math inline">\(y\)</span> and predictor matrix <span class="math inline">\(X\)</span> are observed for samples from each data source.</p>
 <p><code>BRIER.I</code> is designed for settings in which <strong>individual-level data</strong> are available in the target cohort, but the external sources do not share raw data and instead provide only <strong>pre-trained models</strong> (e.g., published PRS weights, penalized regression coefficients). Such settings commonly arise in applications such as predicting binary disease status using gene expression profiles , or constructing genetic prognostic models for time-to-event outcomes .</p>
 <p><code>BRIER.S</code> is designed for settings where only summary statistics (e.g. GWAS summary statistics and LD matrix) are available in both target and external cohorts. This module is particularly useful for constructing predictors such as polygenic risk scores (PRS)  from GWAS summary statistics, or genetically regulated expression (GReX) models from eQTL summary statistics .</p>
-<p>We provide a flowchart outlining the <code>BRIER2</code> pipeline and its major components.</p>
+<p>We provide a flowchart outlining the <code>BRIER</code> pipeline and its major components.</p>
 <div class="figure">
-<img src="../reference/figures/Figure1.png" style="width:100.0%" alt=""><p class="caption">Flowchart of the BRIER2 package</p>
+<img src="../reference/figures/Figure1.png" style="width:100.0%" alt=""><p class="caption">Flowchart of the BRIER package</p>
 </div>
 </div>
 <div class="section level3">
 <h3 id="features">1.3 Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h3>
-<p><code>BRIER2</code> provides a comprehensive and flexible framework for integrative genetic risk modeling, with the following key features:</p>
+<p><code>BRIER</code> provides a comprehensive and flexible framework for integrative genetic risk modeling, with the following key features:</p>
 <ul>
 <li>
-<strong>Flexibility to integrate external information according to different data access and privacy constraints</strong> <code>BRIER2</code> flexibly integrates external information with target data across a wide range of data-availability scenarios, including individual-level data, summary statistics, and pre-trained external models.</li>
+<strong>Flexibility to integrate external information according to different data access and privacy constraints</strong> <code>BRIER</code> flexibly integrates external information with target data across a wide range of data-availability scenarios, including individual-level data, summary statistics, and pre-trained external models.</li>
 <li>
-<strong>Support various distribution families from complex traits</strong><br><code>BRIER2</code> supports a wide range of distribution families to accommodate continuous, binomial, count, and time-to-event outcomes.</li>
+<strong>Support various distribution families from complex traits</strong><br><code>BRIER</code> supports a wide range of distribution families to accommodate continuous, binomial, count, and time-to-event outcomes.</li>
 <li>
 <strong>A suite of hyperparameter tuning tools.</strong><br>
 Provide information-criterion based hyperparameter tuning for core modeling functions (<code>BRIERi.selection</code>, and <code>BRIERs.selection</code>) without requiring an independent validation set.</li>
@@ -114,7 +114,7 @@ Provide information-criterion based hyperparameter tuning for core modeling func
 <strong>Integration of multiple external models.</strong><br>
 Ensemble-based weighting of multiple external models enables scalable integration of multiple information sources without inflating the hyperparameter space, substantially reducing computational burden.</li>
 </ul>
-<p>In addition, <code>BRIER2</code> includes several features designed to improve practical usability in genetic applications:</p>
+<p>In addition, <code>BRIER</code> includes several features designed to improve practical usability in genetic applications:</p>
 <ul>
 <li>
 <strong>Improved computational efficiency.</strong><br>
@@ -134,7 +134,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="section level2">
 <h2 id="sec-install">2. Installation<a class="anchor" aria-label="anchor" href="#sec-install"></a>
 </h2>
-<p><code>BRIER2</code> requires the following R packages: <code>Rcpp</code>,<code>RcppArmadillo</code>, <code>Matrix</code>, <code>pROC</code>. These can be installed with</p>
+<p><code>BRIER</code> requires the following R packages: <code>Rcpp</code>,<code>RcppArmadillo</code>, <code>Matrix</code>, <code>pROC</code>. These can be installed with</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Rcpp"</span>, <span class="st">"RcppArmadillo"</span>, <span class="st">"Matrix"</span>, <span class="st">"BEDMatrix"</span>, <span class="st">"pROC"</span><span class="op">)</span>,</span>
@@ -142,10 +142,10 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="op">)</span></span></code></pre></div>
 <p>The package can then be installed from GitHub using:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"UM-KevinHe/BRIER2"</span>, ref <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"UM-KevinHe/BRIER"</span>, ref <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span></code></pre></div>
 <p>After installation, load the package with:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://zrayw.github.io/BRIER2/">BRIER2</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://zrayw.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="sec-BRIERfull">3. <code>BRIERfull</code>: Modeling with individual-level target and external data<a class="anchor" aria-label="anchor" href="#sec-BRIERfull"></a>
@@ -197,7 +197,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <h3 id="hyperparameters-tuning">3.3 Hyperparameters tuning<a class="anchor" aria-label="anchor" href="#hyperparameters-tuning"></a>
 </h3>
 <p>The  framework involves two classes of hyperparameters: the regularization parameter <span class="math inline">\(\lambda\)</span> and the integration weights <span class="math inline">\(\{\eta_m\}_{m=1}^M\)</span>. For the regularization parameter <span class="math inline">\(\lambda\)</span>, we adopt the classic regularization path strategy implemented in package  , and provide a data-driven sequence of <span class="math inline">\(\lambda\)</span> for each <span class="math inline">\(\eta\)</span> value.</p>
-<p>Tuning the integration weights <span class="math inline">\(\eta\)</span> is more challenging due to the heterogeneity between the target and external data sources. <code>BRIER2</code> provides two strategies for tuning <span class="math inline">\(\eta\)</span>: grid search and Bayesian optimization, implemented through the <code>rBayesianOptimization</code> package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in <a href="Appendix_BayesianOptimization.html">Appendix: Selection of integration weight using Bayesian Optimization</a>.</p>
+<p>Tuning the integration weights <span class="math inline">\(\eta\)</span> is more challenging due to the heterogeneity between the target and external data sources. <code>BRIER</code> provides two strategies for tuning <span class="math inline">\(\eta\)</span>: grid search and Bayesian optimization, implemented through the <code>rBayesianOptimization</code> package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in <a href="Appendix_BayesianOptimization.html">Appendix: Selection of integration weight using Bayesian Optimization</a>.</p>
 <p>For grid search, <code><a href="../reference/BRIERfull.selection.html">BRIERfull.selection()</a></code> evaluates model performance over user-specified candidate values of <span class="math inline">\(\eta\)</span> and the corresponding data-driven regularization path for <span class="math inline">\(\lambda\)</span>. When an independent validation set is available, the function selects the optimal hyperparameter combination <span class="math inline">\((\{\eta_m\}_{m=1}^M, \lambda)\)</span> according to a user-specified validation metric. The example below illustrates the use of mean squared prediction error (MSPE) as the evaluation metric for a continuous outcome. Additional evaluation metrics for different outcome types are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERfull.selection.html">BRIERfull.selection</a></span><span class="op">(</span></span>
@@ -245,7 +245,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="section level2">
 <h2 id="sec-BRIERi">4. <code>BRIERi</code>: modeling with individual-level target data and trained external models<a class="anchor" aria-label="anchor" href="#sec-BRIERi"></a>
 </h2>
-<p>External individual-level data are often inaccessible due to privacy regulations or institutional agreements. Instead, external information may only be available in the form of trained prediction models, typically represented by estimated regression coefficients <span class="math inline">\(\check{\beta}\)</span>. In this setting, <code>BRIER2</code> integrates external model information with individual-level target data through function <code><a href="../reference/BRIERi.html">BRIERi()</a></code>.</p>
+<p>External individual-level data are often inaccessible due to privacy regulations or institutional agreements. Instead, external information may only be available in the form of trained prediction models, typically represented by estimated regression coefficients <span class="math inline">\(\check{\beta}\)</span>. In this setting, <code>BRIER</code> integrates external model information with individual-level target data through function <code><a href="../reference/BRIERi.html">BRIERi()</a></code>.</p>
 <p>To use <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, users need to provide:</p>
 <ul>
 <li>an individual-level predictor design matrix <code>X</code> from both the target cohort;</li>
@@ -283,7 +283,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <h3 id="hyperparameters-tuning-1">4.3 Hyperparameters tuning<a class="anchor" aria-label="anchor" href="#hyperparameters-tuning-1"></a>
 </h3>
 <p>The  framework involves two classes of hyperparameters: the regularization parameter <span class="math inline">\(\lambda\)</span> and the integration weights <span class="math inline">\(\{\eta_m\}_{m=1}^M\)</span>. For the regularization parameter <span class="math inline">\(\lambda\)</span>, we adopt the classic regularization path strategy implemented in package  , and provide a data-driven sequence of <span class="math inline">\(\lambda\)</span> for each <span class="math inline">\(\eta\)</span> value.</p>
-<p>Tuning the integration weights <span class="math inline">\(\eta\)</span> is more challenging due to the heterogeneity between the target and external data sources. <code>BRIER2</code> provides two strategies for tuning <span class="math inline">\(\eta\)</span>: grid search and Bayesian optimization, implemented through the <code>rBayesianOptimization</code> package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in <a href="Appendix_BayesianOptimization.html">Appendix: Selection of integration weight using Bayesian Optimization</a>.</p>
+<p>Tuning the integration weights <span class="math inline">\(\eta\)</span> is more challenging due to the heterogeneity between the target and external data sources. <code>BRIER</code> provides two strategies for tuning <span class="math inline">\(\eta\)</span>: grid search and Bayesian optimization, implemented through the <code>rBayesianOptimization</code> package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in <a href="Appendix_BayesianOptimization.html">Appendix: Selection of integration weight using Bayesian Optimization</a>.</p>
 <p>For grid search, <code>BRIERi</code> provides three criterion to evaluate each candidate pair of hyperparameters <span class="math inline">\((\eta, \lambda)\)</span>: cross-validation, evaluation on an independent validation set, and information-based criteria. The function <code>BRIERi.cv</code> performs cross-validation on the training data, using the predicted deviance as evaluation criteria, with the specific deviance definition provided in <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.cv.html">BRIERi.cv</a></span><span class="op">(</span></span>
@@ -349,7 +349,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="va">summary</span><span class="op">$</span><span class="va">corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/p2cor.html">p2cor</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">pval</span>, <span class="va">summary</span><span class="op">$</span><span class="va">n</span>, sign <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">stats</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">XtX.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calLD.html">calLD</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">summary</span><span class="op">)</span></span>
 <span><span class="va">beta.external</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span></code></pre></div>
-<p>For genetic risk prediction using GWAS summary statistics, <code>BRIER2</code> also provides the helper function <code>PreprocessS()</code> for standard preprocessing in <code>BRIERs</code> modeling. Details are provided in <a href="Appendix_Appendix_Preprocess.html">Appendix: Data Processing of Genetic Risk Prediction using BRIERs</a>.</p>
+<p>For genetic risk prediction using GWAS summary statistics, <code>BRIER</code> also provides the helper function <code>PreprocessS()</code> for standard preprocessing in <code>BRIERs</code> modeling. Details are provided in <a href="Appendix_Appendix_Preprocess.html">Appendix: Data Processing of Genetic Risk Prediction using BRIERs</a>.</p>
 </div>
 <div class="section level3">
 <h3 id="fitting-briers">5.2 Fitting <code>BRIERs</code><a class="anchor" aria-label="anchor" href="#fitting-briers"></a>
@@ -368,7 +368,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <h3 id="hyperparameters-tuning-2">5.3 Hyperparameters tuning<a class="anchor" aria-label="anchor" href="#hyperparameters-tuning-2"></a>
 </h3>
 <p>The  framework involves two classes of hyperparameters: the regularization parameter <span class="math inline">\(\lambda\)</span> and the integration weights <span class="math inline">\(\{\eta_m\}_{m=1}^M\)</span>. For the regularization parameter <span class="math inline">\(\lambda\)</span>, we adopt the classic regularization path strategy implemented in package  , and provide a data-driven sequence of <span class="math inline">\(\lambda\)</span> for each <span class="math inline">\(\eta\)</span> value.</p>
-<p>Tuning the integration weights <span class="math inline">\(\eta\)</span> is more challenging due to the heterogeneity between the target and external data sources. <code>BRIER2</code> provides two strategies for tuning <span class="math inline">\(\eta\)</span>: grid search and Bayesian optimization, implemented through the <code>rBayesianOptimization</code> package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in <a href="Appendix_BayesianOptimization.html">Appendix: Selection of integration weight using Bayesian Optimization</a>.</p>
+<p>Tuning the integration weights <span class="math inline">\(\eta\)</span> is more challenging due to the heterogeneity between the target and external data sources. <code>BRIER</code> provides two strategies for tuning <span class="math inline">\(\eta\)</span>: grid search and Bayesian optimization, implemented through the <code>rBayesianOptimization</code> package. In this tutorial, we illustrate hyperparameter tuning using grid search. Additional details and examples for Bayesian optimization are provided in <a href="Appendix_BayesianOptimization.html">Appendix: Selection of integration weight using Bayesian Optimization</a>.</p>
 <p>For grid search, <code>BRIERs</code> provides two criterion to evaluate each candidate pair of hyperparameters <span class="math inline">\((\eta, \lambda)\)</span>: evaluation on an independent validation set, and information-based criteria.</p>
 <p>The function <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code> can select the optimal hyperparameters if an independent validation set is provided. We note that since <code><a href="../reference/BRIERs.html">BRIERs()</a></code> generate standardized coefficient, it is highly recommended to standardized predictors and outcome in the validation and testing data set before hyperparameter tuning. Below displays an example of using MSPE as evaluation metric for continuous outcome. Additional evaluation metrics for different outcomes are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
@@ -402,11 +402,11 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="section level2">
 <h2 id="sec-downstream">6. Downstream Analysis<a class="anchor" aria-label="anchor" href="#sec-downstream"></a>
 </h2>
-<p>We provide a suite of functions for evaluating the predictive performance of fitted <code>BRIER2</code> models. To accommodate complex outcomes from different distribution families, a comprehensive set of evaluation metrics is supported, including predictive deviance for general outcomes, AUC for binary outcomes, and C-index for survival outcomes. Additional details are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>. We illustrate the usage of this plotting functions using fitted BRIER models from summary statistics using <code><a href="../reference/BRIERs.html">BRIERs()</a></code></p>
+<p>We provide a suite of functions for evaluating the predictive performance of fitted <code>BRIER</code> models. To accommodate complex outcomes from different distribution families, a comprehensive set of evaluation metrics is supported, including predictive deviance for general outcomes, AUC for binary outcomes, and C-index for survival outcomes. Additional details are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>. We illustrate the usage of this plotting functions using fitted BRIER models from summary statistics using <code><a href="../reference/BRIERs.html">BRIERs()</a></code></p>
 <div class="section level3">
-<h3 id="sec-eval">6.1 Evaluation of <code>BRIER2</code> model<a class="anchor" aria-label="anchor" href="#sec-eval"></a>
+<h3 id="sec-eval">6.1 Evaluation of <code>BRIER</code> model<a class="anchor" aria-label="anchor" href="#sec-eval"></a>
 </h3>
-<p>We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate <code>BRIER2</code> performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
+<p>We introduce several functions for evaluating the predictive performance of fitted models. For complex outcome from different distribution family, we provide comprehensive evaluation metrics to evaluate <code>BRIER</code> performance, for example, predictive deviance, AUC (binary outcomes), and C-index (survival outcomes). Additional details are provided in the <a href="Appendix_Distr.html">Appendix: Distribution Family and Evaluation Metrics</a>.</p>
 <div class="section level4">
 <h4 id="visualizing-predictive-performance-as-a-function-of-integration-weight-eta">Visualizing predictive performance as a function of integration weight <span class="math inline">\(\eta\)</span><a class="anchor" aria-label="anchor" href="#visualizing-predictive-performance-as-a-function-of-integration-weight-eta"></a>
 </h4>
@@ -416,7 +416,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <p>In genetic applications such as polygenic risk score (PRS) evaluation, outcomes often need to be adjusted for environmental or clinical confounders prior to assessment. In these settings, users may pass a <code>data.frame</code> to the <code>covar.data</code> argument containing the testing-set phenotype together with relevant covariates, and specify the trait and confounder column names. The <code>standardize.data</code> option controls whether the phenotype is standardized after confounder adjustment. To further reduce variability in performance estimates introduced by sampling, <code>plot.eta</code> supports bootstrap resampling, which yields more stable estimates of predictive accuracy and a corresponding uncertainty band around the <span class="math inline">\(\eta\)</span>-curve.</p>
 <p>Taken together, the <span class="math inline">\(\eta\)</span>-curve clarifies how varying degrees of external information transfer affect predictive performance on the target population. It provides a visual summary of cross-cohort heterogeneity and helps practitioners gauge the appropriate degree of information borrowing for their application.</p>
 <p><strong>Integrating low heterogeneous external information</strong></p>
-<p>The example below illustrates the integration curves obtained when <code>BRIER2</code> incorporates external information with low heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance improves, as indicated by an increase in Pearson’s <span class="math inline">\(R^2\)</span> and a decrease in MSPE. Performance reaches an optimum at an intermediate value of <span class="math inline">\(\eta\)</span> and may decline slightly thereafter. This pattern indicates that integrating external information improves predictive accuracy and suggests that the relative heterogeneity between the target and external data is low.</p>
+<p>The example below illustrates the integration curves obtained when <code>BRIER</code> incorporates external information with low heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance improves, as indicated by an increase in Pearson’s <span class="math inline">\(R^2\)</span> and a decrease in MSPE. Performance reaches an optimum at an intermediate value of <span class="math inline">\(\eta\)</span> and may decline slightly thereafter. This pattern indicates that integrating external information improves predictive accuracy and suggests that the relative heterogeneity between the target and external data is low.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Extract training data</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">train</span><span class="op">$</span><span class="va">X</span> </span>
@@ -463,7 +463,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <p><img src="../reference/figures/line.eta.rsq_ext1_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_ext1_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:48%;"></p>
 </div>
 <p><strong>Integrating high heterogeneous external information</strong></p>
-<p>The example below illustrates the integration curves obtained when <code>BRIER2</code> incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s <span class="math inline">\(R^2\)</span> and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.</p>
+<p>The example below illustrates the integration curves obtained when <code>BRIER</code> incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s <span class="math inline">\(R^2\)</span> and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Extract training data</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">train</span><span class="op">$</span><span class="va">X</span> </span>
@@ -515,7 +515,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 </h4>
 <p>The <code><a href="../reference/plot.box.html">plot.box()</a></code> function provides a complementary perspective for evaluating <code>BRIER</code> models. It visualizes the distribution of predictive performance across bootstrap resamples using boxplots, thereby capturing variability introduced by sampling randomness. Below, we illustrate <code><a href="../reference/plot.box.html">plot.box()</a></code> under settings where the external information exhibits low and high heterogeneity relative to the target (target) data.</p>
 <p><strong>Integrating low heterogeneous external information</strong></p>
-<p>In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson <span class="math inline">\(R^2\)</span> and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the <code>BRIER2</code> model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.</p>
+<p>In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson <span class="math inline">\(R^2\)</span> and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the <code>BRIER</code> model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
@@ -575,7 +575,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <div class="section level3">
 <h3 id="sec-prs_strat">6.3 PRS stratification<a class="anchor" aria-label="anchor" href="#sec-prs_strat"></a>
 </h3>
-<p>The <code>plot.strat</code> function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated <code>BRIER2</code> model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.</p>
+<p>The <code>plot.strat</code> function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated <code>BRIER</code> model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">plot.strat</span><span class="op">(</span>  </span>
 <span>  <span class="va">fit</span>, </span>
@@ -585,7 +585,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div class="figure">
-<img src="../reference/figures/density_testing_stratification.png" style="width:50.0%" alt=""><p class="caption">Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER2 models</p>
+<img src="../reference/figures/density_testing_stratification.png" style="width:50.0%" alt=""><p class="caption">Density plot of testing-set outcome distributions stratified by prediction percentile for BRIER models</p>
 </div>
 </div>
 <div class="section level3">

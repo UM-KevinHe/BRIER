@@ -18,9 +18,9 @@ bibliography: references.bib
 
 # Distribution family {#sec-distr}
 
-`BRIER2` accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in the Table below. The model family is specified through the `family` argument in the model fitting functions `BRIERfull()`, `BRIERi()`, and `BRIERs()`, with `"gaussian"` as the default. For each family, `BRIER2` provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in [Section 2](#sec-eval) below.
+`BRIER` accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in the Table below. The model family is specified through the `family` argument in the model fitting functions `BRIERfull()`, `BRIERi()`, and `BRIERs()`, with `"gaussian"` as the default. For each family, `BRIER` provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in [Section 2](#sec-eval) below.
 
-Table: Distribution families implemented in `BRIER2` and the corresponding model specification. Here $\mu_i = E(y_i \mid \mathbf{x}_i)$ denotes the conditional mean of the outcome.
+Table: Distribution families implemented in `BRIER` and the corresponding model specification. Here $\mu_i = E(y_i \mid \mathbf{x}_i)$ denotes the conditional mean of the outcome.
 
 | **Outcome Type** | **Family** | **`family` Argument** | **Model specification** |
 |:--|:--|:--|:--|
@@ -33,11 +33,11 @@ Table: Distribution families implemented in `BRIER2` and the corresponding model
 
 # Evaluation metrics {#sec-eval}
 
-`BRIER2` provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in the Table below. Each metric is selected through the `criteria` argument in the relevant evaluation and tuning functions (e.g., `BRIERi.selection()`, `BRIERs.selection()`, `plot.eta()`, `plot.box()`).
+`BRIER` provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in the Table below. Each metric is selected through the `criteria` argument in the relevant evaluation and tuning functions (e.g., `BRIERi.selection()`, `BRIERs.selection()`, `plot.eta()`, `plot.box()`).
 
 For continuous outcomes, mean squared prediction error (MSPE) and Pearson $R^2$ summarize the absolute and relative agreement between observed and predicted values, respectively. For binary outcomes, predictive deviance reflects calibration, while Tjur's $R^2$ — defined as the difference in mean predicted probability between cases and controls — and the area under the ROC curve (AUC) measure discrimination. For count outcomes, predictive deviance is computed under the Poisson or negative-binomial likelihood. For survival outcomes, predictive deviance is based on the Cox partial likelihood, and Harrell's concordance index (C-index) summarizes the model's ability to correctly rank pairs of subjects by event time.
 
-Table: Evaluation metrics for outcome families implemented in `BRIER2`. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.
+Table: Evaluation metrics for outcome families implemented in `BRIER`. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.
 
 | **Family** | **Metric** | **`criteria` Argument** | **Formula** | **Optimum** |
 |:--|:--|:--|:--|:--|

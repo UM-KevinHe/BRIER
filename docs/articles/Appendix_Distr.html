@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Distribution Family and Evaluation Metrics • BRIER2</title>
+<title>Distribution Family and Evaluation Metrics • BRIER</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -27,7 +27,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BRIER2</a>
+    <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
@@ -39,7 +39,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
-<li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/BRIER.html">Get started</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
@@ -55,7 +55,7 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER2" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -80,9 +80,9 @@
 <div class="section level2">
 <h2 id="sec-distr">Distribution family<a class="anchor" aria-label="anchor" href="#sec-distr"></a>
 </h2>
-<p><code>BRIER2</code> accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in the Table below. The model family is specified through the <code>family</code> argument in the model fitting functions <code><a href="../reference/BRIERfull.html">BRIERfull()</a></code>, <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, and <code><a href="../reference/BRIERs.html">BRIERs()</a></code>, with <code>"gaussian"</code> as the default. For each family, <code>BRIER2</code> provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in <a href="#sec-eval">Section 2</a> below.</p>
+<p><code>BRIER</code> accommodates a wide range of complex traits by supporting five outcome distribution families, covering continuous, binary (case-control), count, and time-to-event outcomes. The available families and their corresponding link functions are summarized in the Table below. The model family is specified through the <code>family</code> argument in the model fitting functions <code><a href="../reference/BRIERfull.html">BRIERfull()</a></code>, <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, and <code><a href="../reference/BRIERs.html">BRIERs()</a></code>, with <code>"gaussian"</code> as the default. For each family, <code>BRIER</code> provides a tailored set of evaluation metrics for assessing predictive performance on validation or testing data, described in <a href="#sec-eval">Section 2</a> below.</p>
 <table class="table">
-<caption>Distribution families implemented in <code>BRIER2</code> and the corresponding model specification. Here <span class="math inline">\(\mu_i = E(y_i \mid \mathbf{x}_i)\)</span> denotes the conditional mean of the outcome.</caption>
+<caption>Distribution families implemented in <code>BRIER</code> and the corresponding model specification. Here <span class="math inline">\(\mu_i = E(y_i \mid \mathbf{x}_i)\)</span> denotes the conditional mean of the outcome.</caption>
 <colgroup>
 <col width="25%">
 <col width="25%">
@@ -132,10 +132,10 @@
 <div class="section level2">
 <h2 id="sec-eval">Evaluation metrics<a class="anchor" aria-label="anchor" href="#sec-eval"></a>
 </h2>
-<p><code>BRIER2</code> provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in the Table below. Each metric is selected through the <code>criteria</code> argument in the relevant evaluation and tuning functions (e.g., <code><a href="../reference/BRIERi.selection.html">BRIERi.selection()</a></code>, <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code>, <code><a href="../reference/plot.eta.html">plot.eta()</a></code>, <code><a href="../reference/plot.box.html">plot.box()</a></code>).</p>
+<p><code>BRIER</code> provides a comprehensive suite of evaluation metrics for assessing predictive performance on independent validation or testing datasets. The available metrics are family-specific and are summarized in the Table below. Each metric is selected through the <code>criteria</code> argument in the relevant evaluation and tuning functions (e.g., <code><a href="../reference/BRIERi.selection.html">BRIERi.selection()</a></code>, <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code>, <code><a href="../reference/plot.eta.html">plot.eta()</a></code>, <code><a href="../reference/plot.box.html">plot.box()</a></code>).</p>
 <p>For continuous outcomes, mean squared prediction error (MSPE) and Pearson <span class="math inline">\(R^2\)</span> summarize the absolute and relative agreement between observed and predicted values, respectively. For binary outcomes, predictive deviance reflects calibration, while Tjur’s <span class="math inline">\(R^2\)</span> — defined as the difference in mean predicted probability between cases and controls — and the area under the ROC curve (AUC) measure discrimination. For count outcomes, predictive deviance is computed under the Poisson or negative-binomial likelihood. For survival outcomes, predictive deviance is based on the Cox partial likelihood, and Harrell’s concordance index (C-index) summarizes the model’s ability to correctly rank pairs of subjects by event time.</p>
 <table class="table">
-<caption>Evaluation metrics for outcome families implemented in <code>BRIER2</code>. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.</caption>
+<caption>Evaluation metrics for outcome families implemented in <code>BRIER</code>. Abbreviations: MSPE, mean squared prediction error; PD, predictive deviance; AUC, area under the ROC curve.</caption>
 <colgroup>
 <col width="20%">
 <col width="20%">

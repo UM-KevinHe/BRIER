@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // LD_blocks
 arma::ivec LD_blocks(const arma::vec& chr, const arma::vec& pos, const arma::mat& LDB);
-RcppExport SEXP _BRIER2_LD_blocks(SEXP chrSEXP, SEXP posSEXP, SEXP LDBSEXP) {
+RcppExport SEXP _BRIER_LD_blocks(SEXP chrSEXP, SEXP posSEXP, SEXP LDBSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,7 +26,7 @@ END_RCPP
 }
 // LD_sigma
 arma::sp_mat LD_sigma(const arma::mat& X, const arma::uvec& blk, double tau);
-RcppExport SEXP _BRIER2_LD_sigma(SEXP XSEXP, SEXP blkSEXP, SEXP tauSEXP) {
+RcppExport SEXP _BRIER_LD_sigma(SEXP XSEXP, SEXP blkSEXP, SEXP tauSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,7 @@ END_RCPP
 }
 // cd_wgaussian_fit_ssr
 List cd_wgaussian_fit_ssr(const arma::mat& X, const arma::vec& y, const arma::vec& wt, const arma::vec& multiplier, const std::string& penalty, const arma::vec& lam, double alpha, double gamma, double lam_max, int max_iter, double eps, int dfmax);
-RcppExport SEXP _BRIER2_cd_wgaussian_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP epsSEXP, SEXP dfmaxSEXP) {
+RcppExport SEXP _BRIER_cd_wgaussian_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP epsSEXP, SEXP dfmaxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -61,7 +61,7 @@ END_RCPP
 }
 // cd_glm_fit_ssr
 Rcpp::List cd_glm_fit_ssr(const arma::mat& X, const arma::vec& y, std::string family, const arma::vec& multiplier, std::string penalty, const arma::vec& lambda, double alpha, double gamma, double lam_max, int max_iter, int dfmax, double eps, bool user, bool warn);
-RcppExport SEXP _BRIER2_cd_glm_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP familySEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP epsSEXP, SEXP userSEXP, SEXP warnSEXP) {
+RcppExport SEXP _BRIER_cd_glm_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP familySEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP epsSEXP, SEXP userSEXP, SEXP warnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -85,7 +85,7 @@ END_RCPP
 }
 // cd_wglm_fit_ssr
 Rcpp::List cd_wglm_fit_ssr(const arma::mat& X, const arma::vec& y, const arma::vec& wt, std::string family, const arma::vec& multiplier, std::string penalty, const arma::vec& lambda, double alpha, double gamma, double lam_max, int max_iter, int dfmax, double eps, bool user, bool warn);
-RcppExport SEXP _BRIER2_cd_wglm_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP familySEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP epsSEXP, SEXP userSEXP, SEXP warnSEXP) {
+RcppExport SEXP _BRIER_cd_wglm_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP familySEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP epsSEXP, SEXP userSEXP, SEXP warnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -110,7 +110,7 @@ END_RCPP
 }
 // cd_summary_fit
 List cd_summary_fit(const arma::vec& XtY, const arma::sp_mat& ld_mat, const arma::vec& multiplier, const std::string& penalty, const arma::vec& lam, double alpha, double gamma, double eps, int max_iter, int dfmax, bool user);
-RcppExport SEXP _BRIER2_cd_summary_fit(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP userSEXP) {
+RcppExport SEXP _BRIER_cd_summary_fit(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP userSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -131,7 +131,7 @@ END_RCPP
 }
 // maxprod
 double maxprod(const arma::mat& X, const arma::vec& r, int n, int p, const arma::vec& m);
-RcppExport SEXP _BRIER2_maxprod(SEXP XSEXP, SEXP rSEXP, SEXP nSEXP, SEXP pSEXP, SEXP mSEXP) {
+RcppExport SEXP _BRIER_maxprod(SEXP XSEXP, SEXP rSEXP, SEXP nSEXP, SEXP pSEXP, SEXP mSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -146,7 +146,7 @@ END_RCPP
 }
 // maxlambda_summary
 double maxlambda_summary(const arma::vec& XtY, const arma::sp_mat& ld_mat, const arma::vec& m, double alpha, double eps, int max_iter);
-RcppExport SEXP _BRIER2_maxlambda_summary(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP mSEXP, SEXP alphaSEXP, SEXP epsSEXP, SEXP max_iterSEXP) {
+RcppExport SEXP _BRIER_maxlambda_summary(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP mSEXP, SEXP alphaSEXP, SEXP epsSEXP, SEXP max_iterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -162,7 +162,7 @@ END_RCPP
 }
 // pseudo_validation
 arma::vec pseudo_validation(const arma::mat& beta, const arma::sp_mat& XtX, const arma::vec& r);
-RcppExport SEXP _BRIER2_pseudo_validation(SEXP betaSEXP, SEXP XtXSEXP, SEXP rSEXP) {
+RcppExport SEXP _BRIER_pseudo_validation(SEXP betaSEXP, SEXP XtXSEXP, SEXP rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -175,7 +175,7 @@ END_RCPP
 }
 // standardize_X
 List standardize_X(const NumericMatrix& Xr);
-RcppExport SEXP _BRIER2_standardize_X(SEXP XrSEXP) {
+RcppExport SEXP _BRIER_standardize_X(SEXP XrSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -186,7 +186,7 @@ END_RCPP
 }
 // wstandardize_X
 List wstandardize_X(const arma::mat& X, const arma::vec& wt);
-RcppExport SEXP _BRIER2_wstandardize_X(SEXP XSEXP, SEXP wtSEXP) {
+RcppExport SEXP _BRIER_wstandardize_X(SEXP XSEXP, SEXP wtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -198,7 +198,7 @@ END_RCPP
 }
 // unstand_beta
 arma::mat unstand_beta(arma::mat& b0, arma::mat& b, arma::vec& scale, arma::vec& center, double yy_center, int L, int p);
-RcppExport SEXP _BRIER2_unstand_beta(SEXP b0SEXP, SEXP bSEXP, SEXP scaleSEXP, SEXP centerSEXP, SEXP yy_centerSEXP, SEXP LSEXP, SEXP pSEXP) {
+RcppExport SEXP _BRIER_unstand_beta(SEXP b0SEXP, SEXP bSEXP, SEXP scaleSEXP, SEXP centerSEXP, SEXP yy_centerSEXP, SEXP LSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -215,22 +215,22 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BRIER2_LD_blocks", (DL_FUNC) &_BRIER2_LD_blocks, 3},
-    {"_BRIER2_LD_sigma", (DL_FUNC) &_BRIER2_LD_sigma, 3},
-    {"_BRIER2_cd_wgaussian_fit_ssr", (DL_FUNC) &_BRIER2_cd_wgaussian_fit_ssr, 12},
-    {"_BRIER2_cd_glm_fit_ssr", (DL_FUNC) &_BRIER2_cd_glm_fit_ssr, 14},
-    {"_BRIER2_cd_wglm_fit_ssr", (DL_FUNC) &_BRIER2_cd_wglm_fit_ssr, 15},
-    {"_BRIER2_cd_summary_fit", (DL_FUNC) &_BRIER2_cd_summary_fit, 11},
-    {"_BRIER2_maxprod", (DL_FUNC) &_BRIER2_maxprod, 5},
-    {"_BRIER2_maxlambda_summary", (DL_FUNC) &_BRIER2_maxlambda_summary, 6},
-    {"_BRIER2_pseudo_validation", (DL_FUNC) &_BRIER2_pseudo_validation, 3},
-    {"_BRIER2_standardize_X", (DL_FUNC) &_BRIER2_standardize_X, 1},
-    {"_BRIER2_wstandardize_X", (DL_FUNC) &_BRIER2_wstandardize_X, 2},
-    {"_BRIER2_unstand_beta", (DL_FUNC) &_BRIER2_unstand_beta, 7},
+    {"_BRIER_LD_blocks", (DL_FUNC) &_BRIER_LD_blocks, 3},
+    {"_BRIER_LD_sigma", (DL_FUNC) &_BRIER_LD_sigma, 3},
+    {"_BRIER_cd_wgaussian_fit_ssr", (DL_FUNC) &_BRIER_cd_wgaussian_fit_ssr, 12},
+    {"_BRIER_cd_glm_fit_ssr", (DL_FUNC) &_BRIER_cd_glm_fit_ssr, 14},
+    {"_BRIER_cd_wglm_fit_ssr", (DL_FUNC) &_BRIER_cd_wglm_fit_ssr, 15},
+    {"_BRIER_cd_summary_fit", (DL_FUNC) &_BRIER_cd_summary_fit, 11},
+    {"_BRIER_maxprod", (DL_FUNC) &_BRIER_maxprod, 5},
+    {"_BRIER_maxlambda_summary", (DL_FUNC) &_BRIER_maxlambda_summary, 6},
+    {"_BRIER_pseudo_validation", (DL_FUNC) &_BRIER_pseudo_validation, 3},
+    {"_BRIER_standardize_X", (DL_FUNC) &_BRIER_standardize_X, 1},
+    {"_BRIER_wstandardize_X", (DL_FUNC) &_BRIER_wstandardize_X, 2},
+    {"_BRIER_unstand_beta", (DL_FUNC) &_BRIER_unstand_beta, 7},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_BRIER2(DllInfo *dll) {
+RcppExport void R_init_BRIER(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Recovering Summary-level Input from GWAS Results • BRIER2</title>
+<title>Recovering Summary-level Input from GWAS Results • BRIER</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -27,7 +27,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BRIER2</a>
+    <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
@@ -39,7 +39,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
-<li class="nav-item"><a class="nav-link" href="../articles/BRIER2.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/BRIER.html">Get started</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
@@ -55,7 +55,7 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER2" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/zrayw/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -94,7 +94,7 @@
 <div class="section level2">
 <h2 id="construction-of-the-ld-matrix">Construction of the LD matrix<a class="anchor" aria-label="anchor" href="#construction-of-the-ld-matrix"></a>
 </h2>
-<p>An estimate of the LD correlation matrix <span class="math inline">\(\widetilde{\mathbf{\Sigma}}\)</span> is required for model fitting in <code>BRIER.S</code>. Direct estimation of the full <span class="math inline">\(p \times p\)</span> LD matrix from individual-level data is often infeasible due to computational and storage constraints. Instead, <code>BRIER2</code> supports several practical and scalable strategies.</p>
+<p>An estimate of the LD correlation matrix <span class="math inline">\(\widetilde{\mathbf{\Sigma}}\)</span> is required for model fitting in <code>BRIER.S</code>. Direct estimation of the full <span class="math inline">\(p \times p\)</span> LD matrix from individual-level data is often infeasible due to computational and storage constraints. Instead, <code>BRIER</code> supports several practical and scalable strategies.</p>
 <div class="section level3">
 <h3 id="estimation-of-ld-using-a-reference-panel">Estimation of LD using a reference panel<a class="anchor" aria-label="anchor" href="#estimation-of-ld-using-a-reference-panel"></a>
 </h3>
@@ -102,13 +102,13 @@
 <p><span class="math display">\[
 \widetilde{\mathbf{\Sigma}} = \frac{1}{n_r} \mathbf{G}^\top \mathbf{G}.
 \]</span></p>
-<p>To reduce both computational and storage burden in high-dimensional settings, <code>BRIER2</code> adopts a block-wise LD approximation based on approximately independent LD blocks defined in <span class="citation">(<span class="citeproc-not-found" data-reference-id="berisa2016_ld"><strong>???</strong></span>)</span>. Under this strategy, the genome is partitioned into contiguous LD blocks, and LD is computed and stored separately within each block. Correlations between SNPs belonging to different blocks are set to zero, yielding a sparse block-diagonal approximation of <span class="math inline">\(\widetilde{\mathbf{\Sigma}}\)</span>. This approximation substantially improves scalability while preserving the essential local LD structure required for accurate polygenic modeling.</p>
-<p><code>BRIER2</code> supports LD estimation from user-provided genotype data in PLINK binary format (<code>.bed</code>, <code>.bim</code>, <code>.fam</code>). In addition, imputed genotype data are directly supported through the <code>calculate.LD</code> module, which accepts <code>BGEN</code> files and constructs LD matrices using dosage values. The resulting LD matrices are stored in sparse format to further improve computational efficiency. When using user-specified reference data, users are responsible for ensuring appropriate quality control and consistency between the reference panel and the GWAS summary statistics, including genome build, allele alignment, and SNP filtering.</p>
+<p>To reduce both computational and storage burden in high-dimensional settings, <code>BRIER</code> adopts a block-wise LD approximation based on approximately independent LD blocks defined in <span class="citation">(<span class="citeproc-not-found" data-reference-id="berisa2016_ld"><strong>???</strong></span>)</span>. Under this strategy, the genome is partitioned into contiguous LD blocks, and LD is computed and stored separately within each block. Correlations between SNPs belonging to different blocks are set to zero, yielding a sparse block-diagonal approximation of <span class="math inline">\(\widetilde{\mathbf{\Sigma}}\)</span>. This approximation substantially improves scalability while preserving the essential local LD structure required for accurate polygenic modeling.</p>
+<p><code>BRIER</code> supports LD estimation from user-provided genotype data in PLINK binary format (<code>.bed</code>, <code>.bim</code>, <code>.fam</code>). In addition, imputed genotype data are directly supported through the <code>calculate.LD</code> module, which accepts <code>BGEN</code> files and constructs LD matrices using dosage values. The resulting LD matrices are stored in sparse format to further improve computational efficiency. When using user-specified reference data, users are responsible for ensuring appropriate quality control and consistency between the reference panel and the GWAS summary statistics, including genome build, allele alignment, and SNP filtering.</p>
 </div>
 <div class="section level3">
 <h3 id="precomputed-ld-references">Precomputed LD references<a class="anchor" aria-label="anchor" href="#precomputed-ld-references"></a>
 </h3>
-<p>The <code>BRIER2</code> package distributes precomputed block-structured LD reference panels for major continental ancestries (EUR, AFR, EAS, SAS, WAS, AMR), derived from preprocessed 1000 Genomes Project cohorts. Preprocessing includes restricting to HapMap3 SNPs, filtering SNPs with minor allele frequency (MAF) greater than 0.05, and removing variants with missing rates above 0.01, resulting in 471,965 SNPs. Both standardized and unstandardized LD matrices are provided for <code>hg19</code> and <code>hg38</code> genome builds.</p>
+<p>The <code>BRIER</code> package distributes precomputed block-structured LD reference panels for major continental ancestries (EUR, AFR, EAS, SAS, WAS, AMR), derived from preprocessed 1000 Genomes Project cohorts. Preprocessing includes restricting to HapMap3 SNPs, filtering SNPs with minor allele frequency (MAF) greater than 0.05, and removing variants with missing rates above 0.01, resulting in 471,965 SNPs. Both standardized and unstandardized LD matrices are provided for <code>hg19</code> and <code>hg38</code> genome builds.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
