@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
 <li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
-    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Preprocessing When Modeling with Genotypes</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
@@ -224,21 +224,21 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="va">df</span><span class="op">$</span><span class="va">eta_1_lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">eta_1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">df</span><span class="op">$</span><span class="va">eta_2_lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">eta_2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">best</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">metric</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">eta_1_lab</span>, y <span class="op">=</span> <span class="va">eta_2_lab</span>, fill <span class="op">=</span> <span class="va">metric</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_tile</span><span class="op">(</span>color <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_point</span><span class="op">(</span></span>
-<span>    data <span class="op">=</span> <span class="va">best</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">eta_1_lab</span>, y <span class="op">=</span> <span class="va">eta_2_lab</span><span class="op">)</span>,</span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">eta_1_lab</span>, y <span class="op">=</span> <span class="va">eta_2_lab</span>, fill <span class="op">=</span> <span class="va">metric</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span></span>
+<span>    data <span class="op">=</span> <span class="va">best</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">eta_1_lab</span>, y <span class="op">=</span> <span class="va">eta_2_lab</span><span class="op">)</span>,</span>
 <span>    shape <span class="op">=</span> <span class="fl">17</span>, size <span class="op">=</span> <span class="fl">5</span>, color <span class="op">=</span> <span class="st">"black"</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">scale_fill_gradient</span><span class="op">(</span>low <span class="op">=</span> <span class="st">"#31a354"</span>, high <span class="op">=</span> <span class="st">"#f7fcb9"</span>, name <span class="op">=</span> <span class="st">"MSPE"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_classic</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span>, base_family <span class="op">=</span> <span class="st">"serif"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme</span><span class="op">(</span></span>
-<span>    panel.grid <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"#31a354"</span>, high <span class="op">=</span> <span class="st">"#f7fcb9"</span>, name <span class="op">=</span> <span class="st">"MSPE"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span>, base_family <span class="op">=</span> <span class="st">"serif"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>    panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/heatmap.eta_ext1.2_BRIERfull_gaussian.mspe.png" alt="Heatmap of mean squared prediction error on the validation set as a joint function of (eta_1,eta_2)" style="width:48%;"></p>
+<p><img src="../reference/figures/heatmap.eta_ext1.2_BRIERfull_gaussian.mspe.png" alt="Heatmap of mean squared prediction error on the validation set as a joint function of (eta_1,eta_2)" style="width:49%;"></p>
 </div>
 </div>
 </div>
@@ -315,7 +315,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta_ext1_BRIERi_gaussian.mspe.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta_ext1_BRIERi_BIC.png" alt="Bayesian information riterion as a function of eta" style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta_ext1_BRIERi_gaussian.mspe.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:49%;"><img src="../reference/figures/line.eta_ext1_BRIERi_BIC.png" alt="Bayesian information riterion as a function of eta" style="width:49%;"></p>
 </div>
 </div>
 </div>
@@ -349,7 +349,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="va">summary</span><span class="op">$</span><span class="va">corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/p2cor.html">p2cor</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">pval</span>, <span class="va">summary</span><span class="op">$</span><span class="va">n</span>, sign <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">stats</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">XtX.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calLD.html">calLD</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">summary</span><span class="op">)</span></span>
 <span><span class="va">beta.external</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span></code></pre></div>
-<p>For genetic risk prediction using GWAS summary statistics, <code>BRIER</code> also provides the helper function <code>PreprocessS()</code> for standard preprocessing in <code>BRIERs</code> modeling. Details are provided in <a href="Appendix_Appendix_Preprocess.html">Appendix: Data Processing of Genetic Risk Prediction using BRIERs</a>.</p>
+<p>For genetic risk prediction using GWAS summary statistics, <code>BRIER</code> also provides the helper function <code>PreprocessS()</code> for standard preprocessing in <code>BRIERs</code> modeling. Details are provided in <a href="Appendix_Preprocess.html">Appendix: Data Preprocessing When Modeling with Genotypes</a>.</p>
 </div>
 <div class="section level3">
 <h3 id="fitting-briers">5.2 Fitting <code>BRIERs</code><a class="anchor" aria-label="anchor" href="#fitting-briers"></a>
@@ -395,7 +395,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta_ext1_BRIERs_gaussian.mspe.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta_ext1_BRIERs_GIC.png" alt="Generalized information criterion as a function of eta" style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta_ext1_BRIERs_gaussian.mspe.png" alt="Mean squared prediction error on the validation set as a function of eta" style="width:49%;"><img src="../reference/figures/line.eta_ext1_BRIERs_GIC.png" alt="Generalized information criterion as a function of eta" style="width:49%;"></p>
 </div>
 </div>
 </div>
@@ -460,7 +460,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.rsq_ext1_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_ext1_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta.rsq_ext1_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:49%;"><img src="../reference/figures/line.eta.mspe_ext1_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:49%;"></p>
 </div>
 <p><strong>Integrating high heterogeneous external information</strong></p>
 <p>The example below illustrates the integration curves obtained when <code>BRIER</code> incorporates external information with high heterogeneity relative to the target data. Model performance is evaluated using two metrics: Pearson’s <span class="math inline">\(R^2\)</span> (left panel) and mean squared prediction error (MSPE; right panel). As the integration weight <span class="math inline">\(\eta\)</span> increases and more external information is transferred to the target model, predictive performance deteriorates, as indicated by an decrease in Pearson’s <span class="math inline">\(R^2\)</span> and a increase in MSPE. This pattern indicates that integrating external information does not improve predictive accuracy and suggests that the relative heterogeneity between the target and external data is high.</p>
@@ -507,7 +507,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/line.eta.rsq_ext3_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:48%;"><img src="../reference/figures/line.eta.mspe_ext3_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:48%;"></p>
+<p><img src="../reference/figures/line.eta.rsq_ext3_BRIERs_test.png" alt="Pearson R-squared on the testing set as a function of eta" style="width:49%;"><img src="../reference/figures/line.eta.mspe_ext3_BRIERs_test.png" alt="Mean squared prediction error on the testing set as a function of eta " style="width:49%;"></p>
 </div>
 </div>
 <div class="section level4">
@@ -532,7 +532,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/boxplot.rsq_ext1_BRIERs_test.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:48%;"><img src="../reference/figures/boxplot.mspe_ext1_BRIERs_test.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:48%;"></p>
+<p><img src="../reference/figures/boxplot.rsq_ext1_BRIERs_test.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:49%;"><img src="../reference/figures/boxplot.mspe_ext1_BRIERs_test.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:49%;"></p>
 </div>
 <p><strong>Integrating high heterogeneous external information</strong></p>
 <p>In contrast, the example below illustrates a setting where the external model performs poorly relative to the target-only model (lower Pearson <span class="math inline">\(R^2\)</span> and higher MSPE), indicating substantial heterogeneity between the target and external data. As the integration weight increases, incorporating external information does not improve (and may even degrade) predictive performance. This pattern suggests that the external source is not well matched to the target population and may be excluded from joint integration.</p>
@@ -552,7 +552,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span>  <span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <div style="display: flex; justify-content: space-between;">
-<p><img src="../reference/figures/boxplot.rsq_ext3_BRIERs_test.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:48%;"><img src="../reference/figures/boxplot.mspe_ext3_BRIERs_test.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:48%;"></p>
+<p><img src="../reference/figures/boxplot.rsq_ext3_BRIERs_test.png" alt="Boxplots of Pearson R-squared on the testing set" style="width:49%;"><img src="../reference/figures/boxplot.mspe_ext3_BRIERs_test.png" alt="Boxplots of mean squared prediction error on the testing set" style="width:49%;"></p>
 </div>
 </div>
 </div>

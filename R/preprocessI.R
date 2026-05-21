@@ -1,61 +1,81 @@
-#' Preprocess inputs for BRIERi (genotype as predictors)
+#' Preprocess inputs for BRIERi genotype-based modeling
 #'
-#' Aligns external model coefficients to the SNP order of a target
-#' individual-level genotype matrix for use with \code{\link{BRIERi}}.
-#' \code{target.info} describes the columns of the target X matrix (in
-#' order) and defines the canonical allele orientation: external
-#' coefficients are matched by chromosome and position, then sign-flipped
-#' where their alleles are swapped relative to \code{target.info}.
+#' `preprocessI()` prepares SNP-level input information for `BRIERi()` when
+#' individual-level genotype data are available in the target cohort and one or
+#' more external models are available as SNP-level coefficients. The function
+#' performs genotype annotation quality control, harmonizes SNP representation
+#' across data sources, and aligns external model coefficients to the SNP order
+#' and allele orientation of the target genotype matrix.
 #'
-#' \code{BRIERi} estimates an intercept internally from the target data,
-#' so external model intercepts are not required as input. The
-#' \code{beta.external} matrix passed to \code{BRIERi} must include an
-#' intercept slot as the first row (typically zero, since no external
-#' intercept is being imposed); see the example below.
+#' The argument `target.info` should be a data.frame describing the SNPs in the
+#' target genotype matrix, with rows ordered to match the columns of the target
+#' predictor matrix. The optional argument `external.ss` should be a data.frame
+#' containing SNP annotation columns and one or more external coefficient
+#' columns, specified through `external.coef.cols`.
 #'
-#' Inputs are validated for missing values: if \code{NA} is detected in
-#' any of the required columns of \code{target.info} or \code{external.ss}
-#' (chr, bp, ref, alt, or coefficient columns), the function stops with
-#' an error. Clean the inputs before calling.
+#' First, `preprocessI()` performs quality control and harmonization separately
+#' for the target SNP information and the external coefficient file. SNP
+#' annotation columns are standardized to `CHR`, `BP`, `REF`, and `ALT`, where
+#' `CHR` is chromosome, `BP` is base-pair position, `REF` is the reference
+#' allele, and `ALT` is the alternative/effect allele. Chromosome labels are
+#' normalized by removing `"chr"` prefixes, converting PLINK chromosome codes
+#' `23`, `24`, `25`, and `26` to `X`, `Y`, `XY`, and `MT`, and converting `M` to `MT`.
+#' SNPs with unrecognized chromosome labels are removed with a warning. The
+#' function also removes sites with duplicated CHR:BP entries 
+#' (treated as multi-allelic or input duplicates), and optionally removes 
+#' strand-ambiguous SNPs, including A/T and C/G allele pairs, when 
+#' `drop.ambiguous = TRUE`.
 #'
-#' Chromosome coding is normalized internally: \code{"chr"} prefix is
-#' stripped, PLINK numeric codes (23/24/26) mapped to \code{"X"/"Y"/"MT"},
-#' and \code{"M"} normalized to \code{"MT"}. SNPs with unrecognized CHR
-#' values (anything not in \code{"1"}\eqn{-}\code{"22"}, \code{"X"},
-#' \code{"Y"}, \code{"MT"}, \code{"XY"}) are dropped with a warning.
-#' \code{varnames} in the output uses the canonical form.
+#' After quality control, the target cohort is used as the canonical reference
+#' for SNP order and allele orientation. SNP identifiers in the processed output
+#' are written as `CHR:BP:REF:ALT`, using the target-cohort allele orientation.
+#' External SNPs are matched to target SNPs by `CHR:BP`. If the external alleles
+#' match the target orientation, the external coefficient is retained unchanged.
+#' If the external `REF` and `ALT` alleles are reversed relative to the target,
+#' the external coefficient sign is flipped. If the alleles conflict, the
+#' corresponding external coefficient is set to zero. SNPs present in the target
+#' cohort but absent from an external model are retained and assigned an
+#' external coefficient of zero, whereas SNPs present only in the external model
+#' are not retained because the output is aligned to the target genotype matrix.
 #'
-#' External models whose coefficient column is entirely zero after
-#' alignment (no overlap with \code{target.info}) are dropped from the
-#' output. If \emph{all} supplied external models are dropped, the
-#' function emits a warning and returns \code{external.ss = NULL}.
+#' External models whose aligned coefficient columns are entirely zero are
+#' removed from the output. If all supplied external models are removed after
+#' alignment, the function returns `external.ss = NULL` with a warning.
+#' 
+#' The function errors out if any required annotation or coefficient column
+#' contains missing values.
+#' 
+#' The returned `target.info.keep` element gives the indices of SNPs retained
+#' from the original target SNP information and should be used to subset the
+#' columns of the target genotype matrix before calling `BRIERi()`. The returned
+#' `external.ss` element contains external coefficients aligned to the retained
+#' target SNP order and allele orientation.
 #'
-#' Multi-allelic variants (duplicate \code{CHR:BP} entries) are dropped
-#' with a warning from every input independently. Strand-ambiguous SNPs
-#' (alleles A/T or C/G) are dropped by default; set
-#' \code{drop.ambiguous = FALSE} to keep them when strand is reliably
-#' matched across studies.
-#'
-#' All three relevant data.frames (\code{target.info}, \code{external.ss})
-#' share a \code{varnames} column of the form \code{"CHR:BP:REF:ALT"} (in
-#' the target.info orientation) as the first column.
+#' `BRIERi()` expects the external coefficient matrix to include an intercept
+#' slot as the first row. If an external-model intercept is unavailable or is not
+#' used, this intercept slot should be set to zero. The intercept row is required
+#' for `BRIERi()` but is not needed for `BRIERs()`.
 #'
 #' @param target.info A data.frame describing the columns of the target
-#'   genotype matrix in order. Must contain chromosome, basepair, REF, ALT.
+#'   genotype matrix in order. Must contain chromosome, base-pair position, REF, ALT.
 #' @param external.ss Optional data.frame of external model coefficients.
-#'   Must contain chromosome, basepair, REF, ALT, plus one or more
+#'   Must contain chromosome, base-pair position, REF, ALT, plus one or more
 #'   coefficient columns.
-#' @param target.info.cols Named character vector mapping \code{chr},
-#'   \code{bp}, \code{ref}, \code{alt} to column names in
-#'   \code{target.info}.
-#' @param external.ss.cols Named character vector mapping \code{chr},
-#'   \code{bp}, \code{ref}, \code{alt} to column names in
-#'   \code{external.ss}.
+#' @param target.info.cols Named character vector mapping the canonical keys
+#'   \code{chr}, \code{bp}, \code{ref}, \code{alt} to column names in
+#'   \code{target.info}. Defaults to
+#'   \code{c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT")}; override
+#'   any key whose column name differs in your input.
+#' @param external.ss.cols Named character vector mapping canonical keys
+#'   (\code{chr}, \code{bp}, \code{ref}, \code{alt}) to the column names in
+#'   \code{external.ss}. Defaults to
+#'   \code{c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT")}; 
+#'   override any key whose column name differs in your input.
 #' @param external.coef.cols Character vector of column names in
 #'   \code{external.ss} that hold model coefficients. Required when
 #'   \code{external.ss} is supplied.
 #' @param drop.ambiguous Logical. If TRUE (default), drops strand-ambiguous
-#'   SNPs (A/T, T/A, C/G, G/C alleles) from every input before matching.
+#'   SNPs (A/T and C/G allele pairs) from every input before matching.
 #' @param verbose Logical. If TRUE (default), prints SNP counts at each
 #'   filter step.
 #'
@@ -87,8 +107,8 @@
 #'     \code{n.external.conflict}, \code{n.external.zero}.}
 #' }
 #'
-#' @seealso \code{\link{BRIERi}}, \code{\link{preprocessS}},
-#'   \code{\link{mergeExternals}}
+#' @seealso \code{\link{BRIERi}}, \code{\link{mergeExternals}},
+#'   \code{\link{preprocessS}}
 #'
 #' @examples
 #' \dontrun{
@@ -105,7 +125,7 @@
 #' # Extract beta.external matrix and prepend a zero row for the intercept
 #' # slot expected by BRIERi (BRIERi estimates the intercept internally).
 #' beta.ext <- as.matrix(
-#'   out$external.ss[, grep("^coef", colnames(out$external.ss))]
+#'   out$external.ss[, grep("^coef", colnames(out$external.ss)), drop = FALSE]
 #' )
 #' beta.ext <- rbind(0, beta.ext)
 #'
@@ -313,7 +333,7 @@ preprocessI <- function(
         "All external models have only zero coefficients after alignment ",
         "with target.info. This usually indicates: ",
         "(a) target.info and external.ss do not overlap on CHR:BP; ",
-        "(b) chromosome or basepair coding differs between inputs ",
+        "(b) chromosome or base-pair position coding differs between inputs ",
         "(e.g., hg19 vs hg38 build); or ",
         "(c) allele coding is inconsistent. ",
         "Returning external.ss = NULL. Consider rerunning preprocessI without ",

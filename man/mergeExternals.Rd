@@ -2,7 +2,7 @@
 % Please edit documentation in R/mergeExternals.R
 \name{mergeExternals}
 \alias{mergeExternals}
-\title{Merge multiple external model coefficient data.frames into one}
+\title{Merge multiple external model coefficients}
 \usage{
 mergeExternals(external.list, drop.ambiguous = TRUE, verbose = TRUE)
 }
@@ -27,45 +27,50 @@ The result has an attribute \code{coef.names} mapping the standardized
 \code{coef1}, \code{coef2}, ... back to the input list names (or
 \code{model1}, \code{model2}, ... if the list was unnamed).
 
-Pass this directly as \code{external.ss} to \code{\link{preprocessS}}
-with \code{external.coef.cols = paste0("coef", seq_len(M))}.
+Pass this directly as \code{external.ss} to \code{\link{preprocessI}} or
+\code{\link{preprocessS}} with
+\code{external.coef.cols = paste0("coef", seq_len(M))}.
 }
 \description{
-Performs a full-join on a list of external PRS/coefficient data.frames,
-producing a single wide-format data.frame suitable for use as the
-\code{external.ss} argument to \code{\link{preprocessS}}.
+\code{mergeExternals()} combines multiple external SNP-level coefficient files
+into a single wide-format data.frame. The merged output can be used as the
+\code{external.ss} input for downstream preprocessing functions such as
+\code{preprocessI()} or \code{preprocessS()}.
 }
 \details{
-Each input data.frame must contain exactly the columns \code{CHR},
-\code{BP}, \code{REF}, \code{ALT}, and \code{coef} (other columns are
-ignored). The first data.frame in \code{external.list} to contain a
-given SNP (matched by \code{CHR:BP}) defines the canonical \code{REF/ALT}
-orientation for that SNP in the merged output. Subsequent
-data.frames contributing the same SNP have their \code{coef}:
-\itemize{
-\item copied as-is if their alleles match the canonical;
-\item sign-flipped if their alleles are swapped vs the canonical;
-\item set to 0 if their alleles conflict (e.g., canonical A/G vs
-model B's A/T at the same position) — a real allele mismatch
-is treated as "this model does not include this variant";
-\item set to 0 if the SNP is absent from this model.
-}
+Each element of \code{external.list} should be a data.frame containing SNP
+annotation columns \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and a coefficient column
+\code{coef}. Additional columns are ignored. Each data.frame represents one
+external model.
 
-Inputs are validated for missing values: if \code{NA} is detected in
-any required column (\code{CHR}, \code{BP}, \code{REF}, \code{ALT},
-\code{coef}) of any input data.frame, the function stops with an
-error. Clean each input before calling.
+First, \code{mergeExternals()} performs quality control and harmonization
+independently for each external model. Chromosome labels are normalized by
+removing \code{"chr"} prefixes, converting PLINK chromosome codes \code{23}, \code{24}, \code{25},
+and \code{26} to \code{X}, \code{Y}, \code{XY}, and \code{MT}, and converting \code{M} to \code{MT}. SNPs with
+unrecognized chromosome labels are removed with a warning. The function errors
+out if any required column contains missing values, removes sites with
+duplicated \code{CHR:BP} entries within each input (treated as multi-allelic
+or input duplicates), and optionally removes strand-ambiguous SNPs,
+including A/T and C/G variants, when \code{drop.ambiguous = TRUE}.
 
-Chromosome coding is normalized internally: \code{"chr"} prefix is
-stripped, PLINK numeric codes (23/24/26) mapped to \code{"X"/"Y"/"MT"},
-and \code{"M"} normalized to \code{"MT"}. SNPs with unrecognized CHR
-values (anything not in \code{"1"}\eqn{-}\code{"22"}, \code{"X"},
-\code{"Y"}, \code{"MT"}, \code{"XY"}) are dropped per input with a
-warning.
+After quality control, the function constructs the union of SNPs across all
+external models. For each SNP, matched by \code{CHR:BP}, the first external model
+that survives QC for that SNP defines the canonical \code{REF}/\code{ALT} orientation in
+the merged output. Coefficients from all other external models are then
+aligned to this canonical orientation. If the alleles match the canonical
+orientation, the coefficient is retained unchanged. If the alleles are
+reversed relative to the canonical orientation, the coefficient sign is
+flipped. If the alleles conflict, the coefficient is set to zero. If a SNP is
+absent from a given external model, its coefficient for that model is also
+set to zero.
 
-Multi-allelic variants (duplicate \code{CHR:BP} within one input) and,
-by default, strand-ambiguous SNPs (A/T, T/A, C/G, G/C) are dropped from
-each input independently before merging.
+The returned data.frame contains columns \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, followed
+by standardized coefficient columns \code{coef1}, \code{coef2}, ..., \code{coefM}, where
+\code{M} is the number of external models. Rows are sorted by chromosome and
+base-pair position. The output also has a \code{coef.names} attribute mapping
+standardized coefficient names back to the input model names, or to
+automatically generated names \code{model1}, \code{model2}, ..., when the input list is
+unnamed.
 }
 \examples{
 \dontrun{
@@ -76,7 +81,7 @@ eur <- data.frame(
 )
 eas <- data.frame(
   CHR = c(1,2,2), BP = c(100,300,400),
-  REF = c("G","A","T"), ALT = c("A","G","C"),   # 1,2 flipped
+  REF = c("G","A","T"), ALT = c("A","G","C"),   # # rows 1 & 2: REF/ALT flipped vs eur
   coef = c(0.3, 0.4, -0.1)
 )
 
@@ -96,5 +101,5 @@ out <- preprocessS(
 
 }
 \seealso{
-\code{\link{preprocessS}}, \code{\link{preprocessI}}
+\code{\link{preprocessI}}, \code{\link{preprocessS}}
 }

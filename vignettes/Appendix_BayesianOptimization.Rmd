@@ -1,0 +1,16 @@
+---
+title: "Selection of Integration Weight using Bayesian Optimization"
+output:
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 6
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Selection of Integration Weight using Bayesian Optimization}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options:
+  markdown:
+    wrap: sentence
+bibliography: references.bib
+---

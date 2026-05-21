@@ -1,66 +1,84 @@
-#' Preprocess summary statistics for BRIERs (genotype as predictors)
+#' Preprocess summary statistics for BRIERs genotype-based modeling
 #'
-#' Aligns target sumstats and external model coefficients to a target LD
-#' reference panel for use with \code{\link{BRIERs}}. The LD reference panel
-#' defines the canonical allele orientation; target and external inputs are
-#' matched by chromosome and position, then sign-flipped where their alleles
-#' are swapped relative to the LD reference.
+#' `preprocessS()` prepares SNP-level summary-statistic inputs for `BRIERs()`
+#' when target-cohort individual-level genotypes are not available. The function
+#' harmonizes target summary statistics, target LD reference-panel SNP
+#' information, and optional external model coefficients, and then aligns all
+#' inputs to the SNP order and allele orientation of the target LD reference
+#' panel.
 #'
-#' When \code{target.ind = "gwas"}, a correlation column (\code{corr}) is
-#' computed from the p-value, sample size, and effect direction via
-#' \code{\link{p2cor}}; the rest of the pipeline then treats GWAS and
-#' correlation inputs uniformly. P-values of exactly zero are imputed with
-#' the smallest observed non-zero p-value. If every p-value is zero, the
-#' function stops with an error.
+#' The argument `target.ss` should be a data.frame containing target summary
+#' statistics. The argument `target.ld` should be a data.frame describing the
+#' SNPs in the target LD reference panel, with rows ordered to match the rows
+#' and columns of the LD matrix used in downstream `BRIERs()` fitting. The
+#' optional argument `external.ss` should be a data.frame containing SNP
+#' annotation columns and one or more external coefficient columns, specified
+#' through `external.coef.cols`.
 #'
-#' Inputs are validated for missing values: if \code{NA} is detected in
-#' any of the required columns of \code{target.ss}, \code{target.ld}, or
-#' \code{external.ss}, the function stops with an error. Clean the inputs
-#' before calling.
+#' First, `preprocessS()` performs quality control and harmonization separately
+#' for the target summary statistics, target LD reference panel, and external
+#' coefficient file. SNP annotation columns are standardized to `CHR`, `BP`,
+#' `REF`, and `ALT`, where `CHR` is chromosome, `BP` is base-pair position,
+#' `REF` is the reference allele, and `ALT` is the alternative/effect allele.
+#' Chromosome labels are normalized by removing `"chr"` prefixes, converting
+#' PLINK chromosome codes `23`, `24`, `25`, and `26` to `X`, `Y`, `XY`, and `MT`, and
+#' converting `M` to `MT`. SNPs with unrecognized chromosome labels are removed
+#' with a warning. The function also removes sites with duplicated CHR:BP entries 
+#' (treated as multi-allelic or input duplicates), and optionally removes 
+#' strand-ambiguous SNPs, including A/T and C/G allele pairs, when 
+#' `drop.ambiguous = TRUE`.
 #'
-#' Chromosome coding is normalized internally: \code{"chr"} prefix is
-#' stripped, PLINK numeric codes (23/24/26) mapped to \code{"X"/"Y"/"MT"},
-#' and \code{"M"} normalized to \code{"MT"}. SNPs with unrecognized CHR
-#' values (anything not in \code{"1"}\eqn{-}\code{"22"}, \code{"X"},
-#' \code{"Y"}, \code{"MT"}, \code{"XY"}) are dropped with a warning.
-#' \code{varnames} in the output uses the canonical form.
+#' When `target.ind = "gwas"`, `preprocessS()` converts GWAS summary
+#' statistics into marginal SNP-outcome correlations. In this setting,
+#' `target.ss` must contain p-values, sample sizes, and either effect signs or
+#' beta coefficients. If beta coefficients are provided, effect directions are
+#' inferred from the sign of beta. P-values equal to zero are replaced by the
+#' smallest observed non-zero p-value before computing correlations. If all
+#' p-values are zero, the function stops with an error. When
+#' `target.ind = "corr"`, the user must directly provide a marginal
+#' correlation column.
 #'
-#' Three categories of input are handled:
-#' \describe{
-#'   \item{Target sumstats (\code{target.ss})}{Kept only at SNPs present in
-#'     both the target sumstats and the LD reference. SNPs absent from
-#'     either side are dropped (no zero-imputation). Surviving rows have
-#'     their \code{corr} sign-flipped where the target's REF/ALT is swapped
-#'     relative to the LD reference.}
-#'   \item{Target LD reference (\code{target.ld})}{Defines the canonical
-#'     allele orientation. The returned LD panel is a subset of the input
-#'     containing only the SNPs that survived alignment with the target
-#'     sumstats. The original-row indices are returned in
-#'     \code{target.ld.keep} so callers can subset a pre-computed LD matrix.}
-#'   \item{External coefficients (\code{external.ss})}{Aligned to the
-#'     surviving SNP set. Coefficient columns are sign-flipped where alleles
-#'     are swapped, and zero-padded for SNPs that the external model does
-#'     not cover. Output coefficient columns are renamed to \code{coef1},
-#'     \code{coef2}, ... in input order; the mapping back to the original
-#'     column names is returned in \code{external.coef.names}.}
-#' }
+#' After quality control, the target LD reference panel is used as the canonical
+#' reference for SNP order and allele orientation. SNP identifiers in the
+#' processed output are written as `CHR:BP:REF:ALT`, using the LD-reference
+#' allele orientation. Target summary-statistic SNPs are matched to the LD
+#' reference panel by `CHR:BP`. If the summary-statistic alleles match the LD
+#' reference orientation, the marginal correlation is retained unchanged. If the
+#' summary-statistic `REF` and `ALT` alleles are reversed relative to the LD
+#' reference, the marginal correlation sign is flipped. SNPs without compatible
+#' allele matches between `target.ss` and `target.ld` are removed from the final
+#' analysis set.
 #'
-#' External models whose coefficient column is entirely zero after
-#' alignment (no overlap with the surviving target SNP set) are dropped
-#' from the output. If \emph{all} supplied external models are dropped,
-#' the function emits a warning and returns \code{external.ss = NULL}.
+#' External model coefficients are then aligned to the surviving LD-reference
+#' SNP set. External SNPs are matched by `CHR:BP`. If the external alleles match
+#' the LD-reference orientation, the external coefficient is retained unchanged.
+#' If the external `REF` and `ALT` alleles are reversed relative to the LD
+#' reference, the external coefficient sign is flipped. If the alleles conflict,
+#' the corresponding external coefficient is set to zero. SNPs present in the
+#' final target/LD SNP set but absent from an external model are retained and
+#' assigned an external coefficient of zero, whereas SNPs present only in the
+#' external model are not retained because the output is aligned to the target
+#' LD reference panel.
 #'
-#' All three output data.frames share a \code{varnames} column of the form
-#' \code{"CHR:BP:REF:ALT"} (in the LD reference orientation) as the first
-#' column, providing a stable row identifier across the outputs.
+#' External models whose aligned coefficient columns are entirely zero are
+#' removed from the output. If all supplied external models are removed after
+#' alignment, the function returns `external.ss = NULL` with a warning.
+#' 
+#' The function errors out if any required annotation, summary-statistic, 
+#' LD-reference, or coefficient column contains missing values.
 #'
-#' Multi-allelic variants (duplicate \code{CHR:BP} entries) are dropped with
-#' a warning from every input independently. Strand-ambiguous SNPs (alleles
-#' A/T or C/G) are dropped by default; set \code{drop.ambiguous = FALSE} to
-#' keep them when strand is reliably matched across studies.
+#' The returned `target.ld.keep` element gives the indices of SNPs retained
+#' from the original target LD reference panel and should be used to subset the
+#' rows and columns of a precomputed LD matrix before calling `BRIERs()`. The
+#' returned `target.ss` contains marginal correlations aligned to the retained
+#' LD-reference SNP order and allele orientation. The returned `external.ss`
+#' contains external coefficients aligned to the same SNP set.
+#'
+#' Unlike `BRIERi()`, `BRIERs()` does not require an intercept row in
+#' `beta.external`.
 #'
 #' @param target.ss A data.frame of target summary statistics. Must contain
-#'   chromosome, basepair, REF, ALT, plus value columns determined by
+#'   chromosome, base-pair position, REF, ALT, plus value columns determined by
 #'   \code{target.ind}.
 #' @param target.ind One of \code{"gwas"} or \code{"corr"}. For
 #'   \code{"gwas"}, \code{target.ss} must contain p-value, sample size, and
@@ -68,25 +86,33 @@
 #'   required.
 #' @param target.ld A data.frame of the target LD reference panel SNP info,
 #'   defining the canonical allele orientation. Must contain chromosome,
-#'   basepair, REF, ALT.
+#'   base-pair position, REF, ALT. 
 #' @param external.ss Optional data.frame of external model coefficients.
-#'   Must contain chromosome, basepair, REF, ALT, plus one or more
+#'   Must contain chromosome, base-pair position, REF, ALT, plus one or more
 #'   coefficient columns.
 #' @param target.ss.cols Named character vector mapping canonical keys
 #'   (\code{chr}, \code{bp}, \code{ref}, \code{alt}, \code{p}, \code{n},
 #'   \code{sgn}, \code{beta}, \code{corr}) to the column names in
 #'   \code{target.ss}. Only the keys relevant to \code{target.ind} need to
-#'   be present in the data.
-#' @param target.ld.cols Named character vector mapping \code{chr},
-#'   \code{bp}, \code{ref}, \code{alt} to column names in \code{target.ld}.
-#' @param external.ss.cols Named character vector mapping \code{chr},
-#'   \code{bp}, \code{ref}, \code{alt} to column names in
-#'   \code{external.ss}.
+#'   be present. Defaults to
+#'   \code{c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT", p = "pval",
+#'   n = "n", sgn = "sgn", beta = "beta", corr = "corr")}; override any key
+#'   whose column name differs in your input.
+#' @param target.ld.cols Named character vector mapping canonical keys
+#'   (\code{chr}, \code{bp}, \code{ref}, \code{alt}) to the column names in
+#'   \code{target.ld}. Defaults to
+#'   \code{c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT")}; 
+#'   override any key whose column name differs in your input.
+#' @param external.ss.cols Named character vector mapping canonical keys
+#'   (\code{chr}, \code{bp}, \code{ref}, \code{alt}) to the column names in
+#'   \code{external.ss}. Defaults to
+#'   \code{c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT")}; 
+#'   override any key whose column name differs in your input.
 #' @param external.coef.cols Character vector of column names in
 #'   \code{external.ss} that hold model coefficients. Required when
 #'   \code{external.ss} is supplied; the function does not auto-detect.
 #' @param drop.ambiguous Logical. If TRUE (default), drops strand-ambiguous
-#'   SNPs (A/T, T/A, C/G, G/C alleles) from every input before matching.
+#'   SNPs (A/T and C/G allele pairs) from every input before matching.
 #' @param verbose Logical. If TRUE (default), prints SNP counts at each
 #'   filter step.
 #'
@@ -130,16 +156,21 @@
 #'   target.ld          = hapmap3_panel,
 #'   external.ss        = prs_coefs,
 #'   external.coef.cols = c("PRS_EUR", "PRS_EAS"),
-#'   target.ss.cols     = c(chr = "Chromosome", bp = "Position", p = "PVAL")
+#'   target.ss.cols     = c(
+#'     chr  = "Chromosome", bp = "Position",
+#'     ref  = "Allele2",    alt = "Allele1",
+#'     p    = "PVAL",       n  = "N",
+#'     beta = "Effect"
+#'   )
 #' )
 #'
-#' XtY      <- out$target.ss$corr
-#' XtX      <- precomputed_LD[out$target.ld.keep, out$target.ld.keep]
+#' LD.input <- precomputed_LD[out$target.ld.keep, out$target.ld.keep]
 #' beta.ext <- as.matrix(
-#'   out$external.ss[, grep("^coef", colnames(out$external.ss))]
+#'   out$external.ss[, grep("^coef", colnames(out$external.ss)), drop = FALSE]
 #' )
 #'
-#' fit <- BRIERs(XtX = XtX, XtY = XtY, beta.external = beta.ext, ...)
+#' fit <- BRIERs(
+#'   sumstats = out$target.ss, XtX = LD.input, beta.external = beta.ext, ...)
 #' }
 #'
 #' @export
@@ -188,14 +219,14 @@ preprocessS <- function(
 
   # GWAS: need sgn; derive from beta if not supplied. Then compute corr.
   if (target.ind == "gwas") {
-    sgn.col  <- target.ss.cols[["sgn"]]
-    beta.col <- target.ss.cols[["beta"]]
-    if (!is.null(sgn.col) && !is.na(sgn.col) && sgn.col %in% colnames(target.ss)) {
+    # Safely access optional keys — sgn and beta may be omitted from the mapping
+    # (one is enough; sgn is derived from beta if only beta is supplied).
+    sgn.col  <- if ("sgn"  %in% names(target.ss.cols)) target.ss.cols[["sgn"]]  else NA_character_
+    beta.col <- if ("beta" %in% names(target.ss.cols)) target.ss.cols[["beta"]] else NA_character_
+
+    if (!is.na(sgn.col) && sgn.col %in% colnames(target.ss)) {
       colnames(target.ss)[colnames(target.ss) == sgn.col] <- "sgn"
-    } else if (
-      !is.null(beta.col) && !is.na(beta.col) &&
-      beta.col %in% colnames(target.ss)
-    ) {
+    } else if (!is.na(beta.col) && beta.col %in% colnames(target.ss)) {
       target.ss$sgn <- sign(target.ss[[beta.col]])
     } else {
       stop(
@@ -466,7 +497,7 @@ preprocessS <- function(
         "All external models have only zero coefficients after alignment ",
         "with the surviving target SNP set. This usually indicates: ",
         "(a) target.ss / target.ld and external.ss do not overlap on CHR:BP; ",
-        "(b) chromosome or basepair coding differs between inputs ",
+        "(b) chromosome or base-pair position coding differs between inputs ",
         "(e.g., hg19 vs hg38 build); or ",
         "(c) allele coding is inconsistent. ",
         "Returning external.ss = NULL. Consider rerunning preprocessS without ",
