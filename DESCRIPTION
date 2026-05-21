@@ -1,7 +1,7 @@
 Package: BRIER
 Type: Package
 Title: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     person("Ruiwen", "Zhou", role = c("aut", "cre"), email = "zrayw@umich.edu")
 Description: BRIER is a transfer learning framework for improving genetic risk
@@ -11,13 +11,14 @@ License: GPL-3
 URL: https://um-kevinhe.github.io/BRIER/
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: xz
 Depends: 
     R (>= 4.0),
-    Matrix
+    Matrix,
+    ggplot2
 Imports:
     Rcpp,
     stats,
-    ggplot2,
     parallel,
     pROC,
     rlang

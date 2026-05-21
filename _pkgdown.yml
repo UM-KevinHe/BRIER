@@ -25,7 +25,7 @@ navbar:
       href: articles/Appendix_Multiple.html
     - text: Selection of Integration Weight using Bayesian Optimization
       href: articles/Appendix_BayesianOptimization.html
-    - text: Data Processing of Genetic Risk Prediction using BRIERs
+    - text: Data Preprocessing When Modeling with Genotypes
       href: articles/Appendix_Preprocess.html
     - text: Model Details
       href: articles/Appendix_Model.html
@@ -114,11 +114,13 @@ reference:
     - calcExtXtY
 - title: "Datasets"
   desc: >
-    Simulated example datasets.
+    Example datasets.
   contents:
     - Data_BRIERfull
     - Data_BRIERi
     - Data_BRIERs
+    - Data_preprocessI
+    - Data_preprocessS
 - title: "Internals"
   desc: >
     Internal helpers, not intended for end users.

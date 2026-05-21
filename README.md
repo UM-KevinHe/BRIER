@@ -115,8 +115,8 @@ Full package documentation and parameter explanations: [here](https://um-kevinhe
 
 If you encounter problems or bugs, please contact us:
 
-- zrayw@umich.edu
-- kevinhe@umich.edu
+- Ruiwen Zhou (zrayw@umich.edu)
+- Kevin He (kevinhe@umich.edu)
 
 
 # Reference
