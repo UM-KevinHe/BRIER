@@ -86,10 +86,12 @@ BRIERs <- function(
   ## Build variable names
   chr <- sumstats$CHR
   pos <- sumstats$BP
+  ref <- sumstats$REF
+  alt <- sumstats$ALT
   varnames <- if (!is.null(sumstats$varnames)) {
     sumstats$varnames
-  } else if (!is.null(chr) && !is.null(pos)) {
-    paste(chr, pos, sep = ":")
+  } else if (!is.null(chr) && !is.null(pos) && !is.null(ref) && !is.null(alt)) {
+    paste(chr, pos, ref, alt, sep = ":")
   } else {
     paste0("X", seq_len(p))
   }
@@ -97,8 +99,10 @@ BRIERs <- function(
   # -- Validate XtX --
   if (!inherits(XtX, "Matrix")) { XtX <- Matrix::Matrix(XtX, sparse = TRUE) }
   if (nrow(XtX) != p || ncol(XtX) != p) {
-    stop(paste0("XtX dimensions (", nrow(XtX), " x ", ncol(XtX),
-                ") do not match sumstats (", p, " variants)."), call. = FALSE)
+    stop(paste0(
+      "XtX dimensions (", nrow(XtX), " x ", ncol(XtX),
+      ") do not match sumstats (", p, " variants)."), call. = FALSE
+    )
   }
 
   # -- Validate beta.external --
