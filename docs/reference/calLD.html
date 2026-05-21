@@ -60,7 +60,7 @@ to <code><a href="BRIERs.html">BRIERs</a></code>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calLD</span><span class="op">(</span><span class="va">X</span>, <span class="va">sumstats</span>, LDB <span class="op">=</span> <span class="cn">NULL</span>, tau <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calLD</span><span class="op">(</span><span class="va">X</span>, <span class="va">SNP.info</span>, LDB <span class="op">=</span> <span class="cn">NULL</span>, tau <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -71,10 +71,10 @@ to <code><a href="BRIERs.html">BRIERs</a></code>.</p>
 <dd><p>An n x p reference genotype matrix (individual-level).</p></dd>
 
 
-<dt id="arg-sumstats">sumstats<a class="anchor" aria-label="anchor" href="#arg-sumstats"></a></dt>
-<dd><p>A data.frame of marginal summary statistics. Required when
-<code>LDB</code> is supplied; must contain <code>CHR</code>, <code>BP</code>, and
-<code>corr</code> columns.</p></dd>
+<dt id="arg-snp-info">SNP.info<a class="anchor" aria-label="anchor" href="#arg-snp-info"></a></dt>
+<dd><p>A data.frame describing the columns of <code>X</code>, in
+order. Required when <code>LDB</code> is supplied; must contain <code>CHR</code>
+and <code>BP</code> columns for assigning SNPs to LD blocks.</p></dd>
 
 
 <dt id="arg-ldb">LDB<a class="anchor" aria-label="anchor" href="#arg-ldb"></a></dt>
@@ -114,7 +114,7 @@ entries; entries with |LD| &lt; tau are set to zero. Defaults to 0
 <span class="r-in"><span><span class="va">ld</span> <span class="op">&lt;-</span> <span class="fu">calLD</span><span class="op">(</span><span class="va">X</span>, tau <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># block-structured LD with Berisa et al. blocks</span></span></span>
-<span class="r-in"><span><span class="va">ld</span> <span class="op">&lt;-</span> <span class="fu">calLD</span><span class="op">(</span><span class="va">X</span>, sumstats <span class="op">=</span> <span class="va">sumstats</span>, LDB <span class="op">=</span> <span class="va">LDB</span>, tau <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ld</span> <span class="op">&lt;-</span> <span class="fu">calLD</span><span class="op">(</span><span class="va">X</span>, SNP.info <span class="op">=</span> <span class="va">SNP.info</span>, LDB <span class="op">=</span> <span class="va">LDB</span>, tau <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

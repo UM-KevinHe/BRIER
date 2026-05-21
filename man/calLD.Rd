@@ -4,14 +4,14 @@
 \alias{calLD}
 \title{Calculate LD matrix for BRIER.S}
 \usage{
-calLD(X, sumstats, LDB = NULL, tau = 0)
+calLD(X, SNP.info, LDB = NULL, tau = 0)
 }
 \arguments{
 \item{X}{An n x p reference genotype matrix (individual-level).}
 
-\item{sumstats}{A data.frame of marginal summary statistics. Required when
-\code{LDB} is supplied; must contain \code{CHR}, \code{BP}, and
-\code{corr} columns.}
+\item{SNP.info}{A data.frame describing the columns of \code{X}, in
+order. Required when \code{LDB} is supplied; must contain \code{CHR}
+and \code{BP} columns for assigning SNPs to LD blocks.}
 
 \item{LDB}{Optional m x 3 matrix of LD block boundaries (\code{chr},
 \code{start}, \code{stop}), e.g. from Berisa et al. If NULL, the full
@@ -40,7 +40,7 @@ to \code{\link{BRIERs}}.
 ld <- calLD(X, tau = 0.05)
 
 # block-structured LD with Berisa et al. blocks
-ld <- calLD(X, sumstats = sumstats, LDB = LDB, tau = 0.05)
+ld <- calLD(X, SNP.info = SNP.info, LDB = LDB, tau = 0.05)
 }
 
 }

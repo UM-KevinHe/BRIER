@@ -87,6 +87,9 @@ reference:
   desc: >
     Data processing of input data
   contents:
+    - preprocessI
+    - preprocessS
+    - mergeExternals
     - p2cor
     - calLD
     - standardize_X
