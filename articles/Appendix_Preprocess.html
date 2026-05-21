@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title> • BRIER</title>
+<title>Data Preprocessing When Modeling with Genotypes • BRIER</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -19,7 +19,7 @@
 <link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Data Preprocessing When Modeling with Genotypes">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
 <li><a class="dropdown-item" href="../articles/Appendix_Multiple.html">Integration of Multiple External Models</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_BayesianOptimization.html">Selection of Integration Weight using Bayesian Optimization</a></li>
-    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Processing of Genetic Risk Prediction using BRIERs</a></li>
+    <li><a class="dropdown-item" href="../articles/Appendix_Preprocess.html">Data Preprocessing When Modeling with Genotypes</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Model.html">Model Details</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_Distr.html">Distribution Family and Evaluation Metrics</a></li>
     <li><a class="dropdown-item" href="../articles/Appendix_IC.html">Information Criteria for Hyper-parameter Tuning</a></li>
@@ -69,7 +69,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1></h1>
+      <h1>Data Preprocessing When Modeling with Genotypes</h1>
             
       
 
@@ -78,8 +78,546 @@
 
     
     
-
-  </main>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>When modeling with genotypes to model the polygenic risk of complex
+traits, the data preprocessing needs extra cautious. For example,
+mis-alignment of Flipped reference/alternative alleles between target
+and external source bring challenges/XXXother words; chromosome
+misalignment standardardizaiton X/Y (1, chr1, Chr1 etc). Here we provide
+helper funtions <code><a href="../reference/preprocessI.html">preprocessI()</a></code> for data preprocessing of
+<code><a href="../reference/BRIERi.html">BRIERi()</a></code> modeling and <code><a href="../reference/preprocessS.html">preprocessS()</a></code> for data
+preprocessing of <code><a href="../reference/BRIERs.html">BRIERs()</a></code> modeling.</p>
+</div>
+<div class="section level2">
+<h2 id="sec-Introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#sec-Introduction"></a>
+</h2>
+<p>When genotype data are used for genetic risk prediction, careful
+preprocessing is essential to ensure that predictors, alleles, and
+genomic coordinates are consistently defined across data sources. This
+step is particularly important for integrative modeling, where
+target-cohort data are combined with external models or external summary
+statistics.</p>
+<p>Several common issues can lead to incorrect model fitting or biased
+prediction. For example, reference and alternative alleles may be
+flipped between the target and external sources, leading to inconsistent
+coding of genetic effects. Chromosome labels may also be represented
+differently across files, such as <code>1</code>, <code>chr1</code>, or
+<code>Chr1</code>. In addition, variant identifiers, genomic positions,
+allele ordering, and genotype standardization must be harmonized before
+applying transfer-learning-based models.</p>
+<p>To facilitate these preprocessing steps, <code>BRIER</code> provides
+helper functions for genotype-based modeling:</p>
+<ul>
+<li>
+<code><a href="../reference/preprocessI.html">preprocessI()</a></code> prepares input data for
+<code><a href="../reference/BRIERi.html">BRIERi()</a></code> when individual-level target data and external
+model coefficients are available.</li>
+<li>
+<code><a href="../reference/preprocessS.html">preprocessS()</a></code> prepares input data for
+<code><a href="../reference/BRIERs.html">BRIERs()</a></code> when target summary statistics and external model
+coefficients are available.</li>
+</ul>
+<p>These functions are designed to help users align variants, harmonize
+allele coding, standardize chromosome and position information, and
+construct model-ready inputs for downstream BRIER analysis.</p>
+</div>
+<div class="section level2">
+<h2 id="sec-preprocessI">2. <code>preprocessI()</code><a class="anchor" aria-label="anchor" href="#sec-preprocessI"></a>
+</h2>
+<div class="section level3">
+<h3 id="basic-usage">2.1 Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
+</h3>
+<p>The function <code><a href="../reference/preprocessI.html">preprocessI()</a></code> prepares genotype-based
+inputs for <code><a href="../reference/BRIERi.html">BRIERi()</a></code> when individual-level genotype data are
+available in the target cohort and one or more external models are
+available as SNP-level coefficients.</p>
+<p>The argument <code>target.info</code> takes a <code>data.frame</code>
+describing the SNPs in the target genotype matrix, where each row
+corresponds to one column of the target predictor matrix. Users must
+specify the column mapping through target.info.cols. The argument
+<code>external.ss</code> takes an optional <code>data.frame</code>
+containing external model coefficients. When <code>external.ss</code> is
+provided, users must specify the SNP-annotation column mapping through
+<code>external.ss.cols</code> and the coefficient columns through
+<code>external.coef.cols</code>.</p>
+<p><code><a href="../reference/preprocessI.html">preprocessI()</a></code> first performs quality control and
+harmonization separately for the target SNP information and external
+model coefficients. Specifically, it:</p>
+<ul>
+<li>standardizes SNP annotation columns to <code>CHR</code>,
+<code>BP</code>, <code>REF</code>, and <code>ALT</code>, corresponding
+to chromosome, base-pair position, reference allele, and alternative
+allele;</li>
+<li>normalizes chromosome labels to a common format, including
+<code>1</code>–<code>22</code>, <code>X</code>, <code>Y</code>,
+<code>MT</code>, and <code>XY</code>;</li>
+<li>removes SNPs with invalid or unrecognized chromosome labels;</li>
+<li>removes multi-allelic sites, defined as duplicated
+<code>CHR:BP</code> entries within each input;</li>
+<li>optionally removes strand-ambiguous SNPs, including A/T and C/G
+variants, using the <code>drop.ambiguous</code> argument.</li>
+</ul>
+<p><code><a href="../reference/preprocessI.html">preprocessI()</a></code> also aligns external SNP coefficients to
+the target cohort. Specifically, it:</p>
+<ul>
+<li>SNP identifiers are standardized using the target-cohort allele
+orientation as <code>CHR:BP:REF:ALT</code>.</li>
+<li>External SNPs are matched to target SNPs by chromosome and base-pair
+position (<code>CHR:BP</code>).</li>
+<li>If the external <code>REF</code> and <code>ALT</code> alleles match
+the target-cohort orientation, the external coefficient is retained
+unchanged.</li>
+<li>If the external <code>REF</code> and <code>ALT</code> alleles are
+reversed relative to the target-cohort orientation, the external
+coefficient sign is flipped.</li>
+<li>If the external alleles conflict with the target alleles, the
+external coefficient is set to zero (a conflict means the alleles
+disagree beyond a simple flip, e.g., A/G vs A/T at the same position,
+usually indicating a different variant).</li>
+<li>SNPs present in external models but absent from the target cohort
+are removed.</li>
+<li>SNPs present in the target cohort but absent from an external model
+are retained and assigned an external coefficient of zero.</li>
+</ul>
+<p><code><a href="../reference/preprocessI.html">preprocessI()</a></code> returns a list containing the main
+processed inputs required for downstream <code><a href="../reference/BRIERi.html">BRIERi()</a></code>
+analysis:</p>
+<ul>
+<li>
+<code>target.info</code>: processed target SNP information,
+including standardized columns <code>varnames</code>, <code>CHR</code>,
+<code>BP</code>, <code>REF</code>, and <code>ALT</code>;</li>
+<li>
+<code>target.info.keep</code>: indices of SNPs retained after
+quality control, which can be used to subset the columns of the target
+genotype matrix;</li>
+<li>
+<code>external.ss</code>: processed and target-aligned external
+model coefficients, with coefficient columns renamed as
+<code>coef1</code>, <code>coef2</code>, …, when external models are
+provided;</li>
+<li>
+<code>external.coef.names</code>: a mapping between the standardized
+coefficient names and the original external coefficient column
+names;</li>
+<li>
+<code>summary</code>: a named vector summarizing the number of SNPs
+retained, removed, matched, flipped, zero-padded, or excluded during
+preprocessing.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="example-usage">2.2 Example usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
+</h3>
+<p>We illustrate the use of <code><a href="../reference/preprocessI.html">preprocessI()</a></code> using a height
+PRS prediction example from the Michigan Genomics Initiative (MGI). In
+this example, the target cohort consists of 2,162 individuals of African
+ancestry (AFR), and the predictor set includes the top 10,000 SNPs
+ranked by marginal association. Two external models are provided: one
+trained using MGI European-ancestry (EUR) data and one derived from a
+published EUR GWAS with a larger set of 163,140 SNPs.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://um-kevinhe.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Data_preprocessI"</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">Data_preprocessI</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span>
+<span><span class="co"># [1] "target.info"    "external.coef1" "external.coef2"</span></span></code></pre></div>
+<p>The function <code><a href="../reference/mergeExternals.html">mergeExternals()</a></code> can be used to combine
+multiple external SNP-level coefficient files into a single wide-format
+data frame. This is useful when users want to integrate more than one
+external model in downstream <code><a href="../reference/preprocessI.html">preprocessI()</a></code> or
+<code><a href="../reference/preprocessS.html">preprocessS()</a></code> analysis.</p>
+<p>Each input external model should be provided as a
+<code>data.frame</code> with the required columns <code>CHR</code>,
+<code>BP</code>, <code>REF</code>, <code>ALT</code>, and
+<code>coef</code>. The function first applies the same basic genotype
+harmonization steps to each external model, including chromosome-code
+normalization, optional removal of strand-ambiguous SNPs, and removal of
+multi-allelic sites. It then constructs the union of SNPs across all
+external models.</p>
+<p>For SNPs shared across models, the first external model containing a
+given <code>CHR:BP</code> defines the canonical
+<code>REF</code>/<code>ALT</code> orientation in the merged output.
+Coefficients from subsequent models are then aligned to this canonical
+orientation:</p>
+<ul>
+<li>if the alleles match the canonical orientation, the coefficient is
+retained unchanged;</li>
+<li>if the alleles are reversed relative to the canonical orientation,
+the coefficient sign is flipped;</li>
+<li>if the alleles conflict with the canonical alleles, the coefficient
+is set to zero (a conflict means the alleles disagree beyond a simple
+flip, e.g., A/G vs A/T at the same position, usually indicating a
+different variant);</li>
+<li>if a SNP is absent from a given external model, its coefficient for
+that model is set to zero.</li>
+</ul>
+<p>The merged output contains columns <code>CHR</code>, <code>BP</code>,
+<code>REF</code>, <code>ALT</code>, followed by standardized coefficient
+columns <code>coef1</code>, <code>coef2</code>, …, <code>coefM</code>,
+where <code>M</code> is the number of external models. The original
+model names are stored in the <code>coef.names</code> attribute. This
+merged data.frame can then be passed to <code><a href="../reference/preprocessI.html">preprocessI()</a></code> or
+<code><a href="../reference/preprocessS.html">preprocessS()</a></code> using
+<code>external.coef.cols = paste0("coef", seq_len(M))</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">external.merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mergeExternals.html">mergeExternals</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">external.coef1</span>, <span class="va">dat</span><span class="op">$</span><span class="va">external.coef2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Input SNPs per model (after CHR validation): external.list[[1]]=10000, external.list[[2]]=163140</span></span>
+<span><span class="co"># Union SNP set: 163140 variants across 2 model(s).</span></span>
+<span><span class="co">#   model1 (-&gt; coef1): matched=10000, flipped=0, conflict=0, zero-padded=153140</span></span>
+<span><span class="co">#   model2 (-&gt; coef2): matched=161641, flipped=1499, conflict=0, zero-padded=0</span></span></code></pre></div>
+<p>Then, we apply <code><a href="../reference/preprocessI.html">preprocessI()</a></code> to harmonize the target SNP
+information with the merged external model coefficients and generate
+model-ready inputs for <code><a href="../reference/BRIERi.html">BRIERi()</a></code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preprocessI.html">preprocessI</a></span><span class="op">(</span> </span>
+<span>  target.info <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">target.info</span>, </span>
+<span>  target.info.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>chr <span class="op">=</span> <span class="st">"CHR"</span>, bp <span class="op">=</span> <span class="st">"BP"</span>, ref <span class="op">=</span> <span class="st">"A2"</span>, alt <span class="op">=</span> <span class="st">"A1"</span><span class="op">)</span>,</span>
+<span>  external.ss <span class="op">=</span> <span class="va">external.merged</span>, </span>
+<span>  external.ss.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>chr <span class="op">=</span> <span class="st">"CHR"</span>, bp <span class="op">=</span> <span class="st">"BP"</span>, ref <span class="op">=</span> <span class="st">"REF"</span>, alt <span class="op">=</span> <span class="st">"ALT"</span><span class="op">)</span>, </span>
+<span>  external.coef.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coef1"</span>, <span class="st">"coef2"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Input SNPs: target.info=10000, external.ss=163140</span></span>
+<span><span class="co"># External: 9000 matched, 1000 flipped, 0 conflict, 0 zero-padded.</span></span>
+<span><span class="co"># Final analysis set: 10000 SNPs.</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">processed</span><span class="op">)</span></span>
+<span><span class="co"># [1] "target.info"         "target.info.keep"    "external.ss"        </span></span>
+<span><span class="co"># [4] "external.coef.names" "summary" </span></span></code></pre></div>
+<p>Unfortunately, due to privacy constraints, we cannot share the raw
+MGI genotype matrix. Instead, we provide example code showing how the
+output from <code><a href="../reference/preprocessI.html">preprocessI()</a></code> can be used to construct
+downstream inputs for <code><a href="../reference/BRIERi.html">BRIERi()</a></code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span>, <span class="va">processed</span><span class="op">$</span><span class="va">target.info.keep</span><span class="op">]</span></span>
+<span><span class="co"># BRIERi requires an intercept slot as the first row of beta.external; BRIERs does not.</span></span>
+<span><span class="va">external.mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span></span>
+<span>  <span class="va">processed</span><span class="op">$</span><span class="va">external.ss</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^coef"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">processed</span><span class="op">$</span><span class="va">external.ss</span><span class="op">)</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">external.mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">external.mat</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.html">BRIERi</a></span><span class="op">(</span></span>
+<span>  <span class="va">X</span>, <span class="va">y</span>, family <span class="op">=</span> <span class="st">"gaussian"</span>, </span>
+<span>  beta.external <span class="op">=</span> <span class="va">external.mat</span>, </span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="notes">2.3 Notes<a class="anchor" aria-label="anchor" href="#notes"></a>
+</h3>
+<p>When using <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, users may want to include
+non-genetic covariates, such as age, sex, genotype principal components,
+or other demographic variables. In this setting, genotype predictors and
+non-genetic covariates should be handled separately during
+preprocessing.</p>
+<p>Specifically, only SNP-level information should be passed to
+<code><a href="../reference/preprocessI.html">preprocessI()</a></code>. The target SNP annotation file should
+correspond only to the genotype columns in the target design matrix, and
+the external model coefficient file should contain only SNP-level
+coefficients. Non-genetic covariates and any external-model intercepts
+should not be included in <code><a href="../reference/preprocessI.html">preprocessI()</a></code>.</p>
+<p>After preprocessing, users can subset the genotype matrix using
+<code>processed$target.info.keep</code>, construct the aligned external
+SNP coefficient matrix from <code>processed$external.ss</code>, and then
+add back non-genetic covariates to the target design matrix before
+fitting <code><a href="../reference/BRIERi.html">BRIERi()</a></code>.</p>
+<p>In addition, <code><a href="../reference/BRIERi.html">BRIERi()</a></code> expects the external coefficient
+matrix to include an intercept slot as the first row. If no intercepts
+are estimated from external models, this intercept slot should be set to
+zero. The intercept row is not required for <code><a href="../reference/BRIERs.html">BRIERs()</a></code>.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># SNP matrix after preprocessing</span></span>
+<span><span class="va">X.snp</span> <span class="op">&lt;-</span> <span class="va">X.snp</span><span class="op">[</span>, <span class="va">processed</span><span class="op">$</span><span class="va">target.info.keep</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># Add non-genetic covariates after SNP preprocessing</span></span>
+<span><span class="va">X.full</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>age <span class="op">=</span> <span class="va">age</span>, sex <span class="op">=</span> <span class="va">sex</span>, <span class="va">X.snp</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># External SNP coefficients aligned by preprocessI()</span></span>
+<span><span class="va">beta.snp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span></span>
+<span>  <span class="va">processed</span><span class="op">$</span><span class="va">external.ss</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^coef"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">processed</span><span class="op">$</span><span class="va">external.ss</span><span class="op">)</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Add rows for intercept and non-genetic covariates.</span></span>
+<span><span class="co"># Intercept is set to 0; covariate coefficients are also set to 0 unless</span></span>
+<span><span class="co"># external coefficients for these covariates are available and harmonized separately.</span></span>
+<span><span class="va">beta.external</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  intercept <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  age <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  sex <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">beta.snp</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.html">BRIERi</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X.full</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">y</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">beta.external</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="sec-preprocessS">3. <code>preprocessS()</code><a class="anchor" aria-label="anchor" href="#sec-preprocessS"></a>
+</h2>
+<div class="section level3">
+<h3 id="basic-usage-1">3.1 Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage-1"></a>
+</h3>
+<p>The function <code><a href="../reference/preprocessS.html">preprocessS()</a></code> prepares genotype-based
+summary-statistic inputs for <code><a href="../reference/BRIERs.html">BRIERs()</a></code> when target-cohort
+individual-level genotypes are not available. Instead, users provide
+target summary statistics, a target LD reference panel, and optionally
+one or more external models as SNP-level coefficients.</p>
+<p>The argument <code>target.ss</code> takes a <code>data.frame</code>
+containing target summary statistics. The argument
+<code>target.ld</code> takes a <code>data.frame</code> describing the
+SNPs in the target LD reference panel, where each row corresponds to one
+row/column of the LD matrix. The optional argument
+<code>external.ss</code> takes a <code>data.frame</code> containing
+external model coefficients. When <code>external.ss</code> is provided,
+users must specify the SNP-annotation column mapping through
+<code>external.ss.cols</code> and the coefficient columns through
+<code>external.coef.cols</code>.</p>
+<p><code><a href="../reference/preprocessS.html">preprocessS()</a></code> first performs quality control and
+harmonization separately for the target summary statistics, the target
+LD reference panel, and external model coefficients. Specifically,
+it:</p>
+<ul>
+<li>standardizes SNP annotation columns to <code>CHR</code>,
+<code>BP</code>, <code>REF</code>, and <code>ALT</code>, corresponding
+to chromosome, base-pair position, reference allele, and alternative
+allele;</li>
+<li>normalizes chromosome labels to a common format, including
+<code>1</code>–<code>22</code>, <code>X</code>, <code>Y</code>,
+<code>XY</code>, and <code>MT</code>;</li>
+<li>removes SNPs with invalid or unrecognized chromosome labels;</li>
+<li>removes multi-allelic sites, defined as duplicated
+<code>CHR:BP</code> entries within each input;</li>
+<li>optionally removes strand-ambiguous SNPs, including A/T and C/G
+variants, using the <code>drop.ambiguous</code> argument.</li>
+</ul>
+<p>When <code>target.ind = "gwas"</code>, <code><a href="../reference/preprocessS.html">preprocessS()</a></code>
+converts GWAS summary statistics into marginal SNP-outcome correlations.
+In this setting, users must provide p-values, sample sizes, and either
+effect signs or beta coefficients. If beta coefficients are provided,
+the effect direction is inferred from the sign of beta. P-values equal
+to zero are replaced by the smallest observed non-zero p-value before
+computing correlations.</p>
+<p>After quality control, <code><a href="../reference/preprocessS.html">preprocessS()</a></code> uses the target LD
+reference panel as the canonical reference for SNP order and allele
+orientation. SNP identifiers in the processed output are written as
+<code>CHR:BP:REF:ALT</code>, where <code>REF</code> and <code>ALT</code>
+are defined according to the target LD reference panel.</p>
+<p>The function then aligns target summary statistics and external model
+coefficients to the target LD reference panel. Specifically:</p>
+<ul>
+<li>target summary-statistic SNPs are matched to the LD reference panel
+by chromosome and base-pair position (<code>CHR:BP</code>);</li>
+<li>if the target summary-statistic alleles match the LD reference
+orientation, the marginal correlation is retained unchanged;</li>
+<li>if the target summary-statistic alleles are reversed relative to the
+LD reference orientation, the marginal correlation sign is flipped;</li>
+<li>SNPs without an allele-compatible match between the target summary
+statistics and the LD reference panel (in either the same or flipped
+orientation) are removed from the final analysis set.</li>
+<li>external SNP coefficients are matched to the surviving LD-reference
+SNPs by chromosome and base-pair position (<code>CHR:BP</code>);</li>
+<li>if the external <code>REF</code> and <code>ALT</code> alleles match
+the LD reference orientation, the external coefficient is retained
+unchanged;</li>
+<li>if the external <code>REF</code> and <code>ALT</code> alleles are
+reversed relative to the LD reference orientation, the external
+coefficient sign is flipped;</li>
+<li>if the external alleles conflict with the LD reference alleles, the
+external coefficient is set to zero;</li>
+<li>SNPs present in the final target/LD SNP set but absent from an
+external model are retained and assigned an external coefficient of
+zero;</li>
+<li>SNPs present only in external models but absent from the final
+target/LD SNP set are removed.</li>
+</ul>
+<p>External models whose aligned coefficient columns are entirely zero
+are removed from the output. If all external models are removed after
+alignment, <code>external.ss</code> is returned as <code>NULL</code>
+with a warning.</p>
+<p><code><a href="../reference/preprocessS.html">preprocessS()</a></code> returns a list containing the main
+processed inputs required for downstream <code><a href="../reference/BRIERs.html">BRIERs()</a></code>
+analysis:</p>
+<ul>
+<li>
+<code>target.ss</code>: processed target summary statistics,
+including standardized columns <code>varnames</code>, <code>CHR</code>,
+<code>BP</code>, <code>REF</code>, <code>ALT</code>, and
+<code>corr</code>;</li>
+<li>
+<code>target.ld</code>: processed target LD reference SNP
+information, aligned to the final analysis SNP set;</li>
+<li>
+<code>target.ld.keep</code>: indices of SNPs retained from the
+original LD reference panel, which can be used to subset a precomputed
+LD matrix;</li>
+<li>
+<code>external.ss</code>: processed and LD-aligned external model
+coefficients, with coefficient columns renamed as <code>coef1</code>,
+<code>coef2</code>, …, when external models are provided;</li>
+<li>
+<code>external.coef.names</code>: a mapping between the standardized
+coefficient names and the original external coefficient column
+names;</li>
+<li>
+<code>summary</code>: a named vector summarizing the number of SNPs
+retained, removed, matched, flipped, zero-padded, or excluded during
+preprocessing.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="example-usage-1">3.2 Example usage<a class="anchor" aria-label="anchor" href="#example-usage-1"></a>
+</h3>
+<p>We illustrate the use of <code><a href="../reference/preprocessS.html">preprocessS()</a></code> using a height
+PRS prediction example from the Michigan Genomics Initiative (MGI). In
+this example, the target data consists of GWAS summary statistics
+derived from 2,162 African (AFR) individuals, and the predictor set
+includes the top 10,000 SNPs ranked by marginal association. Two
+external models are provided: one trained using MGI European-ancestry
+(EUR) data and one derived from a published EUR GWAS with a larger set
+of 163,140 SNPs.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://um-kevinhe.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Data_preprocessS</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">Data_preprocessS</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span>
+<span><span class="co"># [1] "target.ss"      "target.ld"      "target.ld.mat"  "external.coef1"</span></span>
+<span><span class="co"># [5] "external.coef2"</span></span></code></pre></div>
+<p>As in the <a href="#sec-preprocessI">previous example</a>, multiple
+external models can first be merged using <code><a href="../reference/mergeExternals.html">mergeExternals()</a></code>.
+This step constructs the union of SNPs across external models and aligns
+their coefficients to a common allele orientation.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">external.merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mergeExternals.html">mergeExternals</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">external.coef1</span>, <span class="va">dat</span><span class="op">$</span><span class="va">external.coef2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Input SNPs per model (after CHR validation): external.list[[1]]=10000, external.list[[2]]=163140</span></span>
+<span><span class="co"># Union SNP set: 163140 variants across 2 model(s).</span></span>
+<span><span class="co">#   model1 (-&gt; coef1): matched=10000, flipped=0, conflict=0, zero-padded=153140</span></span>
+<span><span class="co">#   model2 (-&gt; coef2): matched=161641, flipped=1499, conflict=0, zero-padded=0</span></span></code></pre></div>
+<p>Next, we apply <code><a href="../reference/preprocessS.html">preprocessS()</a></code> to harmonize the target
+summary statistics, target LD reference panel, and merged external model
+coefficients. In this example, <code>target.ind = "gwas"</code>
+indicates that the target input is provided as GWAS summary statistics.
+The function uses p-values, sample sizes, and beta coefficients to
+compute marginal SNP-outcome correlations for <code><a href="../reference/BRIERs.html">BRIERs()</a></code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preprocessS.html">preprocessS</a></span><span class="op">(</span> </span>
+<span>  target.ss <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">target.ss</span>, target.ind <span class="op">=</span> <span class="st">"gwas"</span>, </span>
+<span>  target.ss.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>chr <span class="op">=</span> <span class="st">"CHR"</span>, bp <span class="op">=</span> <span class="st">"BP"</span>, ref <span class="op">=</span> <span class="st">"A2"</span>, alt <span class="op">=</span> <span class="st">"A1"</span>, p <span class="op">=</span> <span class="st">"P"</span>, n <span class="op">=</span> <span class="st">"NMISS"</span>, beta <span class="op">=</span> <span class="st">"BETA"</span><span class="op">)</span>,</span>
+<span>  target.ld <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">target.ld</span>, </span>
+<span>  target.ld.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>chr <span class="op">=</span> <span class="st">"CHR"</span>, bp <span class="op">=</span> <span class="st">"BP"</span>, ref <span class="op">=</span> <span class="st">"A2"</span>, alt <span class="op">=</span> <span class="st">"A1"</span><span class="op">)</span>, </span>
+<span>  external.ss <span class="op">=</span> <span class="va">external.merged</span>, </span>
+<span>  external.ss.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>chr <span class="op">=</span> <span class="st">"CHR"</span>, bp <span class="op">=</span> <span class="st">"BP"</span>, ref <span class="op">=</span> <span class="st">"REF"</span>, alt <span class="op">=</span> <span class="st">"ALT"</span><span class="op">)</span>, </span>
+<span>  external.coef.cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coef1"</span>, <span class="st">"coef2"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Input SNPs: target.ss=10000, target.ld=10000, external.ss=163140</span></span>
+<span><span class="co"># Aligned 9000 SNPs in same orientation, 1000 in flipped orientation; 0 dropped (no allele match).</span></span>
+<span><span class="co"># External: 9000 matched, 1000 flipped, 0 conflict, 0 zero-padded.</span></span>
+<span><span class="co"># Final analysis set: 10000 SNPs.</span></span></code></pre></div>
+<p>The processed output can then be used to construct the inputs for
+<code><a href="../reference/BRIERs.html">BRIERs()</a></code>. The target LD matrix should be subset using
+<code>processed$target.ld.keep</code>, and the aligned external
+coefficient matrix can be extracted from
+<code>processed$external.ss</code>. Unlike <code><a href="../reference/BRIERi.html">BRIERi()</a></code>,
+<code><a href="../reference/BRIERs.html">BRIERs()</a></code> does not require an intercept row in
+beta.external.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">LD.input</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">target.ld.mat</span><span class="op">[</span><span class="va">processed</span><span class="op">$</span><span class="va">target.ld.keep</span>, <span class="va">processed</span><span class="op">$</span><span class="va">target.ld.keep</span><span class="op">]</span></span>
+<span><span class="va">external.mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span></span>
+<span>  <span class="va">processed</span><span class="op">$</span><span class="va">external.ss</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^coef"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">processed</span><span class="op">$</span><span class="va">external.ss</span><span class="op">)</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.html">BRIERs</a></span><span class="op">(</span></span>
+<span>  sumstats <span class="op">=</span> <span class="va">processed</span><span class="op">$</span><span class="va">target.ss</span>, XtX <span class="op">=</span> <span class="va">LD.input</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">external.mat</span>, </span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>If model selection is performed using criteria that require an
+estimate of SNP heritability, users may compute heritability externally
+and pass it to <code><a href="../reference/BRIERs.selection.html">BRIERs.selection()</a></code>. In this example, there
+are only 10,000 SNPs included, the heritability is not well estimated
+from package ldscr, therefore we use 0.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ldsc_input</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">target.ss</span></span>
+<span><span class="va">ldsc_input</span><span class="op">$</span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="va">ldsc_input</span><span class="op">$</span><span class="va">STAT</span> </span>
+<span><span class="va">ldsc_input</span><span class="op">$</span><span class="va">N</span> <span class="op">&lt;-</span> <span class="va">ldsc_input</span><span class="op">$</span><span class="va">NMISS</span></span>
+<span><span class="va">h2_res</span> <span class="op">&lt;-</span> <span class="fu">ldscr</span><span class="fu">::</span><span class="fu">ldsc_h2</span><span class="op">(</span>munged_sumstats <span class="op">=</span> <span class="va">ldsc_input</span>, ancestry <span class="op">=</span> <span class="st">"AFR"</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.selection.html">BRIERs.selection</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"GIC"</span>, </span>
+<span>  TN <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">target.ss</span><span class="op">$</span><span class="va">NMISS</span><span class="op">)</span>, </span>
+<span>  h2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">h2_res</span><span class="op">$</span><span class="va">h2_observed</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Best eta: 6.158 </span></span>
+<span><span class="co"># Best lambda: 0 </span></span></code></pre></div>
+<p>The <code><a href="../reference/plot.eta.html">plot.eta()</a></code> function visualize the selection of <span class="math inline">\(\eta\)</span> using GIC.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<div style="display: flex; justify-content: space-between;">
+<p><img src="../reference/figures/line.eta_height_BRIERs_GIC.png" alt="Generalized information criterion as a function of eta" style="width:49%;"></p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="practical-preprocessing-recommendations">4. Practical preprocessing recommendations<a class="anchor" aria-label="anchor" href="#practical-preprocessing-recommendations"></a>
+</h3>
+<p>In addition to the allele harmonization and SNP alignment implemented
+in <code><a href="../reference/preprocessI.html">preprocessI()</a></code> and <code><a href="../reference/preprocessS.html">preprocessS()</a></code>, we
+recommend applying standard genotype and summary-statistic
+quality-control steps before BRIER modeling.</p>
+<p>Based on our experience, users may consider the following
+preprocessing steps:</p>
+<ul>
+<li>Remove insertion/deletion variants and structural variants, unless
+they are specifically included in the study design. Restricting to SNPs
+can reduce ambiguity in allele matching across target and external
+sources.</li>
+<li>Restrict analyses to biallelic variants. Multi-allelic sites can
+create ambiguous <code>CHR:BP:REF:ALT</code> definitions across datasets
+and are removed by the preprocessing functions.</li>
+<li>Filter variants by minor allele frequency. For common-variant PRS
+modeling, a typical choice is to retain variants with
+<code>0.01 &lt;= MAF &lt;= 0.99</code>. Less restrictive thresholds may
+be used when rare variants are of primary interest.</li>
+<li>Filter variants by imputation quality, for example retaining
+variants with imputation <code>R^2 &gt;= 0.7</code> or another
+study-specific threshold.</li>
+<li>Remove variants showing strong deviation from Hardy–Weinberg
+equilibrium within the target cohort, when appropriate for the study
+design.</li>
+<li>Check and harmonize the genome build across all inputs, such as
+GRCh37/hg19 versus GRCh38/hg38. Variants should be represented on the
+same genome build before matching by chromosome and base-pair position.
+We recommend harmonizing all inputs to GRCh38/hg38 when possible.
+However, if a more suitable LD reference panel is only available in
+GRCh37/hg19, harmonize all inputs to GRCh37/hg19 instead. For example,
+one that is better ancestry-matched to the target cohort or derived from
+a larger reference sample. Avoid lifting the LD panel itself between
+builds, as coordinate conversion of LD reference data is error-prone.
+For coordinate conversion, users may refer to the <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" class="external-link">UCSC LiftOver tool</a>
+for both web-based and command-line conversion using chain files, or to
+the <a href="https://cloufield.github.io/GWASTutorial/LiftOver/" class="external-link">GWAS
+Tutorial liftover guide</a> for a worked example of lifting summary
+statistics between assemblies.</li>
+<li>Use LD reference panels that are ancestry-matched to the target
+cohort whenever possible. This is particularly important for
+<code><a href="../reference/BRIERs.html">BRIERs()</a></code>, where the LD matrix directly enters model fitting
+and should reflect the LD structure of the target population.</li>
+<li>We highly recommend LD pruning or clumping before model fitting to
+reduce memory usage and improve computational efficiency, especially
+when starting from a large genome-wide SNP set. <a href="https://www.cog-genomics.org/plink/2.0/ld" class="external-link">LD pruning</a> and <a href="https://www.cog-genomics.org/plink/2.0/postproc" class="external-link">clumping</a> can
+be performed using PLINK.</li>
+</ul>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
