@@ -15,9 +15,6 @@ editor_options:
 bibliography: references.bib
 ---
 
-# 1. Introduction
-
-When modeling with genotypes to model the polygenic risk of complex traits, the data preprocessing needs extra cautious. For example, mis-alignment of Flipped reference/alternative alleles between target and external source bring challenges/XXXother words; chromosome misalignment standardardizaiton X/Y (1, chr1, Chr1 etc). Here we provide helper funtions `preprocessI()` for data preprocessing of `BRIERi()` modeling and `preprocessS()` for data preprocessing of `BRIERs()` modeling.
 
 # 1. Introduction {#sec-Introduction}
 
@@ -33,7 +30,7 @@ To facilitate these preprocessing steps, `BRIER` provides helper functions for g
 These functions are designed to help users align variants, harmonize allele coding, standardize chromosome and position information, and construct model-ready inputs for downstream BRIER analysis.
 
 
-# 2. `preprocessI()` {#sec-preprocessI}
+# 2. `preprocessI` {#sec-preprocessI}
 
 ## 2.1 Basic Usage
 

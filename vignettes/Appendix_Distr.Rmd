@@ -45,7 +45,7 @@ Table: Evaluation metrics for outcome families implemented in `BRIER`. Abbreviat
 | Gaussian | Pearson $R^2$ | `"gaussian.rsq"` | $\dfrac{\left\{\sum_{i=1}^n (y_i-\bar{y})(\widehat{y}_i-\overline{\widehat{y}})\right\}^2}{\left\{\sum_{i=1}^n (y_i-\bar{y})^2\right\}\left\{\sum_{i=1}^n (\widehat{y}_i-\overline{\widehat{y}})^2\right\}}$ | Max |
 | Binomial | PD | `"binomial.dev"` | $-\dfrac{2}{n}\sum_{i=1}^n\left[y_i\log(\widehat{y}_i)+(1-y_i)\log(1-\widehat{y}_i)\right]$ | Min |
 | Binomial | Tjur's $R^2$ | `"binomial.tjurrsq"` | $\dfrac{1}{n_1}\sum_{i:y_i=1}\widehat{y}_i\;-\;\dfrac{1}{n_0}\sum_{i:y_i=0}\widehat{y}_i$ | Max |
-| Binomial | AUC | `"binomial.AUC"` | $\Pr(\widehat{y}_i>\widehat{y}_j \mid y_i=1,\; y_j=0)$ | Max |
+| Binomial | AUC | `"binomial.auc"` | $\Pr(\widehat{y}_i>\widehat{y}_j \mid y_i=1,\; y_j=0)$ | Max |
 | Poisson | PD | `"poisson.dev"` | $\dfrac{2}{n}\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i-\widehat{y}_i)\right]$ | Min |
 | Negative Binomial | PD | `"negbin.dev"` | $\dfrac{2}{n}\sum_{i=1}^n\left[y_i\log\!\left(\dfrac{y_i}{\widehat{y}_i}\right)-(y_i+r)\log\!\left(\dfrac{y_i+r}{\widehat{y}_i+r}\right)\right]$ | Min |
 | Cox | PD | `"cox.dev"` | $-\dfrac{2}{n}\sum_{i\in\mathrm{E}}\left[\log(\widehat{r}_i)-\log\!\left(\sum_{j\in\mathrm{R}_i}\widehat{r}_j\right)\right]$ | Min |
