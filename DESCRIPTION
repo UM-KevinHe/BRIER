@@ -13,12 +13,13 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
 Depends: 
-    R (>= 4.0),
-    Matrix,
-    ggplot2
+    R (>= 4.0)
 Imports:
     Rcpp,
+    Matrix,
+    ggplot2,
     stats,
+    utils,
     parallel,
     pROC,
     rlang

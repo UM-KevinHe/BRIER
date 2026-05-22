@@ -1,4 +1,4 @@
-#' BRIER2: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
+#' BRIER: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
 #'
 #' Penalized regression methods for genetic risk prediction that integrate
 #' pretrained external models or external individual-level data with target
@@ -10,8 +10,9 @@
 #' @keywords internal
 #' @useDynLib BRIER, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
-#' @importFrom stats setNames
 #' @importFrom utils head
-#' @importFrom stats approx cor glm logLik model.matrix optim prcomp predict qt residuals sd var
+#' @importFrom stats approx cor glm logLik model.matrix optim prcomp predict qt residuals sd var setNames
 #' @importFrom rlang .data
+#' @importFrom Matrix Matrix sparseMatrix forceSymmetric nearPD
+#' @importFrom ggplot2 ggplot aes geom_line geom_point labs theme_classic theme element_text
 "_PACKAGE"

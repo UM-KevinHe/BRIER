@@ -4,7 +4,7 @@
 \name{BRIER-package}
 \alias{BRIER}
 \alias{BRIER-package}
-\title{BRIER2: Bregman-Divergence-Based Regularized Integrative Estimator in Regression}
+\title{BRIER: Bregman-Divergence-Based Regularized Integrative Estimator in Regression}
 \description{
 Penalized regression methods for genetic risk prediction that integrate
 pretrained external models or external individual-level data with target
