@@ -122,5 +122,3 @@ If you encounter problems or bugs, please contact us:
 # Reference
 
 Li Q, Patrick MT, Zhang H, Khunsriraksakul C, Stuart PE, Gudjonsson JE, Nair R, Elder JT, Liu DJ, Kang J, Tsoi LC, He K. Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025. 2022 Oct 12. (https://arxiv.org/abs/2210.06025)
-
-Li Q, Patrick MT, Fritsche L, Wang D, Kang J, Tsoi LC, He K. Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025. 2022 Oct 12. (https://arxiv.org/abs/2210.06025)
