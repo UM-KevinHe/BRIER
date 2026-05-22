@@ -337,8 +337,8 @@ Then, we calculate the marginal correlation estimate from marginal t-type test p
 
 ```{r, echo = TRUE, eval = FALSE}
 summary <- data$target$train$sumstats
-summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
 XtX.list <- calLD(X, summary)
+summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
 beta.external <- data$beta.external[, 1]
 ```
 
@@ -438,8 +438,8 @@ The example below illustrates the integration curves obtained when `BRIER` incor
 ## Extract training data
 X <- data$target$train$X 
 summary <- data$target$train$sumstats
-summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
 XtX.list <- calLD(X, summary)
+summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
 beta.external <- data$beta.external[, 1]
 
 ## Model fitting and hyper-parameter tuning

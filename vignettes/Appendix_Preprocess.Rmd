@@ -309,6 +309,68 @@ out <- plot.eta(fit)
 </div>
 
 
+## 3.3 LD calculation {#sec-LD}
+
+In this section, we describe how to construct the LD/reference covariance matrix used by `BRIERs()`.
+
+The function `calLD()` can be used to calculate an LD matrix from a reference panel. The reference genotype or predictor matrix should be provided through the argument `X`, with samples in rows and predictors in columns.
+
+When the predictors are SNPs, we recommend computing LD within approximately independent LD blocks. In this case, users should provide LD block definitions through the `LDB` argument. Although this argument is optional, it is highly recommended for large SNP sets because block-wise LD calculation can substantially reduce memory usage and computational cost. The `BRIER` package provides predefined LD block definitions based on Berisa and Pickrell (2015), which can be retrieved using the helper function `getLDB()`.
+
+If `LDB` is provided, SNP annotation must also be supplied through the `SNP.info` argument. The `SNP.info` data frame should contain chromosome and base-pair position columns named exactly `CHR` and `BP`, so that SNPs can be assigned to LD blocks.
+
+The argument `tau` controls optional soft-thresholding of pairwise correlations. By default, `tau = 0`, so no soft-thresholding is applied. Larger values of `tau` shrink small correlations to zero, which can further reduce memory usage and improve computational efficiency when the number of predictors is large.
+
+The returned object is a list containing the sparse LD/reference matrix, intermediate LD block information for the included SNPs, and the indices of predictors retained after removing constant columns.
+
+Users should be cautious about constant columns in the reference genotype matrix. If constant SNP columns are detected, `calLD()` removes them and returns the indices of retained, non-constant predictors. In this case, users should subset `SNP.info` using the returned index so that the SNP annotation remains aligned with the LD matrix.
+
+```{r, echo = TRUE, eval = FALSE}
+## Read genotype data from PLINK BED format
+X <- BEDMatrix::BEDMatrix("path_to_bed")
+X <- as.matrix(X)
+
+SNP.info <- read.table("path_to_bim", header = FALSE)
+colnames(SNP.info) <- c("CHR", "ID", "V3", "BP", "A1", "A2")
+
+## Retrieve predefined LD blocks
+LDB.path <- getLDB(race = "AFR", build = "hg19")
+LDB <- read.table(LDB.path, header = TRUE)
+
+## Convert chromosome labels such as "chr1" to numeric chromosome IDs
+LDB[, 1] <- as.numeric(sub("chr", "", LDB[, 1]))
+LDB <- as.matrix(LDB)
+
+## Calculate block-structured LD matrix
+LD.list <- calLD(
+  X = X,
+  SNP.info = SNP.info,
+  LDB = LDB,
+  tau = 0
+)
+
+## Extract sparse LD matrix
+LD.mat <- LD.list[[1]]
+
+## Extract indices of retained non-constant SNPs
+keep.idx <- LD.list[[3]]
+
+## Update SNP information to match the LD matrix
+SNP.info <- SNP.info[keep.idx, , drop = FALSE]
+
+ncol(LD.mat) == nrow(SNP.info)
+```
+
+For non-genetic predictors, or when LD blocks are not used, only the reference predictor matrix X is required. In this case, `calLD()` computes the reference covariance/correlation matrix across predictors directly.
+
+```{r, echo = TRUE, eval = FALSE}
+LD.list <- calLD(X, tau = 0)
+LD.mat <- LD.list[[1]]
+keep.idx <- LD.list[[3]]
+length(keep.idx) == ncol(X)
+```
+
+
 # 4. Practical preprocessing recommendations
 
 In addition to the allele harmonization and SNP alignment implemented in `preprocessI()` and `preprocessS()`, we recommend applying standard genotype and summary-statistic quality-control steps before BRIER modeling.

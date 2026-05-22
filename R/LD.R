@@ -34,7 +34,7 @@
 #' }
 #'
 #' @export
-calLD <- function(X, SNP.info, LDB = NULL, tau = 0) {
+calLD <- function(X, SNP.info = NULL, LDB = NULL, tau = 0) {
 
   if (is.null(LDB)) {
 
@@ -100,4 +100,57 @@ calLD <- function(X, SNP.info, LDB = NULL, tau = 0) {
 
   class(out) <- "LD"
   out
+}
+
+#' Path to a bundled Berisa-Pickrell LD block file
+#'
+#' Returns the file system path to a packaged BED file that describes
+#' approximately-independent LD blocks from Berisa and Pickrell (2016).
+#' The package ships LD block coordinates for three continental ancestries
+#' (AFR, EAS, EUR) in two genome builds (hg19, hg38).
+#'
+#' These files can be used directly as the \code{blocks} argument to
+#' \code{\link{LD_blocks}} or supplied to downstream LD-aware functions
+#' such as \code{\link{calLD}}.
+#'
+#' @param ancestry Character. One of \code{"AFR"}, \code{"EAS"}, or
+#'   \code{"EUR"}.
+#' @param build Character. One of \code{"hg19"} (GRCh37) or \code{"hg38"}
+#'   (GRCh38). Default \code{"hg38"}.
+#'
+#' @return Absolute path to the requested BED file.
+#'
+#' @references
+#' Berisa, T. and Pickrell, J. K. (2016). Approximately independent
+#' linkage disequilibrium blocks in human populations.
+#' \emph{Bioinformatics}, 32(2), 283-285.
+#'
+#' Original hg19 BED files:
+#' \url{https://bitbucket.org/nygcresearch/ldetect-data}
+#'
+#' @examples
+#' \dontrun{
+#' bed_path <- getLDB("EUR", "hg38")
+#' blocks <- read.table(bed_path, header = T)
+#' head(blocks)
+#' }
+#'
+#' @seealso \code{\link{LD_blocks}}, \code{\link{calLD}}
+#'
+#' @export
+getLDB <- function(
+  ancestry = c("AFR", "EAS", "EUR"),
+  build    = c("hg38", "hg19")
+  ) {
+  ancestry <- match.arg(ancestry)
+  build    <- match.arg(build)
+  fname    <- sprintf("Berisa.%s.%s.bed", ancestry, build)
+  path     <- system.file("extdata", fname, package = "BRIER")
+  if (!nzchar(path)) {
+    stop(
+      "LD block file not found in installed package: ", fname, ". ",
+      "Try reinstalling BRIER.", call. = FALSE
+    )
+  }
+  path
 }

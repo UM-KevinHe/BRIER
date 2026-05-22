@@ -92,6 +92,7 @@ reference:
     - mergeExternals
     - p2cor
     - calLD
+    - getLDB
     - standardize_X
 - title: "Plotting"
   desc: >

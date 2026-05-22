@@ -342,6 +342,57 @@
 <p><img src="../reference/figures/line.eta_height_BRIERs_GIC.png" alt="Generalized information criterion as a function of eta" style="width:49%;"></p>
 </div>
 </div>
+<div class="section level3">
+<h3 id="sec-LD">3.3 LD calculation<a class="anchor" aria-label="anchor" href="#sec-LD"></a>
+</h3>
+<p>In this section, we describe how to construct the LD/reference covariance matrix used by <code><a href="../reference/BRIERs.html">BRIERs()</a></code>.</p>
+<p>The function <code><a href="../reference/calLD.html">calLD()</a></code> can be used to calculate an LD matrix from a reference panel. The reference genotype or predictor matrix should be provided through the argument <code>X</code>, with samples in rows and predictors in columns.</p>
+<p>When the predictors are SNPs, we recommend computing LD within approximately independent LD blocks. In this case, users should provide LD block definitions through the <code>LDB</code> argument. Although this argument is optional, it is highly recommended for large SNP sets because block-wise LD calculation can substantially reduce memory usage and computational cost. The <code>BRIER</code> package provides predefined LD block definitions based on Berisa and Pickrell (2015), which can be retrieved using the helper function <code><a href="../reference/getLDB.html">getLDB()</a></code>.</p>
+<p>If <code>LDB</code> is provided, SNP annotation must also be supplied through the <code>SNP.info</code> argument. The <code>SNP.info</code> data frame should contain chromosome and base-pair position columns named exactly <code>CHR</code> and <code>BP</code>, so that SNPs can be assigned to LD blocks.</p>
+<p>The argument <code>tau</code> controls optional soft-thresholding of pairwise correlations. By default, <code>tau = 0</code>, so no soft-thresholding is applied. Larger values of <code>tau</code> shrink small correlations to zero, which can further reduce memory usage and improve computational efficiency when the number of predictors is large.</p>
+<p>The returned object is a list containing the sparse LD/reference matrix, intermediate LD block information for the included SNPs, and the indices of predictors retained after removing constant columns.</p>
+<p>Users should be cautious about constant columns in the reference genotype matrix. If constant SNP columns are detected, <code><a href="../reference/calLD.html">calLD()</a></code> removes them and returns the indices of retained, non-constant predictors. In this case, users should subset <code>SNP.info</code> using the returned index so that the SNP annotation remains aligned with the LD matrix.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Read genotype data from PLINK BED format</span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu">BEDMatrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BEDMatrix/man/BEDMatrix.html" class="external-link">BEDMatrix</a></span><span class="op">(</span><span class="st">"path_to_bed"</span><span class="op">)</span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">SNP.info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"path_to_bim"</span>, header <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">SNP.info</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span>, <span class="st">"ID"</span>, <span class="st">"V3"</span>, <span class="st">"BP"</span>, <span class="st">"A1"</span>, <span class="st">"A2"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Retrieve predefined LD blocks</span></span>
+<span><span class="va">LDB.path</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getLDB.html">getLDB</a></span><span class="op">(</span>race <span class="op">=</span> <span class="st">"AFR"</span>, build <span class="op">=</span> <span class="st">"hg19"</span><span class="op">)</span></span>
+<span><span class="va">LDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="va">LDB.path</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Convert chromosome labels such as "chr1" to numeric chromosome IDs</span></span>
+<span><span class="va">LDB</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"chr"</span>, <span class="st">""</span>, <span class="va">LDB</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">LDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">LDB</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Calculate block-structured LD matrix</span></span>
+<span><span class="va">LD.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calLD.html">calLD</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>  SNP.info <span class="op">=</span> <span class="va">SNP.info</span>,</span>
+<span>  LDB <span class="op">=</span> <span class="va">LDB</span>,</span>
+<span>  tau <span class="op">=</span> <span class="fl">0</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Extract sparse LD matrix</span></span>
+<span><span class="va">LD.mat</span> <span class="op">&lt;-</span> <span class="va">LD.list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co">## Extract indices of retained non-constant SNPs</span></span>
+<span><span class="va">keep.idx</span> <span class="op">&lt;-</span> <span class="va">LD.list</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co">## Update SNP information to match the LD matrix</span></span>
+<span><span class="va">SNP.info</span> <span class="op">&lt;-</span> <span class="va">SNP.info</span><span class="op">[</span><span class="va">keep.idx</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">LD.mat</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">SNP.info</span><span class="op">)</span></span></code></pre></div>
+<p>For non-genetic predictors, or when LD blocks are not used, only the reference predictor matrix X is required. In this case, <code><a href="../reference/calLD.html">calLD()</a></code> computes the reference covariance/correlation matrix across predictors directly.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">LD.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calLD.html">calLD</a></span><span class="op">(</span><span class="va">X</span>, tau <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">LD.mat</span> <span class="op">&lt;-</span> <span class="va">LD.list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">keep.idx</span> <span class="op">&lt;-</span> <span class="va">LD.list</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">keep.idx</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="practical-preprocessing-recommendations">4. Practical preprocessing recommendations<a class="anchor" aria-label="anchor" href="#practical-preprocessing-recommendations"></a>

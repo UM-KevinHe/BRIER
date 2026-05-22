@@ -4,7 +4,7 @@
 \alias{calLD}
 \title{Calculate LD matrix for BRIER.S}
 \usage{
-calLD(X, SNP.info, LDB = NULL, tau = 0)
+calLD(X, SNP.info = NULL, LDB = NULL, tau = 0)
 }
 \arguments{
 \item{X}{An n x p reference genotype matrix (individual-level).}
