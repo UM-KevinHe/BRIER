@@ -7,11 +7,11 @@ It flexibly accommodates a broad range of outcome types, including continuous, b
 The framework is implemented through three principled functions, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`, 
 which address the major data-access constraints encountered in biomedical and statistical-genetics research.
 
-# Writing R code with an AI assistant?
+# Using BRIER with an AI assistant?
 
-We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/llms.txt>** following the [llms.txt convention](https://llmstxt.org/). It gives the assistant a compact map of the package pinned to the current release: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site.
+We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/llms.txt>** following the [llms.txt convention](https://llmstxt.org/). It gives the assistant a compact map of the package: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site.
 
-Point your assistant at the URL, paste the contents into the chat at the start of a session, or drop the file into your project root so IDE-based agents (Cursor, Claude Code, Copilot) pick it up automatically.
+Point your assistant at the URL or paste the contents into the chat at the start of a session. If you have cloned this repository, coding agents (Codex, Claude Code, Cursor, Copilot, Gemini CLI, and others) also pick up our [`AGENTS.md`](./AGENTS.md), which follows the [AGENTS.md convention](https://agents.md) and adds repository-specific conventions for editing the source.
 
 # Models
 
