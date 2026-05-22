@@ -9,12 +9,9 @@ which address the major data-access constraints encountered in biomedical and st
 
 # Writing R code with an AI assistant?
 
-An AI-optimized reference is published at
-**<https://um-kevinhe.github.io/BRIER/llms.txt>**
-(following the [llms.txt](https://llmstxt.org/) convention).
-Point your AI at that URL, or paste its contents into the chat, to give the
-assistant a compact map of the package — decision tree, parameter reference,
-worked examples, and common pitfalls — without ingesting the full website.
+We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/llms.txt>** following the [llms.txt convention](https://llmstxt.org/). It gives the assistant a compact map of the package pinned to the current release: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site.
+
+Point your assistant at the URL, paste the contents into the chat at the start of a session, or drop the file into your project root so IDE-based agents (Cursor, Claude Code, Copilot) pick it up automatically.
 
 # Models
 
