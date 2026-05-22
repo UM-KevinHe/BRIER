@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,12 +93,13 @@ models for linking genetic variation to transcriptomic architecture
 illustrate the expanding influence of statistical genetics on biomedical
 research and its emerging role in clinical translation.</p>
 <p>Despite these advances, prediction performance remains limited in
-clinically underrepresented populations with scarce data. To address
-these gaps, we previously introduced <code>BRIER</code> [LINK TO
-BRIER1], which integrates a well-powered external model with either
-individual- or summary-level data from a target cohort using a Bregman
-divergence framework. Here, we introduce <code>BRIER</code>, a
-comprehensive update of the previous version.</p>
+clinically underrepresented populations, where target-cohort sample
+sizes are often small and genetic architectures may differ from those
+represented in well-powered discovery studies. To address this
+challenge, we developed <code>BRIER</code>, a comprehensive R package
+designed to improve prediction performance in target cohorts by
+integrating information from well-powered external cohorts across
+different data-availability settings.</p>
 </div>
 <div class="section level3">
 <h3 id="key-modules">1.2 Key Modules<a class="anchor" aria-label="anchor" href="#key-modules"></a>
