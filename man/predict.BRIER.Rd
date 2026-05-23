@@ -7,9 +7,9 @@
 \method{predict}{BRIER}(
   object,
   X,
-  eta = object$eta.min,
+  eta = NULL,
   which.eta = object$eta.min.index,
-  lambda = object$lambda.min,
+  lambda = NULL,
   which.lambda = object$lambda.min.index,
   type = c("link", "response", "coefficients", "vars", "nvars"),
   drop = TRUE,
@@ -21,15 +21,19 @@
 
 \item{X}{A numeric matrix of predictors.}
 
-\item{eta}{Optional matrix of eta combinations to look up.}
+\item{eta}{Optional matrix of eta combinations to look up in
+\code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
+used to select etas directly.}
 
 \item{which.eta}{Optional integer vector of row indices into
-\code{object$eta.grid}.}
+\code{object$eta.grid}. Defaults to \code{object$eta.min.index}.}
 
 \item{lambda}{Optional numeric vector of lambda values for prediction.
-Used only when a single \code{which.eta} is selected.}
+If \code{NULL} (default), \code{which.lambda} is used. Only meaningful
+when a single \code{which.eta} is selected.}
 
-\item{which.lambda}{Optional integer vector of lambda indices.}
+\item{which.lambda}{Optional integer vector of lambda indices. Defaults
+to \code{object$lambda.min.index}.}
 
 \item{type}{A string: "link", "response", "coefficients", "vars", or "nvars".
 See \code{\link{predict.BRIER.eta}}.}

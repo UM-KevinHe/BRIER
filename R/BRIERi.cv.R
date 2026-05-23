@@ -73,7 +73,8 @@
 #' @export
 BRIERi.cv <- function(
   X, y, family = c("gaussian", "binomial", "poisson"),
-  eta.list, beta.external,
+  eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
+  beta.external = rep(0, ncol(X) + 1),
   multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
   ...,
   nfolds = 5, fold = NULL, seed = NULL,
