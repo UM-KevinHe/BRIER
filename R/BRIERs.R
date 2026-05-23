@@ -445,8 +445,8 @@ calcExtXtY <- function(XtX, XtY, beta.external, multi.method) {
     beta.external <- beta.external %*% abs(w)
   } else if (multi.method == "stacking") {
     w <- solve(
-      crossprod(beta.external, XtX %*% beta.external),
-      crossprod(beta.external, XtY)
+      Matrix::crossprod(beta.external, XtX %*% beta.external),
+      Matrix::crossprod(beta.external, XtY)
     )
     beta.external <- beta.external %*% w
   }
