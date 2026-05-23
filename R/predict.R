@@ -6,8 +6,8 @@
 #'
 #' @param object An object of class \code{"BRIER.eta"}.
 #' @param lambda Optional numeric vector of lambda values at which to extract
-#'   coefficients. Must lie within the fitted path. If missing, coefficients are
-#'   returned at the indices given by \code{which}.
+#'   coefficients. Must lie within the fitted path. If \code{NULL} (default),
+#'   coefficients are returned at the indices given by \code{which}.
 #' @param which Integer vector specifying which lambda indices to return.
 #'   Defaults to all fitted lambdas.
 #' @param drop Logical. If TRUE, drop singleton dimensions from the output.
@@ -18,11 +18,11 @@
 #' @seealso \code{\link{predict.BRIER.eta}}, \code{\link{coef.BRIER}}
 #'
 #' @export
-coef.BRIER.eta <- function(object, lambda, which = seq_along(object$lambda), drop = TRUE, ...) {
+coef.BRIER.eta <- function(object, lambda = NULL, which = seq_along(object$lambda), drop = TRUE, ...) {
   if (!inherits(object, "BRIER.eta")) {
     stop("Object must be of class 'BRIER.eta', got '", class(object)[1], "'.", call. = FALSE)
   }
-  if (!missing(lambda)) {
+  if (!is.null(lambda)) {
     if (any(lambda > max(object$lambda) | lambda < min(object$lambda))) {
       stop("lambda must lie within the range of the fitted coefficient path.", call. = FALSE)
     }
@@ -59,8 +59,10 @@ coef.BRIER.eta <- function(object, lambda, which = seq_along(object$lambda), dro
 #'     \item \code{"nvars"}: number of selected variables at each lambda.
 #'   }
 #' @param lambda Optional numeric vector of lambda values for prediction.
+#'   If \code{NULL} (default), \code{which} is used to select lambdas
+#'   directly.
 #' @param which Integer vector specifying which lambda indices to use.
-#'   Defaults to all fitted lambdas.
+#'   Defaults to all fitted lambdas. Ignored when \code{lambda} is supplied.
 #' @param ... Unused; present for S3 method compatibility.
 #'
 #' @return A numeric vector or matrix of predictions, depending on \code{type}.
@@ -71,7 +73,7 @@ coef.BRIER.eta <- function(object, lambda, which = seq_along(object$lambda), dro
 predict.BRIER.eta <- function(
   object, X,
   type = c("link", "response", "coefficients", "vars", "nvars"),
-  lambda, which = seq_along(object$lambda),
+  lambda = NULL, which = seq_along(object$lambda),
   ...
 ) {
   if (!inherits(object, "BRIER.eta")) {
@@ -83,7 +85,7 @@ predict.BRIER.eta <- function(
 
   if (type == "coefficients") return(beta)
   if (type == "nvars")        return(object$k[which])
-  if (type == "vars")         return(drop(apply(abs(beta) >= 1e-8, 2, which)))
+  if (type == "vars")         return(drop(apply(abs(beta) >= 1e-8, 2, base::which)))
 
   # all remaining types need X
   if (missing(X) || is.null(X)) {
@@ -128,14 +130,16 @@ predict.BRIER.eta <- function(
 #' Defaults to the optimal eta and lambda if selection has been performed.
 #'
 #' @param object An object of class \code{"BRIER"}.
-#' @param eta Optional matrix of eta combinations to look up (one row per
-#'   combination, one column per external model).
+#' @param eta Optional matrix of eta combinations to look up in
+#'   \code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
+#'   used to select etas directly.
 #' @param which.eta Optional integer vector of row indices into
 #'   \code{object$eta.grid}. Defaults to \code{object$eta.min.index}.
 #' @param lambda Optional numeric vector of lambda values at which to extract
-#'   coefficients. Used only when a single \code{which.eta} is selected.
-#' @param which.lambda Optional integer vector of lambda indices. Defaults to
-#'   \code{object$lambda.min.index}.
+#'   coefficients. If \code{NULL} (default), \code{which.lambda} is used.
+#'   Only meaningful when a single \code{which.eta} is selected.
+#' @param which.lambda Optional integer vector of lambda indices. Defaults
+#'   to \code{object$lambda.min.index}.
 #' @param drop Logical. If TRUE, drop singleton dimensions from the output.
 #' @param ... Unused; present for S3 method compatibility.
 #'
@@ -148,8 +152,8 @@ predict.BRIER.eta <- function(
 #' @export
 coef.BRIER <- function(
   object,
-  eta = object$eta.min, which.eta = object$eta.min.index,
-  lambda = object$lambda.min, which.lambda = object$lambda.min.index,
+  eta = NULL, which.eta = object$eta.min.index,
+  lambda = NULL, which.lambda = object$lambda.min.index,
   drop = TRUE,
   ...
 ) {
@@ -159,7 +163,7 @@ coef.BRIER <- function(
   }
 
   # -- Resolve eta --
-  if (!missing(eta)) {
+  if (!is.null(eta)) {
     eta <- as.matrix(eta)
     if (ncol(eta) != ncol(object$eta.grid)) {
       stop(paste0(
@@ -170,8 +174,10 @@ coef.BRIER <- function(
     which.eta <- apply(eta, 1, function(e) {
       idx <- which(apply(object$eta.grid, 1, function(row) { all(abs(row - e) < 1e-10) }))
       if (length(idx) == 0) {
-        stop("eta = (", paste(round(e, 4), collapse = ", "),
-             ") does not match any row in eta.grid.", call. = FALSE)
+        stop(
+          "eta = (", paste(round(e, 4), collapse = ", "),
+          ") does not match any row in eta.grid.", call. = FALSE
+        )
       }
       idx[1]
     })
@@ -187,14 +193,12 @@ coef.BRIER <- function(
   }
 
   # -- Capture lambda missingness --
-  has.lambda <- !missing(lambda)
+  has.lambda <- !is.null(lambda)
 
   # -- Single eta: use lambda/which.lambda directly --
   if (length(which.eta) == 1) {
-    if (is.null(which.lambda) || length(which.lambda) == 0) {
-      if (!has.lambda || is.null(lambda)) {
-        stop("No lambda selected. Please supply 'lambda' or 'which.lambda'.", call. = FALSE)
-      }
+    if (!has.lambda && (is.null(which.lambda) || length(which.lambda) == 0)) {
+      stop("No lambda selected. Please supply 'lambda' or 'which.lambda'.", call. = FALSE)
     }
     fit <- object$res[[which.eta]]
     if (has.lambda) {
@@ -206,8 +210,10 @@ coef.BRIER <- function(
 
   # -- Multiple eta: look up best lambda per eta from eta.lambda --
   if (is.null(object$eta.lambda)) {
-    stop("Multiple eta requested but object$eta.lambda not found. ",
-         "Run selection or CV first.", call. = FALSE)
+    stop(
+      "Multiple eta requested but object$eta.lambda not found. ",
+      "Run selection or CV first.", call. = FALSE
+    )
   }
 
   out <- lapply(which.eta, function(i) {
@@ -233,12 +239,16 @@ coef.BRIER <- function(
 #'
 #' @param object An object of class \code{"BRIER"}.
 #' @param X A numeric matrix of predictors.
-#' @param eta Optional matrix of eta combinations to look up.
+#' @param eta Optional matrix of eta combinations to look up in
+#'   \code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
+#'   used to select etas directly.
 #' @param which.eta Optional integer vector of row indices into
-#'   \code{object$eta.grid}.
+#'   \code{object$eta.grid}. Defaults to \code{object$eta.min.index}.
 #' @param lambda Optional numeric vector of lambda values for prediction.
-#'   Used only when a single \code{which.eta} is selected.
-#' @param which.lambda Optional integer vector of lambda indices.
+#'   If \code{NULL} (default), \code{which.lambda} is used. Only meaningful
+#'   when a single \code{which.eta} is selected.
+#' @param which.lambda Optional integer vector of lambda indices. Defaults
+#'   to \code{object$lambda.min.index}.
 #' @param type A string: "link", "response", "coefficients", "vars", or "nvars".
 #'   See \code{\link{predict.BRIER.eta}}.
 #' @param drop Logical. If TRUE, drop singleton dimensions from the output.
@@ -252,8 +262,8 @@ coef.BRIER <- function(
 #' @export
 predict.BRIER <- function(
   object, X,
-  eta = object$eta.min, which.eta = object$eta.min.index,
-  lambda = object$lambda.min, which.lambda = object$lambda.min.index,
+  eta = NULL, which.eta = object$eta.min.index,
+  lambda = NULL, which.lambda = object$lambda.min.index,
   type = c("link", "response", "coefficients", "vars", "nvars"),
   drop = TRUE,
   ...
@@ -266,7 +276,7 @@ predict.BRIER <- function(
   type <- match.arg(type)
 
   # -- Resolve eta --
-  if (!missing(eta)) {
+  if (!is.null(eta)) {
     eta <- as.matrix(eta)
     if (ncol(eta) != ncol(object$eta.grid)) {
       stop(paste0(
@@ -288,22 +298,22 @@ predict.BRIER <- function(
 
   # -- Validate which.eta --
   if (is.null(which.eta) || length(which.eta) == 0) {
-    stop("No eta selected. Please supply 'eta' or 'which.eta', ",
-         "or run selection/CV first.", call. = FALSE)
+    stop(
+      "No eta selected. Please supply 'eta' or 'which.eta', ",
+      "or run selection/CV first.", call. = FALSE
+    )
   }
   if (any(which.eta < 1) || any(which.eta > length(object$res))) {
     stop(paste0("which.eta must be between 1 and ", length(object$res), "."), call. = FALSE)
   }
 
   # -- Capture lambda missingness --
-  has.lambda <- !missing(lambda)
+  has.lambda <- !is.null(lambda)
 
   # -- Single eta: use lambda/which.lambda directly --
   if (length(which.eta) == 1) {
-    if (is.null(which.lambda) || length(which.lambda) == 0) {
-      if (!has.lambda || is.null(lambda)) {
-        stop("No lambda selected. Please supply 'lambda' or 'which.lambda'.", call. = FALSE)
-      }
+    if (!has.lambda && (is.null(which.lambda) || length(which.lambda) == 0)) {
+      stop("No lambda selected. Please supply 'lambda' or 'which.lambda'.", call. = FALSE)
     }
     fit <- object$res[[which.eta]]
     if (has.lambda) {

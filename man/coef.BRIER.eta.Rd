@@ -4,14 +4,14 @@
 \alias{coef.BRIER.eta}
 \title{Coefficients from a single BRIER fit}
 \usage{
-\method{coef}{BRIER.eta}(object, lambda, which = seq_along(object$lambda), drop = TRUE, ...)
+\method{coef}{BRIER.eta}(object, lambda = NULL, which = seq_along(object$lambda), drop = TRUE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{"BRIER.eta"}.}
 
 \item{lambda}{Optional numeric vector of lambda values at which to extract
-coefficients. Must lie within the fitted path. If missing, coefficients are
-returned at the indices given by \code{which}.}
+coefficients. Must lie within the fitted path. If \code{NULL} (default),
+coefficients are returned at the indices given by \code{which}.}
 
 \item{which}{Integer vector specifying which lambda indices to return.
 Defaults to all fitted lambdas.}

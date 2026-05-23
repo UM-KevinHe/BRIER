@@ -8,7 +8,7 @@
   object,
   X,
   type = c("link", "response", "coefficients", "vars", "nvars"),
-  lambda,
+  lambda = NULL,
   which = seq_along(object$lambda),
   ...
 )
@@ -28,10 +28,12 @@
 \item \code{"nvars"}: number of selected variables at each lambda.
 }}
 
-\item{lambda}{Optional numeric vector of lambda values for prediction.}
+\item{lambda}{Optional numeric vector of lambda values for prediction.
+If \code{NULL} (default), \code{which} is used to select lambdas
+directly.}
 
 \item{which}{Integer vector specifying which lambda indices to use.
-Defaults to all fitted lambdas.}
+Defaults to all fitted lambdas. Ignored when \code{lambda} is supplied.}
 
 \item{...}{Unused; present for S3 method compatibility.}
 }

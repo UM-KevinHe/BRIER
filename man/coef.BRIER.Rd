@@ -6,9 +6,9 @@
 \usage{
 \method{coef}{BRIER}(
   object,
-  eta = object$eta.min,
+  eta = NULL,
   which.eta = object$eta.min.index,
-  lambda = object$lambda.min,
+  lambda = NULL,
   which.lambda = object$lambda.min.index,
   drop = TRUE,
   ...
@@ -17,17 +17,19 @@
 \arguments{
 \item{object}{An object of class \code{"BRIER"}.}
 
-\item{eta}{Optional matrix of eta combinations to look up (one row per
-combination, one column per external model).}
+\item{eta}{Optional matrix of eta combinations to look up in
+\code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
+used to select etas directly.}
 
 \item{which.eta}{Optional integer vector of row indices into
 \code{object$eta.grid}. Defaults to \code{object$eta.min.index}.}
 
 \item{lambda}{Optional numeric vector of lambda values at which to extract
-coefficients. Used only when a single \code{which.eta} is selected.}
+coefficients. If \code{NULL} (default), \code{which.lambda} is used.
+Only meaningful when a single \code{which.eta} is selected.}
 
-\item{which.lambda}{Optional integer vector of lambda indices. Defaults to
-\code{object$lambda.min.index}.}
+\item{which.lambda}{Optional integer vector of lambda indices. Defaults
+to \code{object$lambda.min.index}.}
 
 \item{drop}{Logical. If TRUE, drop singleton dimensions from the output.}
 
