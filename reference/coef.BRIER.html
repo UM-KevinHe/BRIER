@@ -66,9 +66,9 @@ Defaults to the optimal eta and lambda if selection has been performed.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'BRIER'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
-<span>  eta <span class="op">=</span> <span class="va">object</span><span class="op">$</span><span class="va">eta.min</span>,</span>
+<span>  eta <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  which.eta <span class="op">=</span> <span class="va">object</span><span class="op">$</span><span class="va">eta.min.index</span>,</span>
-<span>  lambda <span class="op">=</span> <span class="va">object</span><span class="op">$</span><span class="va">lambda.min</span>,</span>
+<span>  lambda <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  which.lambda <span class="op">=</span> <span class="va">object</span><span class="op">$</span><span class="va">lambda.min.index</span>,</span>
 <span>  drop <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -84,8 +84,9 @@ Defaults to the optimal eta and lambda if selection has been performed.</p>
 
 
 <dt id="arg-eta">eta<a class="anchor" aria-label="anchor" href="#arg-eta"></a></dt>
-<dd><p>Optional matrix of eta combinations to look up (one row per
-combination, one column per external model).</p></dd>
+<dd><p>Optional matrix of eta combinations to look up in
+<code>object$eta.grid</code>. If <code>NULL</code> (default), <code>which.eta</code> is
+used to select etas directly.</p></dd>
 
 
 <dt id="arg-which-eta">which.eta<a class="anchor" aria-label="anchor" href="#arg-which-eta"></a></dt>
@@ -95,12 +96,13 @@ combination, one column per external model).</p></dd>
 
 <dt id="arg-lambda">lambda<a class="anchor" aria-label="anchor" href="#arg-lambda"></a></dt>
 <dd><p>Optional numeric vector of lambda values at which to extract
-coefficients. Used only when a single <code>which.eta</code> is selected.</p></dd>
+coefficients. If <code>NULL</code> (default), <code>which.lambda</code> is used.
+Only meaningful when a single <code>which.eta</code> is selected.</p></dd>
 
 
 <dt id="arg-which-lambda">which.lambda<a class="anchor" aria-label="anchor" href="#arg-which-lambda"></a></dt>
-<dd><p>Optional integer vector of lambda indices. Defaults to
-<code>object$lambda.min.index</code>.</p></dd>
+<dd><p>Optional integer vector of lambda indices. Defaults
+to <code>object$lambda.min.index</code>.</p></dd>
 
 
 <dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
