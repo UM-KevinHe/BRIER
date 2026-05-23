@@ -13,6 +13,6 @@
 #' @importFrom utils head
 #' @importFrom stats approx cor glm logLik model.matrix optim prcomp predict qt residuals sd var setNames
 #' @importFrom rlang .data
-#' @importFrom Matrix Matrix sparseMatrix forceSymmetric nearPD
+#' @importFrom Matrix Matrix sparseMatrix forceSymmetric nearPD crossprod tcrossprod
 #' @importFrom ggplot2 ggplot aes geom_line geom_point labs theme_classic theme element_text
 "_PACKAGE"
