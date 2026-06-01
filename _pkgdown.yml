@@ -37,6 +37,9 @@ navbar:
       href: articles/Appendix_GWAS.html
   - text: Reference
     href: reference/index.html
+  - text: Claude Desktop (MCP)
+    href: https://github.com/UM-KevinHe/BRIER-MCP
+    aria-label: BRIER MCP server (Claude Desktop integration)
   right:
   - icon: fa-github fa-lg
     href: https://github.com/um-kevinhe/BRIER
