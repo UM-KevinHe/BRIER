@@ -115,7 +115,7 @@ dim(beta.external)
 # [1] p 3
 ```
 
-Each column of `beta.external` corresponds to one external model, and the rows must be aligned with the columns of the target predictor matrix. When external models are obtained from published studies (e.g., published PRS weights), users may need to reconstruct the coefficient vectors so that they match the target predictor set, assigning zero to predictors absent from a given external model. For genetic risk prediction with GWAS summary statistics, the helper function `PreprocessS()` performs this alignment automatically; see [Appendix: Data Processing of Genetic Risk Prediction using BRIERs](Appendix_Preprocess.html) for details.
+Each column of `beta.external` corresponds to one external model, and the rows must be aligned with the columns of the target predictor matrix. When external models are obtained from published studies (e.g., published PRS weights), users may need to reconstruct the coefficient vectors so that they match the target predictor set, assigning zero to predictors absent from a given external model. For genetic risk prediction with GWAS summary statistics, the helper function `preprocessS()` performs this alignment automatically; see [Appendix: Data Processing of Genetic Risk Prediction using BRIERs](Appendix_Preprocess.html) for details.
 
 ## 3.2 Fitting `BRIERs` with `multi.method = "stacking"`
 
