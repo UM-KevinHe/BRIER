@@ -60,7 +60,7 @@ void ssr_wgaussian(
   arma::ivec &e2, const arma::mat &X, const arma::vec &r, const arma::vec &wt, int j, int n_obs, int l, 
   const std::string &penalty, const arma::vec &lam, double lam_max, double alpha, double gamma, const arma::vec &multiplier
   ) {
-  double cutoff;
+  double cutoff = 0.0;
   double TOLERANCE = 1e-8;
   
   double z = 0;

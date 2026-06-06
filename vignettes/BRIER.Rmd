@@ -342,7 +342,7 @@ summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
 beta.external <- data$beta.external[, 1]
 ```
 
-For genetic risk prediction using GWAS summary statistics, `BRIER` also provides the helper function `PreprocessS()` for standard preprocessing in `BRIERs` modeling. Details are provided in [Appendix: Data Preprocessing When Modeling with Genotypes](Appendix_Preprocess.html).
+For genetic risk prediction using GWAS summary statistics, `BRIER` also provides the helper function `preprocessS()` for standard preprocessing in `BRIERs` modeling. Details are provided in [Appendix: Data Preprocessing When Modeling with Genotypes](Appendix_Preprocess.html).
 
 ## 5.2 Fitting `BRIERs`
 

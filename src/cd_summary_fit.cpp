@@ -28,7 +28,7 @@ void cd_summary(
   double z = XtY(j) - arma::dot(ld_mat.col(j), b.col(l)) + b(j, l);
   // double z_norm = fabs(z);
 
-  double len;
+  double len = 0.0;
   if (penalty == "LASSO") len = lasso(z, lam1, lam2, 1);
   if (penalty == "MCP")   len = MCP(z, lam1, lam2, gamma, 1);
   if (penalty == "SCAD")  len = SCAD(z, lam1, lam2, gamma, 1);
@@ -75,6 +75,20 @@ List cd_summary_fit(
     double alpha, double gamma, double eps, int max_iter, int dfmax, bool user
 ) {
 
+  if (!XtY.is_finite()) {
+    stop("XtY contains non-finite values (NaN or Inf). Check preprocessing.");
+  }
+  if (!ld_mat.is_finite()) {
+    stop(
+      "ld_mat contains non-finite values. This usually indicates "
+      "zero-variance SNPs in the LD reference panel or division-by-zero "
+      "in correlation computation. Check calLD() inputs and tau threshold."
+    ); 
+  }
+  if (!multiplier.is_finite()) {
+    stop("multiplier contains non-finite values.");
+  }
+
   int p = ld_mat.n_cols;
   int L = lam.n_elem;
   int tot_iter = 0;
@@ -96,7 +110,6 @@ List cd_summary_fit(
     R_CheckUserInterrupt();
 
     if (l != 0) {
-      a = b.col(l - 1);
       nv = 0;
       for (int j = 0; j < p; j++) {
         if (a(j) != 0) nv++;
@@ -105,6 +118,10 @@ List cd_summary_fit(
         for (int ll = l; ll < L; ll++) { iter(ll) = NA_INTEGER; }
         break;
       }
+
+      // warm start
+      b.col(l) = b.col(l - 1);
+      a = b.col(l - 1);
     }
 
     while (tot_iter < max_iter) {

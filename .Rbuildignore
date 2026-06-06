@@ -6,3 +6,5 @@
 ^doc$
 ^Meta$
 ^llms\.txt$
+^AGENTS\.md$
+^CLAUDE\.md$

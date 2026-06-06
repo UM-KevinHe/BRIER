@@ -54,7 +54,7 @@ void ssr_glm(
   const std::string &penalty, const arma::vec &lam, double lmax,
   double alpha, double gamma, const arma::vec &multiplier
 ){
-  double cutoff;
+  double cutoff = 0.0;
   double TOLERANCE = 1e-8;
 
   if (l != 0) {
@@ -69,7 +69,9 @@ void ssr_glm(
 
   if (fabs(z(j)) + TOLERANCE > (cutoff * alpha * multiplier(j))) {
     e2(j) = 1; // not reject, in strong set
-  } 
+  } else {
+    e2(j) = 0;     
+  }
 }
 
 

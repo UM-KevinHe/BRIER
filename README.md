@@ -9,9 +9,7 @@ which address the major data-access constraints encountered in biomedical and st
 
 # Using BRIER with an AI assistant?
 
-We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/llms.txt>** following the [llms.txt convention](https://llmstxt.org/). It gives the assistant a compact map of the package: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site.
-
-Point your assistant at the URL or paste the contents into the chat at the start of a session. If you have cloned this repository, coding agents (Codex, Claude Code, Cursor, Copilot, Gemini CLI, and others) also pick up our [`AGENTS.md`](./AGENTS.md), which follows the [AGENTS.md convention](https://agents.md) and adds repository-specific conventions for editing the source.
+We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/llms.txt>** following the [llms.txt convention](https://llmstxt.org/). It gives the assistant a compact map of the package: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site. Point your assistant at the URL or paste the contents into the chat at the start of a session.
 
 For a more interactive workflow inside **Claude Desktop**, we provide a companion **MCP server** at [UM-KevinHe/BRIER-MCP](https://github.com/UM-KevinHe/BRIER-MCP). The server bridges Claude Desktop to your local R installation: describe your data and your question in natural language, and Claude inspects the file, picks the appropriate BRIER variant (`BRIER.I`, `BRIER.FULL`, or `BRIER.S`), calls the corresponding R function on your machine, and explains the results. All computation runs locally; patient-level data never leaves your computer. Install instructions and a worked example are in the [BRIER-MCP README](https://github.com/UM-KevinHe/BRIER-MCP#readme).
 
