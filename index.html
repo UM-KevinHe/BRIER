@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,8 +74,7 @@
 <div class="section level1">
 <h1 id="using-brier-with-an-ai-assistant">Using BRIER with an AI assistant?<a class="anchor" aria-label="anchor" href="#using-brier-with-an-ai-assistant"></a>
 </h1>
-<p>We publish an AI-optimized reference at <strong><a href="https://um-kevinhe.github.io/BRIER/llms.txt" class="uri">https://um-kevinhe.github.io/BRIER/llms.txt</a></strong> following the <a href="https://llmstxt.org/" class="external-link">llms.txt convention</a>. It gives the assistant a compact map of the package: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site.</p>
-<p>Point your assistant at the URL or paste the contents into the chat at the start of a session. If you have cloned this repository, coding agents (Codex, Claude Code, Cursor, Copilot, Gemini CLI, and others) also pick up our <a href="./AGENTS.html"><code>AGENTS.md</code></a>, which follows the <a href="https://agents.md" class="external-link">AGENTS.md convention</a> and adds repository-specific conventions for editing the source.</p>
+<p>We publish an AI-optimized reference at <strong><a href="https://um-kevinhe.github.io/BRIER/llms.txt" class="uri">https://um-kevinhe.github.io/BRIER/llms.txt</a></strong> following the <a href="https://llmstxt.org/" class="external-link">llms.txt convention</a>. It gives the assistant a compact map of the package: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site. Point your assistant at the URL or paste the contents into the chat at the start of a session.</p>
 <p>For a more interactive workflow inside <strong>Claude Desktop</strong>, we provide a companion <strong>MCP server</strong> at <a href="https://github.com/UM-KevinHe/BRIER-MCP" class="external-link">UM-KevinHe/BRIER-MCP</a>. The server bridges Claude Desktop to your local R installation: describe your data and your question in natural language, and Claude inspects the file, picks the appropriate BRIER variant (<code>BRIER.I</code>, <code>BRIER.FULL</code>, or <code>BRIER.S</code>), calls the corresponding R function on your machine, and explains the results. All computation runs locally; patient-level data never leaves your computer. Install instructions and a worked example are in the <a href="https://github.com/UM-KevinHe/BRIER-MCP#readme" class="external-link">BRIER-MCP README</a>.</p>
 </div>
 <div class="section level1">
