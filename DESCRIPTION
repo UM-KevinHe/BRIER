@@ -4,9 +4,8 @@ Title: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
 Version: 1.1.0
 Authors@R: 
     person("Ruiwen", "Zhou", role = c("aut", "cre"), email = "zrayw@umich.edu")
-Description: BRIER is a transfer learning framework for improving genetic risk
-    prediction in a target dataset by leveraging information from external,
-    well-powered cohorts.
+Description: BRIER is a Bregman-Divergence based integration framework for improving genetic risk
+    prediction in a target dataset by leveraging information from well-powered external cohorts.
 License: GPL-3
 URL: https://um-kevinhe.github.io/BRIER/
 Encoding: UTF-8
