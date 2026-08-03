@@ -65,19 +65,22 @@ reference:
   contents:
     - BRIERfull
     - BRIERfull.selection
+    - BRIERfull.bopt
 - title: "BRIER.I"
   desc: >
     Models that integrate pretrained external models with individual-level target data.
   contents:
-    - BRIERi    
+    - BRIERi
     - BRIERi.cv
     - BRIERi.selection
+    - BRIERi.bopt
 - title: "BRIER.S"
   desc: >
     Models that integrate summary-level external data to summary-level target data
   contents:
-    - BRIERs    
+    - BRIERs
     - BRIERs.selection
+    - BRIERs.bopt
 - title: "Predictions"
   desc: >
     Make predictions of a fitted BRIER object on an independent testing set
