@@ -79,8 +79,397 @@
 
     
     
-
-  </main>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>The three BRIER fitting functions tune the integration weight <span class="math inline">\(\eta\)</span> by evaluating every value supplied
+in <code>eta.list</code>. With a single external source this is
+inexpensive: a grid of 21 values means 21 penalized fits, each over the
+full <span class="math inline">\(\lambda\)</span> path. With <span class="math inline">\(M\)</span> external sources and
+<code>multi.method = "ind"</code>, however, the grid is the Cartesian
+product <code>expand.grid(eta.list)</code>, so its size grows
+multiplicatively. Ten candidate values per source means 100 fits for
+<span class="math inline">\(M = 2\)</span>, 1,000 for <span class="math inline">\(M = 3\)</span>, and 100,000 for <span class="math inline">\(M = 5\)</span>. The fitting functions warn once
+the grid exceeds 1,000 combinations for exactly this reason.</p>
+<p>A grid is also a blunt instrument even when it is affordable. It
+spends the same effort on regions where the criterion is flat as on
+regions where it changes quickly, and the optimum it reports is by
+construction one of the values the user guessed in advance.</p>
+<p>Bayesian optimization replaces the exhaustive grid with a sequential
+search <span class="citation">(Snoek et al. 2012)</span>. It fits a
+probabilistic surrogate to the criterion values observed so far, uses an
+acquisition function to decide which <span class="math inline">\(\eta\)</span> is most worth evaluating next,
+evaluates it, and repeats. The number of fits is chosen by the user
+rather than dictated by <span class="math inline">\(M\)</span>, and the
+proposed values are continuous, so the search is not confined to a grid
+the user specified beforehand.</p>
+<p><code>BRIER</code> exposes this through three functions, one per
+module:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Target data</th>
+<th>External information</th>
+<th>Selection criteria</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code><a href="../reference/BRIERfull.bopt.html">BRIERfull.bopt()</a></code></td>
+<td>individual-level</td>
+<td>raw external cohorts</td>
+<td>validation only</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/BRIERi.bopt.html">BRIERi.bopt()</a></code></td>
+<td>individual-level</td>
+<td>pretrained coefficients</td>
+<td>information criteria or validation</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/BRIERs.bopt.html">BRIERs.bopt()</a></code></td>
+<td>summary statistics + LD</td>
+<td>pretrained coefficients</td>
+<td>summary criteria or validation</td>
+</tr>
+</tbody>
+</table>
+<p>They require the <code>rBayesianOptimization</code> package, which is
+a suggested rather than a required dependency:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"rBayesianOptimization"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="what-each-evaluation-does">2. What each evaluation does<a class="anchor" aria-label="anchor" href="#what-each-evaluation-does"></a>
+</h2>
+<p>Each proposed <span class="math inline">\(\eta\)</span> triggers
+exactly one penalized fit over the full <span class="math inline">\(\lambda\)</span> path, which is then scored with
+the same internal machinery the corresponding <code>*.selection()</code>
+function uses. The score returned to the optimizer is the negated
+minimum criterion value over the <span class="math inline">\(\lambda\)</span> path,</p>
+<p><span class="math display">\[
+\text{Score}(\eta) \;=\; -\min_{\lambda} \; \text{criterion}(\eta,
+\lambda),
+\]</span></p>
+<p>because the optimizer maximizes while every BRIER criterion is
+defined so that smaller is better. This holds for the criteria whose
+natural orientation is the opposite: <code>gaussian.rsq</code>,
+<code>binomial.auc</code>, <code>binomial.mcfrsq</code>,
+<code>binomial.tjursq</code> and <code>pseu.val</code> are all negated
+internally, so no special handling is needed when switching
+criteria.</p>
+<p>Two consequences are worth stating explicitly:</p>
+<ul>
+<li>
+<strong><span class="math inline">\(\lambda\)</span> is still
+selected exhaustively.</strong> Bayesian optimization is applied to
+<span class="math inline">\(\eta\)</span> only. The <span class="math inline">\(\lambda\)</span> path is built and searched inside
+each fit exactly as in a grid run, so sparsity tuning is unchanged.</li>
+<li>
+<strong>The objective is identical to the grid objective.</strong>
+Evaluating <code>*.bopt()</code> at a set of <span class="math inline">\(\eta\)</span> values reproduces the
+<code>measure.min</code>, <code>lambda.min</code> and
+<code>lambda.min.index</code> that a grid run over those same values
+would produce. Results from the two approaches are therefore directly
+comparable, and a grid run can be used as a reference when validating a
+Bayesian optimization setup.</li>
+</ul>
+<p>The returned object is an ordinary selection object of class
+<code>c("BRIER.bopt", "BRIER.selection", "BRIER")</code>. The evaluated
+<span class="math inline">\(\eta\)</span> values are stored in
+<code>eta.grid</code> sorted ascending, with <code>res</code> aligned
+row by row, so <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>,
+<code><a href="../reference/plot.eta.html">plot.eta()</a></code>, <code><a href="../reference/plot.box.html">plot.box()</a></code> and
+<code><a href="../reference/plot.importance.html">plot.importance()</a></code> all work on the result without
+modification.</p>
+</div>
+<div class="section level2">
+<h2 id="individual-level-target-data">3. Individual-level target data<a class="anchor" aria-label="anchor" href="#individual-level-target-data"></a>
+</h2>
+<p>The example below tunes a single integration weight for
+<code>BRIERi</code> on a held-out validation set.
+<code>init.points</code> random draws start the search, followed by
+<code>n.iter</code> sequential proposals, for
+<code>init.points + n.iter</code> fits in total.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://um-kevinhe.github.io/BRIER/">BRIER</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Data_BRIERi"</span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">Data_BRIERi</span></span>
+<span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">train</span><span class="op">$</span><span class="va">X</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">train</span><span class="op">$</span><span class="va">y</span></span>
+<span><span class="va">X_val</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span></span>
+<span><span class="va">y_val</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span></span>
+<span></span>
+<span><span class="va">fit_bopt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.bopt.html">BRIERi.bopt</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">y</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking"</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>,</span>
+<span>  X.val <span class="op">=</span> <span class="va">X_val</span>,</span>
+<span>  y.val <span class="op">=</span> <span class="va">y_val</span>,</span>
+<span>  bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eta_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  penalty <span class="op">=</span> <span class="st">"LASSO"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">eta.min</span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">lambda.min</span></span>
+<span></span>
+<span><span class="co">## the usual downstream functions apply unchanged</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_bopt</span><span class="op">)</span></span>
+<span><span class="va">y_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit_bopt</span>, X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit_bopt</span><span class="op">)</span></span></code></pre></div>
+<p>When no validation set is available, supply an information criterion
+instead and omit <code>X.val</code> and <code>y.val</code> entirely. For
+<code>BRIERi</code> the recommended default is <code>"BIC"</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_bopt_ic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.bopt.html">BRIERi.bopt</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">y</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking"</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"BIC"</span>,</span>
+<span>  bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eta_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="summary-level-target-data">4. Summary-level target data<a class="anchor" aria-label="anchor" href="#summary-level-target-data"></a>
+</h2>
+<p><code><a href="../reference/BRIERs.bopt.html">BRIERs.bopt()</a></code> takes the same summary-level inputs as
+<code><a href="../reference/BRIERs.html">BRIERs()</a></code>: a <code>sumstats</code> data frame carrying a
+<code>corr</code> column, and a sparse LD matrix aligned to it.</p>
+<p>The standardization rule of the summary module carries over
+unchanged. <code>BRIERs</code> returns coefficients on the standardized
+predictor scale and standardizes nothing internally, so any validation
+data passed to <code><a href="../reference/BRIERs.bopt.html">BRIERs.bopt()</a></code> must already be standardized.
+The response is standardized only for <code>family = "gaussian"</code>;
+for <code>"binomial"</code> and <code>"poisson"</code> it stays on its
+natural scale.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Data_BRIERs"</span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">Data_BRIERs</span></span>
+<span></span>
+<span><span class="va">summary</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">train</span><span class="op">$</span><span class="va">sumstats</span></span>
+<span><span class="va">summary</span><span class="op">$</span><span class="va">corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/p2cor.html">p2cor</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">pval</span>, <span class="va">summary</span><span class="op">$</span><span class="va">n</span>, sign <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">stats</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ld</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calLD.html">calLD</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">train</span><span class="op">$</span><span class="va">X</span>, <span class="va">summary</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## keep sumstats and the external coefficients aligned to the retained SNPs</span></span>
+<span><span class="va">summary</span> <span class="op">&lt;-</span> <span class="va">summary</span><span class="op">[</span><span class="va">ld</span><span class="op">$</span><span class="va">nz</span>, <span class="op">]</span></span>
+<span><span class="va">beta.external</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span><span class="op">[</span><span class="va">ld</span><span class="op">$</span><span class="va">nz</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">X_val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_X.html">standardize_X</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>, <span class="va">ld</span><span class="op">$</span><span class="va">nz</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">y_val</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_X.html">standardize_X</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">fit_bopt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.bopt.html">BRIERs.bopt</a></span><span class="op">(</span></span>
+<span>  sumstats <span class="op">=</span> <span class="va">summary</span>,</span>
+<span>  XtX <span class="op">=</span> <span class="va">ld</span><span class="op">$</span><span class="va">XtX</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">beta.external</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking"</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>,</span>
+<span>  X.val <span class="op">=</span> <span class="va">X_val</span>,</span>
+<span>  y.val <span class="op">=</span> <span class="va">y_val</span>,</span>
+<span>  bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eta_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The summary-level information criteria are available in the same way,
+and need the training sample size <code>TN</code> and, if it can be
+estimated, the SNP heritability <code>h2</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_bopt_gic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.bopt.html">BRIERs.bopt</a></span><span class="op">(</span></span>
+<span>  sumstats <span class="op">=</span> <span class="va">summary</span>,</span>
+<span>  XtX <span class="op">=</span> <span class="va">ld</span><span class="op">$</span><span class="va">XtX</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">beta.external</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"GIC"</span>,</span>
+<span>  TN <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">n</span><span class="op">)</span>,</span>
+<span>  h2 <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eta_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="pooled-individual-level-cohorts">5. Pooled individual-level cohorts<a class="anchor" aria-label="anchor" href="#pooled-individual-level-cohorts"></a>
+</h2>
+<p><code><a href="../reference/BRIERfull.bopt.html">BRIERfull.bopt()</a></code> tunes one weight per external cohort.
+As with <code><a href="../reference/BRIERfull.selection.html">BRIERfull.selection()</a></code>, only validation criteria are
+supported: information criteria are not defined for the pooled fit, so
+<code>X.val</code> and <code>y.val</code> are required.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_bopt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERfull.bopt.html">BRIERfull.bopt</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X_pooled</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">y_pooled</span>,</span>
+<span>  cohort <span class="op">=</span> <span class="va">cohort</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>,</span>
+<span>  X.val <span class="op">=</span> <span class="va">X_val</span>,</span>
+<span>  y.val <span class="op">=</span> <span class="va">y_val</span>,</span>
+<span>  bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eta_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Note that including 0 in the search box downweights an external
+cohort to zero weight; it does not produce a target-only model.
+<code>BRIERfull</code> requires at least one external cohort by
+construction, so a target-only baseline must be fitted with
+<code>BRIERi</code> at <code>eta = 0</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="multiple-external-sources">6. Multiple external sources<a class="anchor" aria-label="anchor" href="#multiple-external-sources"></a>
+</h2>
+<p>This is the setting Bayesian optimization is designed for. With
+<code>multi.method = "ind"</code> each external source carries its own
+weight <span class="math inline">\(\eta_m\)</span>, and a grid over
+<span class="math inline">\(M\)</span> sources costs the product of the
+per-source grid sizes. A Bayesian search costs
+<code>init.points + n.iter</code> fits regardless of <span class="math inline">\(M\)</span>.</p>
+<p>Supply one entry in <code>bounds</code> per external source. Sources
+may be given different boxes when they are known to differ in
+relevance:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_bopt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.bopt.html">BRIERi.bopt</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">y</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">beta.external</span>,     <span class="co"># (p + 1) x 3</span></span>
+<span>  multi.method <span class="op">=</span> <span class="st">"ind"</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"gaussian.mspe"</span>,</span>
+<span>  X.val <span class="op">=</span> <span class="va">X_val</span>,</span>
+<span>  y.val <span class="op">=</span> <span class="va">y_val</span>,</span>
+<span>  bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    eta_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
+<span>    eta_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
+<span>    eta_3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">40</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">eta.min</span>      <span class="co"># one weight per source</span></span></code></pre></div>
+<p>A larger search space needs more evaluations. As a starting point,
+scale <code>init.points</code> with the number of sources and allow at
+least twice as many sequential iterations as initial points.</p>
+<p>The alternative remains the one recommended in the <a href="Appendix_Multiple.html">Appendix on multiple external models</a>:
+reduce the sources first with <code>multi.method = "stacking"</code> or
+<code>"PCA"</code>, which collapses the problem back to a single <span class="math inline">\(\eta\)</span>. Bayesian optimization and source
+reduction are complementary rather than competing, and both can be used
+together.</p>
+</div>
+<div class="section level2">
+<h2 id="choosing-the-search-settings">7. Choosing the search settings<a class="anchor" aria-label="anchor" href="#choosing-the-search-settings"></a>
+</h2>
+<p><strong>Bounds.</strong> The lower bound cannot be negative, since
+<span class="math inline">\(\eta \ge 0\)</span>. The default box is
+<span class="math inline">\([0, 10]\)</span> per source, matching the
+range of the default <code>eta.list</code>. Widen the upper bound when
+the external information is highly informative for the target and the
+optimum is being found at the edge of the box; narrow it toward <span class="math inline">\([0, 1]\)</span> for weak or heterogeneous external
+information, such as cross-ancestry transfer, where a box stretching to
+10 wastes evaluations in a region that will never be selected. The
+diagnostics in the <a href="BRIER.html#sec-eval">main vignette</a> apply
+here unchanged: if <code><a href="../reference/plot.eta.html">plot.eta()</a></code> on the result shows the
+criterion still improving at the boundary, the box is too narrow.</p>
+<p><strong>Initial design.</strong> By default <code>init.points</code>
+values are drawn at random inside the box. Passing
+<code>init.grid</code> instead evaluates a design chosen by the user
+before the sequential search begins, which is useful for anchoring the
+search at <span class="math inline">\(\eta = 0\)</span> so that the
+no-borrowing model is always among the candidates:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_bopt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.bopt.html">BRIERi.bopt</a></span><span class="op">(</span></span>
+<span>  X <span class="op">=</span> <span class="va">X</span>, y <span class="op">=</span> <span class="va">y</span>, family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  beta.external <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span>,</span>
+<span>  criteria <span class="op">=</span> <span class="st">"BIC"</span>,</span>
+<span>  init.grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">9</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  init.points <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">15</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For several sources, <code>init.grid</code> is a data frame with one
+column per source.</p>
+<p><strong>Acquisition function.</strong> <code>acq = "ucb"</code> (the
+default) balances exploration and exploitation through
+<code>kappa</code>: larger values explore more. <code>acq = "ei"</code>
+and <code>acq = "poi"</code> use <code>acq.eps</code> instead. The
+argument is named <code>acq.eps</code> rather than <code>eps</code>
+because <code>eps</code> is the coordinate-descent convergence
+tolerance, which is passed through <code>...</code> to the underlying
+fitter.</p>
+</div>
+<div class="section level2">
+<h2 id="inspecting-the-search">8. Inspecting the search<a class="anchor" aria-label="anchor" href="#inspecting-the-search"></a>
+</h2>
+<p>Every evaluated <span class="math inline">\(\eta\)</span> is
+retained, so the result can be examined exactly like a grid result.
+<code>eta.lambda</code> holds one row per evaluated point with its best
+<span class="math inline">\(\lambda\)</span> and criterion value, and
+<code><a href="../reference/plot.eta.html">plot.eta()</a></code> traces the criterion across the evaluated
+points.</p>
+<p>The <code>bopt</code> element records the search itself:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">bopt</span><span class="op">$</span><span class="va">bounds</span>        <span class="co"># the search box</span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">bopt</span><span class="op">$</span><span class="va">history</span>       <span class="co"># one row per proposal, with its score</span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">bopt</span><span class="op">$</span><span class="va">best.par</span>      <span class="co"># the optimizer's reported best eta</span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">bopt</span><span class="op">$</span><span class="va">n.failed</span>      <span class="co"># evaluations that failed to fit</span></span>
+<span><span class="va">fit_bopt</span><span class="op">$</span><span class="va">bopt</span><span class="op">$</span><span class="va">failed.eta</span>    <span class="co"># the eta values at which they failed</span></span></code></pre></div>
+<p>A fit that fails at some <span class="math inline">\(\eta\)</span>
+does not abort the run. It is reported as a warning, scored as the worst
+point seen so far, and recorded in <code>n.failed</code> and
+<code>failed.eta</code>. A non-zero <code>n.failed</code> is worth
+investigating, since it usually points to a degenerate region of the
+search box rather than to a genuinely poor <span class="math inline">\(\eta\)</span>.</p>
+</div>
+<div class="section level2">
+<h2 id="practical-notes">9. Practical notes<a class="anchor" aria-label="anchor" href="#practical-notes"></a>
+</h2>
+<ul>
+<li>Bayesian optimization is stochastic: the initial design is random
+unless <code>init.grid</code> is supplied, and the search path depends
+on it. Set a seed with <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> before calling for a
+reproducible run, and report the number of evaluations alongside the
+selected <span class="math inline">\(\eta\)</span>.</li>
+<li>The search does not guarantee the global optimum. With few
+evaluations it can settle in a local one, particularly in higher
+dimensions. When the number of external sources is small and the grid is
+affordable, a grid remains the more predictable choice; the advantage of
+the sequential search grows with <span class="math inline">\(M\)</span>.</li>
+<li>Because the objective matches the grid objective exactly, a sensible
+validation step for a new setup is to run a coarse grid and a Bayesian
+search on the same data and confirm that the search recovers a criterion
+value at least as good as the grid’s best.</li>
+<li>The selected <span class="math inline">\(\eta\)</span> is a
+continuous value rather than a grid point. When reporting results, quote
+it with enough precision to be reproducible.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-snoek2012_bayesopt" class="csl-entry">
+Snoek, Jasper, Hugo Larochelle, and Ryan P. Adams. 2012.
+<span>“Practical <span>Bayesian</span> Optimization of Machine Learning
+Algorithms.”</span> <em>Advances in Neural Information Processing
+Systems</em> 25.
+</div>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
@@ -90,7 +479,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
