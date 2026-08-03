@@ -14,3 +14,258 @@ editor_options:
     wrap: sentence
 bibliography: references.bib
 ---
+
+# 1. Introduction
+
+The three BRIER fitting functions tune the integration weight $\eta$ by evaluating every value supplied in `eta.list`. With a single external source this is inexpensive: a grid of 21 values means 21 penalized fits, each over the full $\lambda$ path. With $M$ external sources and `multi.method = "ind"`, however, the grid is the Cartesian product `expand.grid(eta.list)`, so its size grows multiplicatively. Ten candidate values per source means 100 fits for $M = 2$, 1,000 for $M = 3$, and 100,000 for $M = 5$. The fitting functions warn once the grid exceeds 1,000 combinations for exactly this reason.
+
+A grid is also a blunt instrument even when it is affordable. It spends the same effort on regions where the criterion is flat as on regions where it changes quickly, and the optimum it reports is by construction one of the values the user guessed in advance.
+
+Bayesian optimization replaces the exhaustive grid with a sequential search [@snoek2012_bayesopt]. It fits a probabilistic surrogate to the criterion values observed so far, uses an acquisition function to decide which $\eta$ is most worth evaluating next, evaluates it, and repeats. The number of fits is chosen by the user rather than dictated by $M$, and the proposed values are continuous, so the search is not confined to a grid the user specified beforehand.
+
+`BRIER` exposes this through three functions, one per module:
+
+| Function | Target data | External information | Selection criteria |
+|---|---|---|---|
+| `BRIERfull.bopt()` | individual-level | raw external cohorts | validation only |
+| `BRIERi.bopt()` | individual-level | pretrained coefficients | information criteria or validation |
+| `BRIERs.bopt()` | summary statistics + LD | pretrained coefficients | summary criteria or validation |
+
+They require the `rBayesianOptimization` package, which is a suggested rather than a required dependency:
+
+```{r, echo = TRUE, eval = FALSE}
+install.packages("rBayesianOptimization")
+```
+
+
+# 2. What each evaluation does
+
+Each proposed $\eta$ triggers exactly one penalized fit over the full $\lambda$ path, which is then scored with the same internal machinery the corresponding `*.selection()` function uses. The score returned to the optimizer is the negated minimum criterion value over the $\lambda$ path,
+
+$$
+\text{Score}(\eta) \;=\; -\min_{\lambda} \; \text{criterion}(\eta, \lambda),
+$$
+
+because the optimizer maximizes while every BRIER criterion is defined so that smaller is better. This holds for the criteria whose natural orientation is the opposite: `gaussian.rsq`, `binomial.auc`, `binomial.mcfrsq`, `binomial.tjursq` and `pseu.val` are all negated internally, so no special handling is needed when switching criteria.
+
+Two consequences are worth stating explicitly:
+
+- **$\lambda$ is still selected exhaustively.** Bayesian optimization is applied to $\eta$ only. The $\lambda$ path is built and searched inside each fit exactly as in a grid run, so sparsity tuning is unchanged.
+- **The objective is identical to the grid objective.** Evaluating `*.bopt()` at a set of $\eta$ values reproduces the `measure.min`, `lambda.min` and `lambda.min.index` that a grid run over those same values would produce. Results from the two approaches are therefore directly comparable, and a grid run can be used as a reference when validating a Bayesian optimization setup.
+
+The returned object is an ordinary selection object of class `c("BRIER.bopt", "BRIER.selection", "BRIER")`. The evaluated $\eta$ values are stored in `eta.grid` sorted ascending, with `res` aligned row by row, so `coef()`, `predict()`, `plot.eta()`, `plot.box()` and `plot.importance()` all work on the result without modification.
+
+
+# 3. Individual-level target data
+
+The example below tunes a single integration weight for `BRIERi` on a held-out validation set. `init.points` random draws start the search, followed by `n.iter` sequential proposals, for `init.points + n.iter` fits in total.
+
+```{r, echo = TRUE, eval = FALSE}
+library(BRIER)
+
+data("Data_BRIERi")
+data <- Data_BRIERi
+
+X <- data$target$train$X
+y <- data$target$train$y
+X_val <- data$target$validation$X
+y_val <- data$target$validation$y
+
+fit_bopt <- BRIERi.bopt(
+  X = X,
+  y = y,
+  family = "gaussian",
+  beta.external = data$beta.external,
+  multi.method = "stacking",
+  criteria = "gaussian.mspe",
+  X.val = X_val,
+  y.val = y_val,
+  bounds = list(eta_1 = c(0, 10)),
+  init.points = 10,
+  n.iter = 15,
+  penalty = "LASSO"
+)
+
+fit_bopt$eta.min
+fit_bopt$lambda.min
+
+## the usual downstream functions apply unchanged
+coef(fit_bopt)
+y_pred <- predict(fit_bopt, X = data$target$testing$X, type = "response")
+plot.eta(fit_bopt)
+```
+
+When no validation set is available, supply an information criterion instead and omit `X.val` and `y.val` entirely. For `BRIERi` the recommended default is `"BIC"`:
+
+```{r, echo = TRUE, eval = FALSE}
+fit_bopt_ic <- BRIERi.bopt(
+  X = X,
+  y = y,
+  family = "gaussian",
+  beta.external = data$beta.external,
+  multi.method = "stacking",
+  criteria = "BIC",
+  bounds = list(eta_1 = c(0, 10)),
+  init.points = 10,
+  n.iter = 15
+)
+```
+
+
+# 4. Summary-level target data
+
+`BRIERs.bopt()` takes the same summary-level inputs as `BRIERs()`: a `sumstats` data frame carrying a `corr` column, and a sparse LD matrix aligned to it.
+
+The standardization rule of the summary module carries over unchanged. `BRIERs` returns coefficients on the standardized predictor scale and standardizes nothing internally, so any validation data passed to `BRIERs.bopt()` must already be standardized. The response is standardized only for `family = "gaussian"`; for `"binomial"` and `"poisson"` it stays on its natural scale.
+
+```{r, echo = TRUE, eval = FALSE}
+data("Data_BRIERs")
+data <- Data_BRIERs
+
+summary <- data$target$train$sumstats
+summary$corr <- p2cor(summary$pval, summary$n, sign = sign(summary$stats))
+ld <- calLD(data$target$train$X, summary)
+
+## keep sumstats and the external coefficients aligned to the retained SNPs
+summary <- summary[ld$nz, ]
+beta.external <- data$beta.external[ld$nz, , drop = FALSE]
+
+X_val <- standardize_X(data$target$validation$X)[[1]][, ld$nz, drop = FALSE]
+y_val <- standardize_X(as.matrix(data$target$validation$y))[[1]]
+
+fit_bopt <- BRIERs.bopt(
+  sumstats = summary,
+  XtX = ld$XtX,
+  family = "gaussian",
+  beta.external = beta.external,
+  multi.method = "stacking",
+  criteria = "gaussian.mspe",
+  X.val = X_val,
+  y.val = y_val,
+  bounds = list(eta_1 = c(0, 10)),
+  init.points = 10,
+  n.iter = 15
+)
+```
+
+The summary-level information criteria are available in the same way, and need the training sample size `TN` and, if it can be estimated, the SNP heritability `h2`:
+
+```{r, echo = TRUE, eval = FALSE}
+fit_bopt_gic <- BRIERs.bopt(
+  sumstats = summary,
+  XtX = ld$XtX,
+  family = "gaussian",
+  beta.external = beta.external,
+  criteria = "GIC",
+  TN = max(summary$n),
+  h2 = 0,
+  bounds = list(eta_1 = c(0, 10)),
+  init.points = 10,
+  n.iter = 15
+)
+```
+
+
+# 5. Pooled individual-level cohorts
+
+`BRIERfull.bopt()` tunes one weight per external cohort. As with `BRIERfull.selection()`, only validation criteria are supported: information criteria are not defined for the pooled fit, so `X.val` and `y.val` are required.
+
+```{r, echo = TRUE, eval = FALSE}
+fit_bopt <- BRIERfull.bopt(
+  X = X_pooled,
+  y = y_pooled,
+  cohort = cohort,
+  family = "gaussian",
+  criteria = "gaussian.mspe",
+  X.val = X_val,
+  y.val = y_val,
+  bounds = list(eta_1 = c(0, 10)),
+  init.points = 10,
+  n.iter = 15
+)
+```
+
+Note that including 0 in the search box downweights an external cohort to zero weight; it does not produce a target-only model. `BRIERfull` requires at least one external cohort by construction, so a target-only baseline must be fitted with `BRIERi` at `eta = 0`.
+
+
+# 6. Multiple external sources
+
+This is the setting Bayesian optimization is designed for. With `multi.method = "ind"` each external source carries its own weight $\eta_m$, and a grid over $M$ sources costs the product of the per-source grid sizes. A Bayesian search costs `init.points + n.iter` fits regardless of $M$.
+
+Supply one entry in `bounds` per external source. Sources may be given different boxes when they are known to differ in relevance:
+
+```{r, echo = TRUE, eval = FALSE}
+fit_bopt <- BRIERi.bopt(
+  X = X,
+  y = y,
+  family = "gaussian",
+  beta.external = beta.external,     # (p + 1) x 3
+  multi.method = "ind",
+  criteria = "gaussian.mspe",
+  X.val = X_val,
+  y.val = y_val,
+  bounds = list(
+    eta_1 = c(0, 10),
+    eta_2 = c(0, 10),
+    eta_3 = c(0, 5)
+  ),
+  init.points = 20,
+  n.iter = 40
+)
+
+fit_bopt$eta.min      # one weight per source
+```
+
+A larger search space needs more evaluations. As a starting point, scale `init.points` with the number of sources and allow at least twice as many sequential iterations as initial points.
+
+The alternative remains the one recommended in the [Appendix on multiple external models](Appendix_Multiple.html): reduce the sources first with `multi.method = "stacking"` or `"PCA"`, which collapses the problem back to a single $\eta$. Bayesian optimization and source reduction are complementary rather than competing, and both can be used together.
+
+
+# 7. Choosing the search settings
+
+**Bounds.** The lower bound cannot be negative, since $\eta \ge 0$. The default box is $[0, 10]$ per source, matching the range of the default `eta.list`. Widen the upper bound when the external information is highly informative for the target and the optimum is being found at the edge of the box; narrow it toward $[0, 1]$ for weak or heterogeneous external information, such as cross-ancestry transfer, where a box stretching to 10 wastes evaluations in a region that will never be selected. The diagnostics in the [main vignette](BRIER.html#sec-eval) apply here unchanged: if `plot.eta()` on the result shows the criterion still improving at the boundary, the box is too narrow.
+
+**Initial design.** By default `init.points` values are drawn at random inside the box. Passing `init.grid` instead evaluates a design chosen by the user before the sequential search begins, which is useful for anchoring the search at $\eta = 0$ so that the no-borrowing model is always among the candidates:
+
+```{r, echo = TRUE, eval = FALSE}
+fit_bopt <- BRIERi.bopt(
+  X = X, y = y, family = "gaussian",
+  beta.external = data$beta.external,
+  criteria = "BIC",
+  init.grid = c(0, exp(seq(log(0.1), log(10), length.out = 9))),
+  init.points = 0,
+  n.iter = 15
+)
+```
+
+For several sources, `init.grid` is a data frame with one column per source.
+
+**Acquisition function.** `acq = "ucb"` (the default) balances exploration and exploitation through `kappa`: larger values explore more. `acq = "ei"` and `acq = "poi"` use `acq.eps` instead. The argument is named `acq.eps` rather than `eps` because `eps` is the coordinate-descent convergence tolerance, which is passed through `...` to the underlying fitter.
+
+
+# 8. Inspecting the search
+
+Every evaluated $\eta$ is retained, so the result can be examined exactly like a grid result. `eta.lambda` holds one row per evaluated point with its best $\lambda$ and criterion value, and `plot.eta()` traces the criterion across the evaluated points.
+
+The `bopt` element records the search itself:
+
+```{r, echo = TRUE, eval = FALSE}
+fit_bopt$bopt$bounds        # the search box
+fit_bopt$bopt$history       # one row per proposal, with its score
+fit_bopt$bopt$best.par      # the optimizer's reported best eta
+fit_bopt$bopt$n.failed      # evaluations that failed to fit
+fit_bopt$bopt$failed.eta    # the eta values at which they failed
+```
+
+A fit that fails at some $\eta$ does not abort the run. It is reported as a warning, scored as the worst point seen so far, and recorded in `n.failed` and `failed.eta`. A non-zero `n.failed` is worth investigating, since it usually points to a degenerate region of the search box rather than to a genuinely poor $\eta$.
+
+
+# 9. Practical notes
+
+- Bayesian optimization is stochastic: the initial design is random unless `init.grid` is supplied, and the search path depends on it. Set a seed with `set.seed()` before calling for a reproducible run, and report the number of evaluations alongside the selected $\eta$.
+- The search does not guarantee the global optimum. With few evaluations it can settle in a local one, particularly in higher dimensions. When the number of external sources is small and the grid is affordable, a grid remains the more predictable choice; the advantage of the sequential search grows with $M$.
+- Because the objective matches the grid objective exactly, a sensible validation step for a new setup is to run a coarse grid and a Bayesian search on the same data and confirm that the search recovers a criterion value at least as good as the grid's best.
+- The selected $\eta$ is a continuous value rather than a grid point. When reporting results, quote it with enough precision to be reproducible.
+
+
+# References
