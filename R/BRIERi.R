@@ -22,6 +22,12 @@
 #'       \code{beta.external}.
 #'     \item \code{"stacking"}: aggregate through stacking weights estimated from
 #'       the target data.
+#'     \item \code{"PCstacking"}: project the panel onto the leading principal
+#'       directions of the external coefficient vectors, keeping components until
+#'       \code{pca.var} of the variance is covered, then stack those components.
+#'       Useful when the retained models overlap heavily, since an M-dimensional
+#'       stacking solve is then dominated by noise in the directions that carry
+#'       least. See \code{\link{reduceExternalsPCA}}.
 #'   }
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families.
@@ -31,17 +37,28 @@
 #' @param ncores Integer. Number of cores for parallel fitting.
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
 #'   grid in parallel using \code{parallel::mclapply}.
+#' @param pca.var Fraction of the variance retained by the principal-component
+#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param dedup.cor Similarity threshold for dropping redundant external models
+#'   before anything else runs. Any model whose absolute cosine similarity with
+#'   an already-kept model reaches this value is removed, and the first
+#'   occurrence of each near-identical set is the one kept. \code{NULL} or
+#'   \code{NA} disables the step. See \code{\link{dedupExternals}}.
 #'
 #' @return An object of class \code{"BRIER"} containing:
 #' \describe{
 #'   \item{y}{The response vector.}
 #'   \item{y.external}{A matrix of external predictions (n x M, or n x 1 after
-#'     PCA/stacking aggregation).}
+#'     PCA/stacking/PCstacking aggregation).}
 #'   \item{family}{The response family.}
 #'   \item{eta.list}{The list of per-model eta grids.}
 #'   \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
 #'   \item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 #'   \item{null.dev}{The null deviance.}
+#'   \item{external.dedup}{The de-duplication record, or \code{NULL} when nothing
+#'     was removed.}
+#'   \item{external.pca}{The principal-component reduction record under
+#'     \code{"PCstacking"}, or \code{NULL} otherwise.}
 #' }
 #'
 #' @seealso \code{\link{BRIERi.eta}}, \code{\link{BRIERi.cv}},
@@ -73,11 +90,13 @@ BRIERi = function(
   X, y, family = c("gaussian", "binomial", "poisson"), 
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
-  parallel = (ncores > 1L)
+  parallel = (ncores > 1L),
+  pca.var = 0.8,
+  dedup.cor = 0.9
 ){
 
   family <- match.arg(family)
@@ -130,7 +149,15 @@ BRIERi = function(
   beta.external <- as.matrix(beta.external)
   if (any(is.na(beta.external))) { stop("Missing data (NA's) detected in beta.external.", call. = FALSE) }
   if (nrow(beta.external) != ncol(X) + 1) { stop("The dimension of external beta and X does not match. Please include intercept.") }
-  ext <- calcExtY(X, y, beta.external, family, multi.method, optim.args)
+
+  ## Redundant sources go first, before M is read off anywhere: a repeated model
+  ## cannot add information, and it only doubles the eta grid under "ind" and
+  ## makes the stacking weights unidentifiable under the aggregating methods.
+  dedup <- .dedup_and_report(beta.external, dedup.cor, intercept.row = TRUE)
+  beta.external <- dedup$beta.external
+  if (is.list(eta.list)) { eta.list <- .dedup_follow(eta.list, dedup) }
+
+  ext <- calcExtY(X, y, beta.external, family, multi.method, optim.args, pca.var)
   y.external <- ext$y.external
   M <- ncol(y.external)
 
@@ -209,10 +236,12 @@ BRIERi = function(
     eta.list = eta.list,
     eta.grid = eta.grid,
     res = res,
-    null.dev = null.dev, 
-    n = nrow(X), 
-    p = ncol(X), 
-    M = M
+    null.dev = null.dev,
+    n = nrow(X),
+    p = ncol(X),
+    M = M,
+    external.dedup = if (dedup$applied) dedup else NULL,
+    external.pca = ext$external.pca
   )
   class(out) <- "BRIER"
   out
@@ -469,9 +498,11 @@ BRIERi.eta = function(
 #' than one external model is supplied, aggregate them into a single combined
 #' prediction. Aggregation is controlled by \code{multi.method}: \code{"ind"}
 #' keeps each model independent, \code{"PCA"} aggregates via the first
-#' principal component of the normalised external coefficients, and
+#' principal component of the normalised external coefficients,
 #' \code{"stacking"} learns optimal stacking weights from the target data via
-#' family-specific likelihood maximisation.
+#' family-specific likelihood maximisation, and \code{"PCstacking"} first projects
+#' the panel onto its leading principal directions with
+#' \code{\link{reduceExternalsPCA}} and then stacks those.
 #'
 #' Used internally by \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, and
 #' \code{\link{BRIERfull}}, but exposed for users who want to compute external
@@ -482,19 +513,24 @@ BRIERi.eta = function(
 #' @param beta.external A (p+1) x M matrix of external model coefficients.
 #'   The first row is the intercept; remaining rows are predictor coefficients.
 #' @param family A string: "gaussian", "binomial", or "poisson".
-#' @param multi.method A string: "ind", "PCA", or "stacking".
+#' @param multi.method A string: "ind", "PCA", "stacking", or "PCstacking".
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families. See \code{\link{stacking_binomial}}
 #'   and \code{\link{stacking_poisson}} for available options.
+#' @param pca.var Fraction of the variance retained by the principal-component
+#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
 #'
-#' @return A list with two elements:
+#' @return A list with three elements:
 #' \describe{
 #'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"},
-#'     this is a (p+1) x 1 aggregated coefficient vector; for \code{"ind"} and
+#'     this is a (p+1) x 1 aggregated coefficient vector; for \code{"PCstacking"} it
+#'     is the (p+1) x k principal-component panel; for \code{"ind"} and
 #'     \code{"stacking"}, this is the original input.}
 #'   \item{y.external}{The n x M' matrix of external linear predictions on the
-#'     response scale, where M' = 1 for \code{"PCA"} and \code{"stacking"} and
-#'     M' = M for \code{"ind"}.}
+#'     response scale, where M' = 1 for \code{"PCA"}, \code{"stacking"} and
+#'     \code{"PCstacking"}, and M' = M for \code{"ind"}.}
+#'   \item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
+#'     \code{"PCstacking"}, and \code{NULL} otherwise.}
 #' }
 #'
 #' @seealso \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, \code{\link{BRIERfull}},
@@ -520,8 +556,20 @@ BRIERi.eta = function(
 calcExtY <- function(
   X, y, beta.external, family,
   multi.method,
-  optim.args = list()
+  optim.args = list(),
+  pca.var = 0.8
 ) {
+  ## PCstacking is a reduction followed by an ordinary stacking solve: project the
+  ## panel onto its leading directions, then combine those instead of the raw
+  ## models, so the stacking system has k unknowns rather than M.
+  external.pca <- NULL
+  if (multi.method == "PCstacking") {
+    external.pca <- reduceExternalsPCA(
+      beta.external, pca.var = pca.var, intercept.row = TRUE
+    )
+    beta.external <- external.pca$beta.external
+    multi.method <- "stacking"
+  }
   if (multi.method == "PCA") {
     bb <- apply(beta.external, 2, function(x) x / sqrt(sum(x^2)))
     w <- prcomp(t(bb) %*% bb)$rotation[, 1]
@@ -545,7 +593,8 @@ calcExtY <- function(
   }
   list(
     beta.external = beta.external,
-    y.external    = y.external
+    y.external    = y.external,
+    external.pca  = external.pca
   )
 }
 

@@ -10,12 +10,14 @@ BRIERi(
   family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking"),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"),
   optim.args = list(),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
-  parallel = (ncores > 1L)
+  parallel = (ncores > 1L),
+  pca.var = 0.8,
+  dedup.cor = 0.9
 )
 }
 \arguments{
@@ -41,6 +43,12 @@ intercept as the first row.}
 \code{beta.external}.
 \item \code{"stacking"}: aggregate through stacking weights estimated from
 the target data.
+\item \code{"PCstacking"}: project the panel onto the leading principal
+directions of the external coefficient vectors, keeping components until
+\code{pca.var} of the variance is covered, then stack those components.
+Useful when the retained models overlap heavily, since an M-dimensional
+stacking solve is then dominated by noise in the directions that carry
+least. See \code{\link{reduceExternalsPCA}}.
 }}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
@@ -55,18 +63,31 @@ stacking with binomial or Poisson families.}
 
 \item{parallel}{Logical. If TRUE and on a non-Windows platform, fits the eta
 grid in parallel using \code{parallel::mclapply}.}
+
+\item{pca.var}{Fraction of the variance retained by the principal-component
+reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+
+\item{dedup.cor}{Similarity threshold for dropping redundant external models
+before anything else runs. Any model whose absolute cosine similarity with
+an already-kept model reaches this value is removed, and the first
+occurrence of each near-identical set is the one kept. \code{NULL} or
+\code{NA} disables the step. See \code{\link{dedupExternals}}.}
 }
 \value{
 An object of class \code{"BRIER"} containing:
 \describe{
 \item{y}{The response vector.}
 \item{y.external}{A matrix of external predictions (n x M, or n x 1 after
-PCA/stacking aggregation).}
+PCA/stacking/PCstacking aggregation).}
 \item{family}{The response family.}
 \item{eta.list}{The list of per-model eta grids.}
 \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
 \item{res}{A list of \code{BRIER.eta} objects, one per eta combination.}
 \item{null.dev}{The null deviance.}
+\item{external.dedup}{The de-duplication record, or \code{NULL} when nothing
+was removed.}
+\item{external.pca}{The principal-component reduction record under
+\code{"PCstacking"}, or \code{NULL} otherwise.}
 }
 }
 \description{

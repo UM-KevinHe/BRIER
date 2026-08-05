@@ -288,8 +288,8 @@
 #' @param family A string: "gaussian", "binomial", or "poisson".
 #' @param beta.external A \code{(p + 1) x M} matrix of external coefficients
 #'   with the intercept in the first row.
-#' @param multi.method External aggregation strategy: "ind", "PCA", or
-#'   "stacking". Passed to \code{\link{BRIERi}}'s external reduction, which is
+#' @param multi.method External aggregation strategy: "ind", "PCA", "stacking",
+#'   or "PCstacking". Passed to \code{\link{BRIERi}}'s external reduction, which is
 #'   computed once and reused across every evaluation.
 #' @param optim.args A list of control arguments for the stacking optimizer.
 #' @param criteria Selection criterion, as in \code{\link{BRIERi.selection}}.
@@ -315,6 +315,13 @@
 #'   passed through \code{...} to the fitter.
 #' @param kernel Gaussian-process kernel specification.
 #' @param verbose Logical. Print optimizer progress.
+#' @param pca.var Fraction of the variance retained by the principal-component
+#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param dedup.cor Similarity threshold for dropping redundant external models
+#'   before the search starts, keeping the first occurrence of each
+#'   near-identical set. When a column is dropped, \code{bounds} and
+#'   \code{init.grid} sized to the supplied panel are subset to match.
+#'   \code{NULL} or \code{NA} disables the step. See \code{\link{dedupExternals}}.
 #' @param ... Further arguments passed to \code{\link{BRIERi.eta}}, for example
 #'   \code{penalty}, \code{alpha}, \code{gamma}, \code{penalty.factor},
 #'   \code{nlambda}, or \code{eps}.
@@ -350,7 +357,7 @@
 BRIERi.bopt <- function(
   X, y, family = c("gaussian", "binomial", "poisson"),
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
   criteria = c(
     "gcv", "AIC", "BIC", "Cp",
     "gaussian.mspe", "gaussian.rsq",
@@ -362,6 +369,8 @@ BRIERi.bopt <- function(
   acq = "ucb", kappa = 2.576, acq.eps = 0,
   kernel = list(type = "exponential", power = 2),
   verbose = TRUE,
+  pca.var = 0.8,
+  dedup.cor = 0.9,
   ...
 ) {
 
@@ -419,8 +428,23 @@ BRIERi.bopt <- function(
     }
   }
 
+  ## Redundant sources go first: with "ind" each duplicate would otherwise add a
+  ## search dimension the optimizer has to spend evaluations on.
+  dedup <- .dedup_and_report(beta.external, dedup.cor, intercept.row = TRUE)
+  beta.external <- dedup$beta.external
+  if (dedup$applied && !is.null(bounds) && length(bounds) == dedup$M.in) {
+    ## Names are dropped so the survivors are renumbered eta_1 .. eta_M rather
+    ## than keeping the gaps of the panel they came from, which would disagree
+    ## with the column names of eta.grid.
+    bounds <- unname(bounds[dedup$keep])
+  }
+  if (!is.null(init.grid) && !is.null(dim(init.grid)) &&
+      ncol(init.grid) == dedup$M.in && dedup$applied) {
+    init.grid <- init.grid[, dedup$keep, drop = FALSE]
+  }
+
   # -- External reduction and null deviance: computed once, reused every step --
-  ext <- calcExtY(X, y, beta.external, family, multi.method, optim.args)
+  ext <- calcExtY(X, y, beta.external, family, multi.method, optim.args, pca.var)
   y.external <- ext$y.external
   M <- ncol(y.external)
 
@@ -464,6 +488,8 @@ BRIERi.bopt <- function(
     n                = nrow(X),
     p                = ncol(X),
     M                = M,
+    external.dedup   = if (dedup$applied) dedup else NULL,
+    external.pca     = ext$external.pca,
     criteria         = criteria,
     eta.min          = opt$eta.min,
     eta.min.index    = opt$eta.min.index,
@@ -491,8 +517,8 @@ BRIERi.bopt <- function(
 #' @param family A string: "gaussian", "binomial", or "poisson".
 #' @param beta.external A \code{p x M} matrix of external coefficients, with no
 #'   intercept row.
-#' @param multi.method External aggregation strategy: "ind", "PCA", or
-#'   "stacking".
+#' @param multi.method External aggregation strategy: "ind", "PCA", "stacking",
+#'   or "PCstacking".
 #' @param optim.args A list of control arguments for the stacking optimizer.
 #' @param criteria Selection criterion, as in \code{\link{BRIERs.selection}}.
 #'   Summary criteria are "Cp", "GIC" (need \code{TN}) and "pseu.val";
@@ -517,6 +543,12 @@ BRIERi.bopt <- function(
 #' @param acq.eps Exploration parameter for "ei" and "poi".
 #' @param kernel Gaussian-process kernel specification.
 #' @param verbose Logical. Print optimizer progress.
+#' @param pca.var Fraction of the variance retained by the principal-component
+#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param dedup.cor Similarity threshold for dropping redundant external models
+#'   before the search starts, keeping the first occurrence of each
+#'   near-identical set. \code{NULL} or \code{NA} disables the step. See
+#'   \code{\link{dedupExternals}}.
 #' @param ... Further arguments passed to \code{\link{BRIERs.eta}}.
 #'
 #' @return An object of class \code{c("BRIER.bopt", "BRIER.selection", "BRIER")},
@@ -544,7 +576,7 @@ BRIERi.bopt <- function(
 BRIERs.bopt <- function(
   sumstats, XtX, family = c("gaussian", "binomial", "poisson"),
   beta.external = rep(0, nrow(sumstats)),
-  multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
   criteria = c(
     "Cp", "GIC", "pseu.val",
     "gaussian.mspe", "gaussian.rsq",
@@ -557,6 +589,8 @@ BRIERs.bopt <- function(
   acq = "ucb", kappa = 2.576, acq.eps = 0,
   kernel = list(type = "exponential", power = 2),
   verbose = TRUE,
+  pca.var = 0.8,
+  dedup.cor = 0.9,
   ...
 ) {
 
@@ -615,8 +649,23 @@ BRIERs.bopt <- function(
     if (is.null(sumstats.val)) { sumstats.val <- sumstats }
   }
 
+  ## Redundant sources go first: the stacking solve inverts t(B) XtX B, which is
+  ## singular the moment two columns carry the same information.
+  dedup <- .dedup_and_report(beta.external, dedup.cor, intercept.row = FALSE)
+  beta.external <- dedup$beta.external
+  if (dedup$applied && !is.null(bounds) && length(bounds) == dedup$M.in) {
+    ## Names are dropped so the survivors are renumbered eta_1 .. eta_M rather
+    ## than keeping the gaps of the panel they came from, which would disagree
+    ## with the column names of eta.grid.
+    bounds <- unname(bounds[dedup$keep])
+  }
+  if (!is.null(init.grid) && !is.null(dim(init.grid)) &&
+      ncol(init.grid) == dedup$M.in && dedup$applied) {
+    init.grid <- init.grid[, dedup$keep, drop = FALSE]
+  }
+
   # -- External reduction: computed once, reused every step --
-  ext <- calcExtXtY(XtX, XtY, beta.external, multi.method)
+  ext <- calcExtXtY(XtX, XtY, beta.external, multi.method, pca.var)
   XtY.external <- ext$XtY.external
   M <- ncol(XtY.external)
 
@@ -655,6 +704,8 @@ BRIERs.bopt <- function(
     p                = nrow(XtX),
     M                = M,
     varnames         = varnames,
+    external.dedup   = if (dedup$applied) dedup else NULL,
+    external.pca     = ext$external.pca,
     criteria         = criteria,
     eta.min          = opt$eta.min,
     eta.min.index    = opt$eta.min.index,

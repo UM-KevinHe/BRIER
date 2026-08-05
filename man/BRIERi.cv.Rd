@@ -10,7 +10,7 @@ BRIERi.cv(
   family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking"),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"),
   optim.args = list(),
   ...,
   nfolds = 5,
@@ -19,7 +19,9 @@ BRIERi.cv(
   returnY = FALSE,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
-  parallel = (ncores > 1L)
+  parallel = (ncores > 1L),
+  pca.var = 0.8,
+  dedup.cor = 0.9
 )
 }
 \arguments{
@@ -38,7 +40,7 @@ all external models with a warning.}
 ((p+1) x M). Must include the intercept as the first row.}
 
 \item{multi.method}{A string specifying how to combine multiple external
-models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.}
+models: "ind", "PCA", "stacking", or "PCstacking". See \code{\link{BRIERi}}.}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking with binomial or Poisson families.}
@@ -61,6 +63,14 @@ per-fold deviances \code{E} are stored in each \code{BRIER.eta} object.}
 
 \item{parallel}{Logical. If TRUE and on a non-Windows platform, fits the eta
 grid in parallel using \code{parallel::mclapply}.}
+
+\item{pca.var}{Fraction of the variance retained by the principal-component
+reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+
+\item{dedup.cor}{Similarity threshold for dropping redundant external models
+before anything else runs, keeping the first occurrence of each
+near-identical set. \code{NULL} or \code{NA} disables the step. See
+\code{\link{dedupExternals}}.}
 }
 \value{
 An object of class \code{c("BRIER.cv", "BRIER")} containing:
