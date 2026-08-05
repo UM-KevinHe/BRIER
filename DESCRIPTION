@@ -1,7 +1,7 @@
 Package: BRIER
 Type: Package
 Title: Bregman-Divergence-Based Regularized Integrative Estimator in Regression
-Version: 1.2.0
+Version: 1.3.0
 Authors@R: 
     person("Ruiwen", "Zhou", role = c("aut", "cre"), email = "zrayw@umich.edu")
 Description: BRIER is a Bregman-Divergence based integration framework for improving genetic risk
