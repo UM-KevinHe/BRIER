@@ -21,7 +21,7 @@ so the result is directly comparable to a grid search."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@ so the result is directly comparable to a grid search.</p>
 <span>  <span class="va">y</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
 <span>  beta.external <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,</span>
-<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span><span class="op">)</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span>, <span class="st">"PCstacking"</span><span class="op">)</span>,</span>
 <span>  optim.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  criteria <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gcv"</span>, <span class="st">"AIC"</span>, <span class="st">"BIC"</span>, <span class="st">"Cp"</span>, <span class="st">"gaussian.mspe"</span>, <span class="st">"gaussian.rsq"</span>,</span>
 <span>    <span class="st">"binomial.dev"</span>, <span class="st">"binomial.mcfrsq"</span>, <span class="st">"binomial.tjursq"</span>, <span class="st">"binomial.auc"</span>, <span class="st">"poisson.dev"</span><span class="op">)</span>,</span>
@@ -89,6 +89,8 @@ so the result is directly comparable to a grid search.</p>
 <span>  acq.eps <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  kernel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"exponential"</span>, power <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  pca.var <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  dedup.cor <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -115,8 +117,8 @@ with the intercept in the first row.</p></dd>
 
 
 <dt id="arg-multi-method">multi.method<a class="anchor" aria-label="anchor" href="#arg-multi-method"></a></dt>
-<dd><p>External aggregation strategy: "ind", "PCA", or
-"stacking". Passed to <code><a href="BRIERi.html">BRIERi</a></code>'s external reduction, which is
+<dd><p>External aggregation strategy: "ind", "PCA", "stacking",
+or "PCstacking". Passed to <code><a href="BRIERi.html">BRIERi</a></code>'s external reduction, which is
 computed once and reused across every evaluation.</p></dd>
 
 
@@ -181,6 +183,19 @@ passed through <code>...</code> to the fitter.</p></dd>
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical. Print optimizer progress.</p></dd>
+
+
+<dt id="arg-pca-var">pca.var<a class="anchor" aria-label="anchor" href="#arg-pca-var"></a></dt>
+<dd><p>Fraction of the variance retained by the principal-component
+reduction under <code>multi.method = "PCstacking"</code>. Ignored otherwise.</p></dd>
+
+
+<dt id="arg-dedup-cor">dedup.cor<a class="anchor" aria-label="anchor" href="#arg-dedup-cor"></a></dt>
+<dd><p>Similarity threshold for dropping redundant external models
+before the search starts, keeping the first occurrence of each
+near-identical set. When a column is dropped, <code>bounds</code> and
+<code>init.grid</code> sized to the supplied panel are subset to match.
+<code>NULL</code> or <code>NA</code> disables the step. See <code><a href="dedupExternals.html">dedupExternals</a></code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

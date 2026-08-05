@@ -17,7 +17,7 @@ cross-validated error (cve)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,7 @@ cross-validated error (cve).</p>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
 <span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  beta.external <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,</span>
-<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span><span class="op">)</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span>, <span class="st">"PCstacking"</span><span class="op">)</span>,</span>
 <span>  optim.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  nfolds <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -76,7 +76,9 @@ cross-validated error (cve).</p>
 <span>  returnY <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  trace <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ncores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="op">(</span><span class="va">ncores</span> <span class="op">&gt;</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span>  parallel <span class="op">=</span> <span class="op">(</span><span class="va">ncores</span> <span class="op">&gt;</span> <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>  pca.var <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  dedup.cor <span class="op">=</span> <span class="fl">0.9</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -110,7 +112,7 @@ all external models with a warning.</p></dd>
 
 <dt id="arg-multi-method">multi.method<a class="anchor" aria-label="anchor" href="#arg-multi-method"></a></dt>
 <dd><p>A string specifying how to combine multiple external
-models: "ind", "PCA", or "stacking". See <code><a href="BRIERi.html">BRIERi</a></code>.</p></dd>
+models: "ind", "PCA", "stacking", or "PCstacking". See <code><a href="BRIERi.html">BRIERi</a></code>.</p></dd>
 
 
 <dt id="arg-optim-args">optim.args<a class="anchor" aria-label="anchor" href="#arg-optim-args"></a></dt>
@@ -151,6 +153,18 @@ per-fold deviances <code>E</code> are stored in each <code>BRIER.eta</code> obje
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
 <dd><p>Logical. If TRUE and on a non-Windows platform, fits the eta
 grid in parallel using <code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mclapply</a></code>.</p></dd>
+
+
+<dt id="arg-pca-var">pca.var<a class="anchor" aria-label="anchor" href="#arg-pca-var"></a></dt>
+<dd><p>Fraction of the variance retained by the principal-component
+reduction under <code>multi.method = "PCstacking"</code>. Ignored otherwise.</p></dd>
+
+
+<dt id="arg-dedup-cor">dedup.cor<a class="anchor" aria-label="anchor" href="#arg-dedup-cor"></a></dt>
+<dd><p>Similarity threshold for dropping redundant external models
+before anything else runs, keeping the first occurrence of each
+near-identical set. <code>NULL</code> or <code>NA</code> disables the step. See
+<code><a href="dedupExternals.html">dedupExternals</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
