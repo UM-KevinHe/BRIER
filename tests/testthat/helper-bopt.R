@@ -75,10 +75,15 @@ make_individual_data <- function(n = 80, p = 25, seed = 1) {
     beta = beta, n = n, p = p,
     # one informative external model, intercept row first
     beta.external = matrix(c(0, beta * 0.8), ncol = 1),
-    # three external models of decreasing usefulness
+    # Three external models of decreasing usefulness. They must not be
+    # proportional to one another: a rescaling is the same model, and the
+    # fitters drop it before fitting (see dedupExternals), which would leave a
+    # test that asked for three sources looking at two. The second model
+    # therefore carries its own support on variables 6 to 10, so its cosine
+    # similarity with the first is about 0.71 rather than 1.
     beta.external3 = cbind(
       c(0, beta * 0.8),
-      c(0, beta * 0.4),
+      c(0, beta * 0.4 + c(rep(0, 5), rep(0.6, 5), rep(0, p - 10))),
       c(0, rev(beta) * 0.2)
     )
   )

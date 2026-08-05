@@ -4,7 +4,7 @@
 \alias{calcExtXtY}
 \title{Compute external XtY predictions and aggregate multiple external models}
 \usage{
-calcExtXtY(XtX, XtY, beta.external, multi.method)
+calcExtXtY(XtX, XtY, beta.external, multi.method, pca.var = 0.8)
 }
 \arguments{
 \item{XtX}{A p x p sparse LD reference matrix.}
@@ -14,16 +14,23 @@ calcExtXtY(XtX, XtY, beta.external, multi.method)
 \item{beta.external}{A p x M matrix of external model coefficients
 (no intercept).}
 
-\item{multi.method}{A string: "ind", "PCA", or "stacking".}
+\item{multi.method}{A string: "ind", "PCA", "stacking", or "PCstacking".}
+
+\item{pca.var}{Fraction of the variance retained by the principal-component
+reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
 }
 \value{
-A list with two elements:
+A list with three elements:
 \describe{
 \item{beta.external}{The external coefficient matrix. For \code{"PCA"} and
 \code{"stacking"}, this is a p x 1 aggregated coefficient vector; for
-\code{"ind"}, this is the original input.}
+\code{"PCstacking"} it is the p x k principal-component panel collapsed by
+stacking to p x 1; for \code{"ind"}, this is the original input.}
 \item{XtY.external}{A p x M' matrix of external XtY predictions, where
-M' = 1 for \code{"PCA"} and \code{"stacking"} and M' = M for \code{"ind"}.}
+M' = 1 for \code{"PCA"}, \code{"stacking"} and \code{"PCstacking"}, and
+M' = M for \code{"ind"}.}
+\item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
+\code{"PCstacking"}, and \code{NULL} otherwise.}
 }
 }
 \description{
@@ -31,9 +38,11 @@ Compute external-model XtY predictions in the summary-statistics setting and,
 when more than one external model is supplied, aggregate them into a single
 combined prediction. Aggregation is controlled by \code{multi.method}:
 \code{"ind"} keeps each model independent, \code{"PCA"} aggregates via the
-first principal component of the normalised external coefficients, and
+first principal component of the normalised external coefficients,
 \code{"stacking"} learns optimal stacking weights by minimising the
-summary-statistic least-squares criterion using \code{XtX} and \code{XtY}.
+summary-statistic least-squares criterion using \code{XtX} and \code{XtY},
+and \code{"PCstacking"} first projects the panel onto its leading principal
+directions with \code{\link{reduceExternalsPCA}} and then stacks those.
 }
 \details{
 Used internally by \code{\link{BRIERs}}, but exposed for users who want to

@@ -96,6 +96,8 @@ reference:
     - preprocessI
     - preprocessS
     - mergeExternals
+    - dedupExternals
+    - reduceExternalsPCA
     - p2cor
     - calLD
     - getLDB

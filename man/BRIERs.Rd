@@ -10,12 +10,14 @@ BRIERs(
   family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   beta.external = rep(0, nrow(sumstats)),
-  multi.method = c("ind", "PCA", "stacking"),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"),
   optim.args = list(),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
-  parallel = (ncores > 1L)
+  parallel = (ncores > 1L),
+  pca.var = 0.8,
+  dedup.cor = 0.9
 )
 }
 \arguments{
@@ -38,7 +40,7 @@ all external models with a warning.}
 (p x M, no intercept). Defaults to a vector of zeros.}
 
 \item{multi.method}{A string specifying how to combine multiple external
-models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.}
+models: "ind", "PCA", "stacking", or "PCstacking". See \code{\link{BRIERi}}.}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking.}
@@ -51,6 +53,16 @@ stacking.}
 
 \item{parallel}{Logical. If TRUE and on a non-Windows platform, fits the eta
 grid in parallel using \code{parallel::mclapply}.}
+
+\item{pca.var}{Fraction of the variance retained by the principal-component
+reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+
+\item{dedup.cor}{Similarity threshold for dropping redundant external models
+before anything else runs, keeping the first occurrence of each
+near-identical set. Particularly relevant here, since the stacking weights
+are obtained by inverting \code{t(B) XtX B}, which is singular the moment
+two external models carry the same information. \code{NULL} or \code{NA}
+disables the step. See \code{\link{dedupExternals}}.}
 }
 \value{
 An object of class \code{"BRIER"} containing:
@@ -65,6 +77,10 @@ An object of class \code{"BRIER"} containing:
 \item{null.dev}{Placeholder set to 0 (null deviance not defined for
 summary-stat models).}
 \item{varnames}{The variant names.}
+\item{external.dedup}{The de-duplication record, or \code{NULL} when nothing
+was removed.}
+\item{external.pca}{The principal-component reduction record under
+\code{"PCstacking"}, or \code{NULL} otherwise.}
 }
 }
 \description{

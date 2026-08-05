@@ -4,7 +4,15 @@
 \alias{calcExtY}
 \title{Compute external linear predictions and aggregate multiple external models}
 \usage{
-calcExtY(X, y, beta.external, family, multi.method, optim.args = list())
+calcExtY(
+  X,
+  y,
+  beta.external,
+  family,
+  multi.method,
+  optim.args = list(),
+  pca.var = 0.8
+)
 }
 \arguments{
 \item{X}{An n x p numeric matrix of target-cohort predictors.}
@@ -16,21 +24,27 @@ The first row is the intercept; remaining rows are predictor coefficients.}
 
 \item{family}{A string: "gaussian", "binomial", or "poisson".}
 
-\item{multi.method}{A string: "ind", "PCA", or "stacking".}
+\item{multi.method}{A string: "ind", "PCA", "stacking", or "PCstacking".}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking with binomial or Poisson families. See \code{\link{stacking_binomial}}
 and \code{\link{stacking_poisson}} for available options.}
+
+\item{pca.var}{Fraction of the variance retained by the principal-component
+reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
 }
 \value{
-A list with two elements:
+A list with three elements:
 \describe{
 \item{beta.external}{The external coefficient matrix. For \code{"PCA"},
-this is a (p+1) x 1 aggregated coefficient vector; for \code{"ind"} and
+this is a (p+1) x 1 aggregated coefficient vector; for \code{"PCstacking"} it
+is the (p+1) x k principal-component panel; for \code{"ind"} and
 \code{"stacking"}, this is the original input.}
 \item{y.external}{The n x M' matrix of external linear predictions on the
-response scale, where M' = 1 for \code{"PCA"} and \code{"stacking"} and
-M' = M for \code{"ind"}.}
+response scale, where M' = 1 for \code{"PCA"}, \code{"stacking"} and
+\code{"PCstacking"}, and M' = M for \code{"ind"}.}
+\item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
+\code{"PCstacking"}, and \code{NULL} otherwise.}
 }
 }
 \description{
@@ -38,9 +52,11 @@ Compute external-model linear predictions on a target cohort and, when more
 than one external model is supplied, aggregate them into a single combined
 prediction. Aggregation is controlled by \code{multi.method}: \code{"ind"}
 keeps each model independent, \code{"PCA"} aggregates via the first
-principal component of the normalised external coefficients, and
+principal component of the normalised external coefficients,
 \code{"stacking"} learns optimal stacking weights from the target data via
-family-specific likelihood maximisation.
+family-specific likelihood maximisation, and \code{"PCstacking"} first projects
+the panel onto its leading principal directions with
+\code{\link{reduceExternalsPCA}} and then stacks those.
 }
 \details{
 Used internally by \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, and

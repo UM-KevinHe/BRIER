@@ -14,7 +14,7 @@
 #' @param beta.external A numeric matrix of external model coefficients
 #'   ((p+1) x M). Must include the intercept as the first row.
 #' @param multi.method A string specifying how to combine multiple external
-#'   models: "ind", "PCA", or "stacking". See \code{\link{BRIERi}}.
+#'   models: "ind", "PCA", "stacking", or "PCstacking". See \code{\link{BRIERi}}.
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families.
 #' @param ... Additional arguments passed to \code{BRIERi.eta}.
@@ -28,6 +28,12 @@
 #' @param ncores Integer. Number of cores for parallel fitting.
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
 #'   grid in parallel using \code{parallel::mclapply}.
+#' @param pca.var Fraction of the variance retained by the principal-component
+#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param dedup.cor Similarity threshold for dropping redundant external models
+#'   before anything else runs, keeping the first occurrence of each
+#'   near-identical set. \code{NULL} or \code{NA} disables the step. See
+#'   \code{\link{dedupExternals}}.
 #'
 #' @return An object of class \code{c("BRIER.cv", "BRIER")} containing:
 #' \describe{
@@ -75,12 +81,14 @@ BRIERi.cv <- function(
   X, y, family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
   ...,
   nfolds = 5, fold = NULL, seed = NULL,
   returnY = FALSE, trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
-  parallel = (ncores > 1L)
+  parallel = (ncores > 1L),
+  pca.var = 0.8,
+  dedup.cor = 0.9
 ) {
 
   family <- match.arg(family)
@@ -125,7 +133,13 @@ BRIERi.cv <- function(
   if (nrow(beta.external) != ncol(X) + 1) {
     stop("beta.external must have p+1 rows (intercept + p predictors).", call. = FALSE)
   }
-  ext <- calcExtY(X, y, beta.external, family, multi.method, optim.args)
+
+  ## Redundant sources go first, before M is read off anywhere.
+  dedup <- .dedup_and_report(beta.external, dedup.cor, intercept.row = TRUE)
+  beta.external <- dedup$beta.external
+  if (is.list(eta.list)) { eta.list <- .dedup_follow(eta.list, dedup) }
+
+  ext <- calcExtY(X, y, beta.external, family, multi.method, optim.args, pca.var)
   y.external <- ext$y.external
   M <- ncol(y.external)
 
@@ -297,6 +311,8 @@ BRIERi.cv <- function(
     n              = nrow(X),
     p              = ncol(X),
     M              = M,
+    external.dedup = if (dedup$applied) dedup else NULL,
+    external.pca   = ext$external.pca,
 
     # CV-specific fields
     criteria         = "cve",
