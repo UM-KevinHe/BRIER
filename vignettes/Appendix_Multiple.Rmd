@@ -24,9 +24,9 @@ To address this, `BRIER` provides four strategies for integrating multiple exter
 - `"ind"`: each external model is assigned its own independent integration weight $\eta_m$. This is the most flexible option, but the hyperparameter space grows multiplicatively with the number of external sources, so it is only computationally practical when the number of external models is small (typically $M \leq 3$).
 - `"PCA"`: the external coefficient matrix is collapsed onto its leading principal direction, and that single combined model is integrated with the target. This reduces the multidimensional penalty space to a one-dimensional one and reduces tuning cost.
 - `"stacking"`: the external models are first combined into a single ensemble model using stacking weights estimated from the target data, and the resulting ensemble is then integrated with the target through a single one-dimensional integration weight $\eta$. This avoids joint optimization over multiple external-model weights while retaining flexible information borrowing across sources.
-- `"PCstacking"`: a combination of the two preceding strategies. The panel is first projected onto its leading principal directions, keeping as many components as are needed to cover a fraction `pca.var` of the variance (default $0.8$), and the retained components are then combined by stacking. Unlike `"PCA"`, which always reduces to a single direction, this keeps several and lets the stacking weights choose among them. See Section 3.4.
+- `"stacking.c"`: the same stacking criterion, minimised subject to the stacking weights being non-negative and summing to one. The ensemble is then a convex combination of the supplied models. See Section 3.4.
 
-Based on extensive simulation studies and real-data analyses, we recommend the `"stacking"` strategy as a default. It consistently achieves predictive performance comparable to the gold-standard `"ind"` approach (which jointly tunes a separate integration weight for each external model) while substantially reducing computational burden. When the external models overlap heavily with one another, as a set of published polygenic scores for the same trait typically does, `"PCstacking"` is worth comparing against it. Methodological details for all four strategies are provided in the [Appendix: Model Details](Appendix_Model.html).
+Based on extensive simulation studies and real-data analyses, we recommend the `"stacking"` strategy as a default. It consistently achieves predictive performance comparable to the gold-standard `"ind"` approach (which jointly tunes a separate integration weight for each external model) while substantially reducing computational burden. When the external models are published scores reported on a common scale, and a weight outside $[0, 1]$ would therefore not be interpretable, `"stacking.c"` is worth comparing against it. Methodological details for all four strategies are provided in the [Appendix: Model Details](Appendix_Model.html).
 
 In this vignette, we use `BRIERs()` (summary-level data) as an illustrative example. The same workflow applies to `BRIERi()` (individual-level target data with pre-trained external models), with the only difference being the function name and the form of the inputs.
 
@@ -132,7 +132,7 @@ fit <- BRIERs(
 )
 ```
 
-To use a different aggregation strategy, simply replace `multi.method` with `"PCA"`, `"PCstacking"`, or `"ind"`. We note that `multi.method = "ind"` introduces one integration weight per external model, so the candidate set passed to `eta.list` should be specified as a list of vectors of length $M$ rather than a single vector. See the [Methods Appendix](LINK) for additional details.
+To use a different aggregation strategy, simply replace `multi.method` with `"PCA"`, `"stacking.c"`, or `"ind"`. We note that `multi.method = "ind"` introduces one integration weight per external model, so the candidate set passed to `eta.list` should be specified as a list of vectors of length $M$ rather than a single vector. See the [Methods Appendix](LINK) for additional details.
 
 ## 3.3 Redundant external models are removed first
 
@@ -156,11 +156,11 @@ Three kinds of column are removed: those whose absolute cosine similarity with a
 
 Because the threshold is a default rather than a claim about where redundancy begins, set `dedup.cor` higher to remove only near-exact copies, or `NULL` to disable the step entirely and reproduce the behaviour of earlier versions.
 
-## 3.4 Reducing the panel before combining it: `multi.method = "PCstacking"`
+## 3.4 Constraining the stacking weights: `multi.method = "stacking.c"`
 
-Screened panels of published scores remain highly overlapping even after exact duplicates are removed. On a real application with ten retained scores, the participation ratio of their score-correlation eigenvalues indicated roughly five effectively independent directions. Combining all ten therefore means solving a ten-dimensional system whose low-variance directions carry mostly noise.
+The stacking weights of Section 3.3 are unconstrained. They are whatever minimises the stacking criterion, which means a weight may be negative, and the weights need not sum to one. That is the right default when the external models are on arbitrary scales, because the weights then have to absorb the scaling. It is the wrong default when they are not: a panel of published polygenic scores reported on a common scale is a set of competing estimates of the same quantity, and a combination that puts $-0.4$ on one of them is hard to defend as a model of anything.
 
-`multi.method = "PCstacking"` addresses this by projecting the panel onto its leading principal directions before combining. Components are added in order until the cumulative variance share reaches `pca.var`, and the retained components are then combined by stacking:
+`multi.method = "stacking.c"` minimises the same criterion under the constraint that the weights are non-negative and sum to one:
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERs(
@@ -168,26 +168,35 @@ fit <- BRIERs(
   XtX = XtX.list$XtX,
   beta.external = beta.external,
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 10))),
-  multi.method = "PCstacking",
-  pca.var = 0.8
+  multi.method = "stacking.c"
 )
 
-fit$external.pca$n.pcs        # how many components were kept
-fit$external.pca$cumulative   # cumulative variance share
-fit$external.pca$rotation     # the weight each model carries in each component
+fit$stack$weights      # the constrained weights, summing to one
+fit$stack$kkt          # the KKT residual certifying the solution
+fit$stack$n_dropped    # directions truncated in the unconstrained comparison
 ```
 
-The decomposition is deliberately uncentred. Centring across sources would subtract a mean model, which is not a meaningful reference here: each column is a model rather than a draw from a population, and a zero coefficient means the variant has no effect, not that it is below average. What enters the fit is the projection of the original models onto the leading directions, so the reduced panel stays on the same coefficient scale that $\eta$ shrinks toward.
+Three consequences are worth stating plainly.
 
-The reduction can also be applied on its own, which is useful for inspecting a panel before committing to a fit:
+The combined model **cannot leave the range of the models it combines**, so a prediction from the ensemble is always a prediction some weighted panel of the supplied scores would have made. This is what makes the weights readable as a share of the combination.
+
+A model the target data gives no support to receives an **exact zero**, not a small non-zero coefficient. The constrained optimum sits on the boundary of the weight simplex whenever that happens, and the solver reaches the boundary exactly rather than approaching it, so the set of contributing models can be read off the weight vector directly.
+
+The constraint set is a subset of the unconstrained one, so the constrained fit **cannot fit better in sample**. What it buys is interpretability and stability, not fit. In particular it cannot express a negative weight, so if a panel genuinely needs one, because an external model is mis-signed or mis-scaled relative to the others, the constrained fit will be visibly worse rather than silently correcting the problem. Fit both and compare on a held-out split; a large gap is itself a diagnostic that something in the panel is not on the scale you assumed.
+
+For `BRIERi()` the same constrained criterion is available for all three families. The weights are fit on the response scale, against the Gaussian, binomial and Poisson log-likelihoods respectively, so `"stacking.c"` means the same thing whichever outcome is being modelled.
+
+### A note on conditioning
+
+Both stacking methods solve a system built from $B^\top X^\top X B$ (summary level) or $Y^\top Y$ (individual level). Forming that product squares the condition number of the panel, and a panel of published scores for one trait is routinely near-collinear even after the de-duplication of Section 3.3. The solve therefore rescales the matrix to unit diagonal before decomposing it and truncates directions below a relative tolerance, rather than calling `solve()` on the raw normal equations, which can return weights of enormous magnitude without raising an error. What it did is reported:
 
 ```{r, echo = TRUE, eval = FALSE}
-red <- reduceExternalsPCA(beta.external, pca.var = 0.8)
-red$n.pcs
-round(red$cumulative, 3)
+fit$stack$rcond_raw             # conditioning of the raw system
+fit$stack$rcond_equilibrated    # after rescaling to unit diagonal
+fit$stack$n_dropped             # directions below the relative tolerance
 ```
 
-Two caveats are worth stating. First, the reduction is **unsupervised**, so it follows variance, and a mis-scaled external score is exactly the column with the most variance. `"PCstacking"` is therefore appropriate only for a panel that has already been screened for calibration against the target; applied to an unscreened panel, it can amplify precisely the models that should have been removed. Second, whether it improves on plain stacking is an empirical question for a given panel. Fit both and compare on a held-out split rather than assuming either ordering.
+A `n_dropped` above zero means the panel did not have full rank at working precision. That is a statement about the panel, not about the fit: it is worth returning to the screening step rather than reading the weights as if all of the models had contributed.
 
 ## 3.5 Hyperparameter tuning
 
@@ -254,6 +263,6 @@ When individual-level target data are available together with multiple pre-train
 - the multi-external coefficient matrix is passed through the same `beta.external` argument, with one column per external model and an intercept row included;
 - hyperparameter tuning uses `BRIERi.selection()` and additionally supports cross-validation (`BRIERi.cv()`) in addition to validation-set and information-criterion-based tuning.
 
-De-duplication and `multi.method = "PCstacking"` behave identically in `BRIERi()`, `BRIERi.cv()`, and the Bayesian-optimization entry points `BRIERi.bopt()` and `BRIERs.bopt()`. The only difference is the intercept row: `BRIERi()` expects `beta.external` to be $(p+1) \times M$, and both steps hold that row out of the computation and carry it along with its column, so the $(p+1)$ convention is preserved. For the `*.bopt()` functions, `bounds` and `init.grid` sized to the supplied panel are subset to the surviving models when a duplicate is dropped.
+De-duplication and `multi.method = "stacking.c"` behave identically in `BRIERi()`, `BRIERi.cv()`, and the Bayesian-optimization entry points `BRIERi.bopt()` and `BRIERs.bopt()`. The only difference is the intercept row: `BRIERi()` expects `beta.external` to be $(p+1) \times M$, and both steps hold that row out of the computation and carry it along with its column, so the $(p+1)$ convention is preserved. For the `*.bopt()` functions, `bounds` and `init.grid` sized to the supplied panel are subset to the surviving models when a duplicate is dropped.
 
 See [Section 4 of the main vignette](BRIER.html#sec-BRIERi) for the single-external-model `BRIERi` workflow; the multi-external-model extension follows the same pattern as Sections 3–4 of this appendix.

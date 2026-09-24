@@ -8,7 +8,7 @@
 #      published external models routinely carries near-copies of itself. A
 #      repeated source cannot add information, and it makes the stacking Gram
 #      singular, so the second copy is dropped and the first occurrence kept.
-#   2. PRINCIPAL-COMPONENT REDUCTION, requested with multi.method = "PCstacking".
+#   2. PRINCIPAL-COMPONENT REDUCTION, requested with multi.method = "stacking.c".
 #      The survivors still overlap heavily, so the panel is projected onto its
 #      leading directions and those are combined instead of the raw models.
 #
@@ -252,7 +252,7 @@ dedupExternals <- function(
 #' Projects a panel of external coefficient vectors onto the leading directions
 #' of its singular value decomposition, keeping components until \code{pca.var}
 #' of the variance is covered. This is the first half of
-#' \code{multi.method = "PCstacking"}, whose second half combines the retained
+#' \code{multi.method = "stacking.c"}, whose second half combines the retained
 #' components by stacking.
 #'
 #' Screened external panels stay highly redundant with one another even after
@@ -391,7 +391,7 @@ reduceExternalsPCA <- function(
 # caller supplied. When de-duplication shortens the panel, they follow it, so a
 # dropped duplicate does not turn into a length-mismatch error the caller has no
 # way to anticipate. Settings already sized to the aggregated panel, as they are
-# under PCA, stacking and PCstacking, are left alone.
+# under PCA, stacking and stacking.c, are left alone.
 .dedup_follow <- function(x, ded) {
   if (is.null(x) || !ded$applied) { return(x) }
   if (length(x) != ded$M.in) { return(x) }

@@ -289,7 +289,7 @@
 #' @param beta.external A \code{(p + 1) x M} matrix of external coefficients
 #'   with the intercept in the first row.
 #' @param multi.method External aggregation strategy: "ind", "PCA", "stacking",
-#'   or "PCstacking". Passed to \code{\link{BRIERi}}'s external reduction, which is
+#'   or "stacking.c". Passed to \code{\link{BRIERi}}'s external reduction, which is
 #'   computed once and reused across every evaluation.
 #' @param optim.args A list of control arguments for the stacking optimizer.
 #' @param criteria Selection criterion, as in \code{\link{BRIERi.selection}}.
@@ -316,7 +316,7 @@
 #' @param kernel Gaussian-process kernel specification.
 #' @param verbose Logical. Print optimizer progress.
 #' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#'   reduction; retained for backward compatibility and unused.
 #' @param dedup.cor Similarity threshold for dropping redundant external models
 #'   before the search starts, keeping the first occurrence of each
 #'   near-identical set. When a column is dropped, \code{bounds} and
@@ -357,7 +357,7 @@
 BRIERi.bopt <- function(
   X, y, family = c("gaussian", "binomial", "poisson"),
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"), optim.args = list(),
   criteria = c(
     "gcv", "AIC", "BIC", "Cp",
     "gaussian.mspe", "gaussian.rsq",
@@ -490,6 +490,7 @@ BRIERi.bopt <- function(
     M                = M,
     external.dedup   = if (dedup$applied) dedup else NULL,
     external.pca     = ext$external.pca,
+    stack            = ext$stack,
     criteria         = criteria,
     eta.min          = opt$eta.min,
     eta.min.index    = opt$eta.min.index,
@@ -518,7 +519,7 @@ BRIERi.bopt <- function(
 #' @param beta.external A \code{p x M} matrix of external coefficients, with no
 #'   intercept row.
 #' @param multi.method External aggregation strategy: "ind", "PCA", "stacking",
-#'   or "PCstacking".
+#'   or "stacking.c".
 #' @param optim.args A list of control arguments for the stacking optimizer.
 #' @param criteria Selection criterion, as in \code{\link{BRIERs.selection}}.
 #'   Summary criteria are "Cp", "GIC" (need \code{TN}) and "pseu.val";
@@ -544,7 +545,7 @@ BRIERi.bopt <- function(
 #' @param kernel Gaussian-process kernel specification.
 #' @param verbose Logical. Print optimizer progress.
 #' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#'   reduction; retained for backward compatibility and unused.
 #' @param dedup.cor Similarity threshold for dropping redundant external models
 #'   before the search starts, keeping the first occurrence of each
 #'   near-identical set. \code{NULL} or \code{NA} disables the step. See
@@ -576,7 +577,7 @@ BRIERi.bopt <- function(
 BRIERs.bopt <- function(
   sumstats, XtX, family = c("gaussian", "binomial", "poisson"),
   beta.external = rep(0, nrow(sumstats)),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"), optim.args = list(),
   criteria = c(
     "Cp", "GIC", "pseu.val",
     "gaussian.mspe", "gaussian.rsq",
@@ -706,6 +707,7 @@ BRIERs.bopt <- function(
     varnames         = varnames,
     external.dedup   = if (dedup$applied) dedup else NULL,
     external.pca     = ext$external.pca,
+    stack            = ext$stack,
     criteria         = criteria,
     eta.min          = opt$eta.min,
     eta.min.index    = opt$eta.min.index,

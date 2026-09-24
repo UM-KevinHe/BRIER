@@ -9,7 +9,7 @@ BRIERi.bopt(
   y,
   family = c("gaussian", "binomial", "poisson"),
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"),
   optim.args = list(),
   criteria = c("gcv", "AIC", "BIC", "Cp", "gaussian.mspe", "gaussian.rsq",
     "binomial.dev", "binomial.mcfrsq", "binomial.tjursq", "binomial.auc", "poisson.dev"),
@@ -42,7 +42,7 @@ BRIERi.bopt(
 with the intercept in the first row.}
 
 \item{multi.method}{External aggregation strategy: "ind", "PCA", "stacking",
-or "PCstacking". Passed to \code{\link{BRIERi}}'s external reduction, which is
+or "stacking.c". Passed to \code{\link{BRIERi}}'s external reduction, which is
 computed once and reused across every evaluation.}
 
 \item{optim.args}{A list of control arguments for the stacking optimizer.}
@@ -83,7 +83,7 @@ passed through \code{...} to the fitter.}
 \item{verbose}{Logical. Print optimizer progress.}
 
 \item{pca.var}{Fraction of the variance retained by the principal-component
-reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+reduction; retained for backward compatibility and unused.}
 
 \item{dedup.cor}{Similarity threshold for dropping redundant external models
 before the search starts, keeping the first occurrence of each

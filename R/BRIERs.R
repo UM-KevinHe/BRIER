@@ -20,7 +20,7 @@
 #' @param beta.external A numeric matrix of external model coefficients
 #'   (p x M, no intercept). Defaults to a vector of zeros.
 #' @param multi.method A string specifying how to combine multiple external
-#'   models: "ind", "PCA", "stacking", or "PCstacking". See \code{\link{BRIERi}}.
+#'   models: "ind", "PCA", "stacking", or "stacking.c". See \code{\link{BRIERi}}.
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking.
 #' @param ... Additional arguments passed to \code{BRIERs.eta}.
@@ -28,8 +28,8 @@
 #' @param ncores Integer. Number of cores for parallel fitting.
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
 #'   grid in parallel using \code{parallel::mclapply}.
-#' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param pca.var Retained for backward compatibility; unused since the
+#'   PCstacking option was removed.
 #' @param dedup.cor Similarity threshold for dropping redundant external models
 #'   before anything else runs, keeping the first occurrence of each
 #'   near-identical set. Particularly relevant here, since the stacking weights
@@ -51,8 +51,12 @@
 #'   \item{varnames}{The variant names.}
 #'   \item{external.dedup}{The de-duplication record, or \code{NULL} when nothing
 #'     was removed.}
-#'   \item{external.pca}{The principal-component reduction record under
-#'     \code{"PCstacking"}, or \code{NULL} otherwise.}
+#'   \item{stack}{The stacking report under \code{"stacking"} and
+#'     \code{"stacking.c"}: the weights, the condition numbers before and after
+#'     equilibration, how many eigen-directions were truncated, and the KKT
+#'     residual of the constrained solve. \code{NULL} for other methods.}
+#'   \item{external.pca}{Always \code{NULL}. Retained so that objects written
+#'     before the PCstacking option was removed still read back.}
 #' }
 #'
 #' @seealso \code{\link{BRIERs.eta}}, \code{\link{BRIERs.selection}},
@@ -77,7 +81,7 @@ BRIERs <- function(
   sumstats, XtX, family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
   beta.external = rep(0, nrow(sumstats)),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"), optim.args = list(),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
@@ -214,7 +218,8 @@ BRIERs <- function(
     M              = M,
     varnames       = varnames,
     external.dedup = if (dedup$applied) dedup else NULL,
-    external.pca   = ext$external.pca
+    external.pca   = ext$external.pca,
+    stack          = ext$stack
   )
   class(out) <- "BRIER"
   out
@@ -428,8 +433,8 @@ BRIERs.eta <- function(
 #' first principal component of the normalised external coefficients,
 #' \code{"stacking"} learns optimal stacking weights by minimising the
 #' summary-statistic least-squares criterion using \code{XtX} and \code{XtY},
-#' and \code{"PCstacking"} first projects the panel onto its leading principal
-#' directions with \code{\link{reduceExternalsPCA}} and then stacks those.
+#' and \code{"stacking.c"} minimises that same quadratic under the constraint
+#' that the weights are non-negative and sum to one.
 #'
 #' Used internally by \code{\link{BRIERs}}, but exposed for users who want to
 #' compute external XtY predictions independently of the BRIER fitting
@@ -439,21 +444,23 @@ BRIERs.eta <- function(
 #' @param XtY A numeric vector of marginal correlations (length p).
 #' @param beta.external A p x M matrix of external model coefficients
 #'   (no intercept).
-#' @param multi.method A string: "ind", "PCA", "stacking", or "PCstacking".
-#' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param multi.method A string: "ind", "PCA", "stacking", or "stacking.c".
+#' @param pca.var Retained for backward compatibility; unused since the
+#'   PCstacking option was removed.
 #'
 #' @return A list with three elements:
 #' \describe{
-#'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"} and
-#'     \code{"stacking"}, this is a p x 1 aggregated coefficient vector; for
-#'     \code{"PCstacking"} it is the p x k principal-component panel collapsed by
-#'     stacking to p x 1; for \code{"ind"}, this is the original input.}
+#'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"},
+#'     \code{"stacking"} and \code{"stacking.c"} this is a p x 1 aggregated
+#'     coefficient vector; for \code{"ind"} it is the original input.}
 #'   \item{XtY.external}{A p x M' matrix of external XtY predictions, where
-#'     M' = 1 for \code{"PCA"}, \code{"stacking"} and \code{"PCstacking"}, and
+#'     M' = 1 for \code{"PCA"}, \code{"stacking"} and \code{"stacking.c"}, and
 #'     M' = M for \code{"ind"}.}
-#'   \item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
-#'     \code{"PCstacking"}, and \code{NULL} otherwise.}
+#'   \item{stack}{For \code{"stacking"} and \code{"stacking.c"}, the record
+#'     returned by \code{stack_weights()}: the weights, whether the constraint
+#'     was imposed, the conditioning of the stacking Gram matrix before and after
+#'     equilibration, how many directions were truncated, and the KKT residual.
+#'     \code{NULL} otherwise.}
 #' }
 #'
 #' @seealso \code{\link{BRIERs}}, \code{\link{calLD}}, \code{\link{calcExtY}}
@@ -470,24 +477,22 @@ BRIERs.eta <- function(
 #'
 #' @export
 calcExtXtY <- function(XtX, XtY, beta.external, multi.method, pca.var = 0.8) {
-  ## PCstacking is a reduction followed by an ordinary stacking solve: project the
-  ## panel onto its leading directions, then combine those instead of the raw
-  ## models, so the Gram that gets inverted is k x k rather than M x M.
+  ## The stacking weights minimise ||y - X B w||^2 through the sufficient
+  ## statistics the summary shape already holds: G = B' XtX B and h = B' XtY.
+  ## "stacking" solves that freely, "stacking.c" solves it under the
+  ## constraint that the weights are non-negative and sum to one. Family never enters here: at the summary level the aggregation only
+  ## ever sees G and h.
   external.pca <- NULL
-  if (multi.method == "PCstacking") {
-    external.pca <- reduceExternalsPCA(beta.external, pca.var = pca.var)
-    beta.external <- external.pca$beta.external
-    multi.method <- "stacking"
-  }
+  stack.info <- NULL
   if (multi.method == "PCA") {
     bb <- apply(beta.external, 2, function(x) x / sqrt(sum(x^2)))
     w <- prcomp(t(bb) %*% bb)$rotation[, 1]
     beta.external <- beta.external %*% abs(w)
-  } else if (multi.method == "stacking") {
-    w <- solve(
-      crossprod(beta.external, XtX %*% beta.external),
-      crossprod(beta.external, XtY)
-    )
+  } else if (multi.method %in% c("stacking", "stacking.c")) {
+    G <- as.matrix(crossprod(beta.external, XtX %*% beta.external))
+    h <- as.numeric(crossprod(beta.external, XtY))
+    stack.info <- stack_weights(G, h, constrain = (multi.method == "stacking.c"))
+    w <- stack.info$weights
     beta.external <- beta.external %*% w
   }
 
@@ -495,7 +500,8 @@ calcExtXtY <- function(XtX, XtY, beta.external, multi.method, pca.var = 0.8) {
   list(
     beta.external = beta.external,
     XtY.external  = XtY.external,
-    external.pca  = external.pca
+    external.pca  = external.pca,
+    stack          = stack.info
   )
 }
 

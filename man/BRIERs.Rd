@@ -10,7 +10,7 @@ BRIERs(
   family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))),
   beta.external = rep(0, nrow(sumstats)),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"),
   optim.args = list(),
   ...,
   trace = FALSE,
@@ -40,7 +40,7 @@ all external models with a warning.}
 (p x M, no intercept). Defaults to a vector of zeros.}
 
 \item{multi.method}{A string specifying how to combine multiple external
-models: "ind", "PCA", "stacking", or "PCstacking". See \code{\link{BRIERi}}.}
+models: "ind", "PCA", "stacking", or "stacking.c". See \code{\link{BRIERi}}.}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking.}
@@ -54,8 +54,8 @@ stacking.}
 \item{parallel}{Logical. If TRUE and on a non-Windows platform, fits the eta
 grid in parallel using \code{parallel::mclapply}.}
 
-\item{pca.var}{Fraction of the variance retained by the principal-component
-reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+\item{pca.var}{Retained for backward compatibility; unused since the
+PCstacking option was removed.}
 
 \item{dedup.cor}{Similarity threshold for dropping redundant external models
 before anything else runs, keeping the first occurrence of each
@@ -79,8 +79,12 @@ summary-stat models).}
 \item{varnames}{The variant names.}
 \item{external.dedup}{The de-duplication record, or \code{NULL} when nothing
 was removed.}
-\item{external.pca}{The principal-component reduction record under
-\code{"PCstacking"}, or \code{NULL} otherwise.}
+\item{stack}{The stacking report under \code{"stacking"} and
+\code{"stacking.c"}: the weights, the condition numbers before and after
+equilibration, how many eigen-directions were truncated, and the KKT
+residual of the constrained solve. \code{NULL} for other methods.}
+\item{external.pca}{Always \code{NULL}. Retained so that objects written
+before the PCstacking option was removed still read back.}
 }
 }
 \description{

@@ -24,27 +24,32 @@ The first row is the intercept; remaining rows are predictor coefficients.}
 
 \item{family}{A string: "gaussian", "binomial", or "poisson".}
 
-\item{multi.method}{A string: "ind", "PCA", "stacking", or "PCstacking".}
+\item{multi.method}{A string: "ind", "PCA", "stacking", or "stacking.c".}
 
 \item{optim.args}{A list of arguments passed to \code{optim()} when using
 stacking with binomial or Poisson families. See \code{\link{stacking_binomial}}
 and \code{\link{stacking_poisson}} for available options.}
 
-\item{pca.var}{Fraction of the variance retained by the principal-component
-reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+\item{pca.var}{Retained for backward compatibility; unused since the
+PCstacking option was removed.}
 }
 \value{
 A list with three elements:
 \describe{
-\item{beta.external}{The external coefficient matrix. For \code{"PCA"},
-this is a (p+1) x 1 aggregated coefficient vector; for \code{"PCstacking"} it
-is the (p+1) x k principal-component panel; for \code{"ind"} and
-\code{"stacking"}, this is the original input.}
+\item{beta.external}{The external coefficient matrix. For \code{"PCA"} this
+is a (p+1) x 1 aggregated coefficient vector; for \code{"ind"} and both
+stacking methods it is the original input, since those combine on the
+prediction scale rather than the coefficient scale.}
 \item{y.external}{The n x M' matrix of external linear predictions on the
 response scale, where M' = 1 for \code{"PCA"}, \code{"stacking"} and
-\code{"PCstacking"}, and M' = M for \code{"ind"}.}
-\item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
-\code{"PCstacking"}, and \code{NULL} otherwise.}
+\code{"stacking.c"}, and M' = M for \code{"ind"}.}
+\item{stack}{The stacking report under \code{"stacking"} and
+\code{"stacking.c"}. For the free gaussian solve it is the
+\code{stack_weights()} record (weights, conditioning before and after
+equilibration, truncated directions); for binomial and poisson it carries
+the weights and \code{optim()}'s convergence code; for the constrained
+solve it is the \code{stack_weights_response()} record (weights, KKT
+residual, iterations, objective). \code{NULL} otherwise.}
 }
 }
 \description{
@@ -54,9 +59,8 @@ prediction. Aggregation is controlled by \code{multi.method}: \code{"ind"}
 keeps each model independent, \code{"PCA"} aggregates via the first
 principal component of the normalised external coefficients,
 \code{"stacking"} learns optimal stacking weights from the target data via
-family-specific likelihood maximisation, and \code{"PCstacking"} first projects
-the panel onto its leading principal directions with
-\code{\link{reduceExternalsPCA}} and then stacks those.
+family-specific likelihood maximisation, and \code{"stacking.c"} learns those
+same weights under the constraint that they are non-negative and sum to one.
 }
 \details{
 Used internally by \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, and
