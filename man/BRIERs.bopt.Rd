@@ -9,7 +9,7 @@ BRIERs.bopt(
   XtX,
   family = c("gaussian", "binomial", "poisson"),
   beta.external = rep(0, nrow(sumstats)),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"),
   optim.args = list(),
   criteria = c("Cp", "GIC", "pseu.val", "gaussian.mspe", "gaussian.rsq", "binomial.dev",
     "binomial.mcfrsq", "binomial.tjursq", "binomial.auc", "poisson.dev"),
@@ -45,7 +45,7 @@ BRIERs.bopt(
 intercept row.}
 
 \item{multi.method}{External aggregation strategy: "ind", "PCA", "stacking",
-or "PCstacking".}
+or "stacking.c".}
 
 \item{optim.args}{A list of control arguments for the stacking optimizer.}
 
@@ -87,7 +87,7 @@ not supplied.}
 \item{verbose}{Logical. Print optimizer progress.}
 
 \item{pca.var}{Fraction of the variance retained by the principal-component
-reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+reduction; retained for backward compatibility and unused.}
 
 \item{dedup.cor}{Similarity threshold for dropping redundant external models
 before the search starts, keeping the first occurrence of each

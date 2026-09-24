@@ -22,12 +22,12 @@
 #'       \code{beta.external}.
 #'     \item \code{"stacking"}: aggregate through stacking weights estimated from
 #'       the target data.
-#'     \item \code{"PCstacking"}: project the panel onto the leading principal
-#'       directions of the external coefficient vectors, keeping components until
-#'       \code{pca.var} of the variance is covered, then stack those components.
-#'       Useful when the retained models overlap heavily, since an M-dimensional
-#'       stacking solve is then dominated by noise in the directions that carry
-#'       least. See \code{\link{reduceExternalsPCA}}.
+#'     \item \code{"stacking.c"}: the same stacking loss minimised under the
+#'       constraint that the weights are non-negative and sum to one, so
+#'       the aggregate is a convex combination of the external models. Weights may
+#'       be exactly zero, which names the models that were dropped. Note that the
+#'       constraint removes the freedom the free solve uses to absorb a scale
+#'       mismatch, so put the externals on a common scale first.
 #'   }
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families.
@@ -37,8 +37,8 @@
 #' @param ncores Integer. Number of cores for parallel fitting.
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
 #'   grid in parallel using \code{parallel::mclapply}.
-#' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param pca.var Retained for backward compatibility; unused since the
+#'   PCstacking option was removed.
 #' @param dedup.cor Similarity threshold for dropping redundant external models
 #'   before anything else runs. Any model whose absolute cosine similarity with
 #'   an already-kept model reaches this value is removed, and the first
@@ -49,7 +49,7 @@
 #' \describe{
 #'   \item{y}{The response vector.}
 #'   \item{y.external}{A matrix of external predictions (n x M, or n x 1 after
-#'     PCA/stacking/PCstacking aggregation).}
+#'     PCA or stacking aggregation).}
 #'   \item{family}{The response family.}
 #'   \item{eta.list}{The list of per-model eta grids.}
 #'   \item{eta.grid}{The full combinatorial eta grid (matrix, rows are combinations).}
@@ -57,8 +57,14 @@
 #'   \item{null.dev}{The null deviance.}
 #'   \item{external.dedup}{The de-duplication record, or \code{NULL} when nothing
 #'     was removed.}
-#'   \item{external.pca}{The principal-component reduction record under
-#'     \code{"PCstacking"}, or \code{NULL} otherwise.}
+#'   \item{stack}{The stacking report under \code{"stacking"} and
+#'     \code{"stacking.c"}: the weights, and for the free gaussian solve the
+#'     conditioning of the stacking Gram matrix before and after equilibration
+#'     plus how many directions were truncated; for the constrained solve the
+#'     KKT residual, the iteration count and the objective value. \code{NULL}
+#'     for other methods.}
+#'   \item{external.pca}{Always \code{NULL}. Retained so that objects written
+#'     before the PCstacking option was removed still read back.}
 #' }
 #'
 #' @seealso \code{\link{BRIERi.eta}}, \code{\link{BRIERi.cv}},
@@ -90,7 +96,7 @@ BRIERi = function(
   X, y, family = c("gaussian", "binomial", "poisson"), 
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"), optim.args = list(),
   ...,
   trace = FALSE,
   ncores = max(1L, parallel::detectCores() - 1L),
@@ -241,7 +247,8 @@ BRIERi = function(
     p = ncol(X),
     M = M,
     external.dedup = if (dedup$applied) dedup else NULL,
-    external.pca = ext$external.pca
+    external.pca = ext$external.pca,
+    stack          = ext$stack
   )
   class(out) <- "BRIER"
   out
@@ -500,9 +507,8 @@ BRIERi.eta = function(
 #' keeps each model independent, \code{"PCA"} aggregates via the first
 #' principal component of the normalised external coefficients,
 #' \code{"stacking"} learns optimal stacking weights from the target data via
-#' family-specific likelihood maximisation, and \code{"PCstacking"} first projects
-#' the panel onto its leading principal directions with
-#' \code{\link{reduceExternalsPCA}} and then stacks those.
+#' family-specific likelihood maximisation, and \code{"stacking.c"} learns those
+#' same weights under the constraint that they are non-negative and sum to one.
 #'
 #' Used internally by \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, and
 #' \code{\link{BRIERfull}}, but exposed for users who want to compute external
@@ -513,24 +519,29 @@ BRIERi.eta = function(
 #' @param beta.external A (p+1) x M matrix of external model coefficients.
 #'   The first row is the intercept; remaining rows are predictor coefficients.
 #' @param family A string: "gaussian", "binomial", or "poisson".
-#' @param multi.method A string: "ind", "PCA", "stacking", or "PCstacking".
+#' @param multi.method A string: "ind", "PCA", "stacking", or "stacking.c".
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families. See \code{\link{stacking_binomial}}
 #'   and \code{\link{stacking_poisson}} for available options.
-#' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#' @param pca.var Retained for backward compatibility; unused since the
+#'   PCstacking option was removed.
 #'
 #' @return A list with three elements:
 #' \describe{
-#'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"},
-#'     this is a (p+1) x 1 aggregated coefficient vector; for \code{"PCstacking"} it
-#'     is the (p+1) x k principal-component panel; for \code{"ind"} and
-#'     \code{"stacking"}, this is the original input.}
+#'   \item{beta.external}{The external coefficient matrix. For \code{"PCA"} this
+#'     is a (p+1) x 1 aggregated coefficient vector; for \code{"ind"} and both
+#'     stacking methods it is the original input, since those combine on the
+#'     prediction scale rather than the coefficient scale.}
 #'   \item{y.external}{The n x M' matrix of external linear predictions on the
 #'     response scale, where M' = 1 for \code{"PCA"}, \code{"stacking"} and
-#'     \code{"PCstacking"}, and M' = M for \code{"ind"}.}
-#'   \item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
-#'     \code{"PCstacking"}, and \code{NULL} otherwise.}
+#'     \code{"stacking.c"}, and M' = M for \code{"ind"}.}
+#'   \item{stack}{The stacking report under \code{"stacking"} and
+#'     \code{"stacking.c"}. For the free gaussian solve it is the
+#'     \code{stack_weights()} record (weights, conditioning before and after
+#'     equilibration, truncated directions); for binomial and poisson it carries
+#'     the weights and \code{optim()}'s convergence code; for the constrained
+#'     solve it is the \code{stack_weights_response()} record (weights, KKT
+#'     residual, iterations, objective). \code{NULL} otherwise.}
 #' }
 #'
 #' @seealso \code{\link{BRIERi}}, \code{\link{BRIERi.cv}}, \code{\link{BRIERfull}},
@@ -559,17 +570,12 @@ calcExtY <- function(
   optim.args = list(),
   pca.var = 0.8
 ) {
-  ## PCstacking is a reduction followed by an ordinary stacking solve: project the
-  ## panel onto its leading directions, then combine those instead of the raw
-  ## models, so the stacking system has k unknowns rather than M.
+  ## "stacking" fits the weights freely, by a Gram solve for gaussian and by the
+  ## family likelihood for binomial and poisson. "stacking.c" fits the SAME loss
+  ## under the constraint for all three families, so the constrained
+  ## estimator means one thing everywhere.
   external.pca <- NULL
-  if (multi.method == "PCstacking") {
-    external.pca <- reduceExternalsPCA(
-      beta.external, pca.var = pca.var, intercept.row = TRUE
-    )
-    beta.external <- external.pca$beta.external
-    multi.method <- "stacking"
-  }
+  stack.info <- NULL
   if (multi.method == "PCA") {
     bb <- apply(beta.external, 2, function(x) x / sqrt(sum(x^2)))
     w <- prcomp(t(bb) %*% bb)$rotation[, 1]
@@ -581,20 +587,50 @@ calcExtY <- function(
     optim.args$Y <- y.external
     optim.args$z <- y
     if (family == "gaussian") {
-      w <- stacking_gaussian(y.external, y)
+      ## stacking_gaussian() would give the same weights; going through
+      ## stack_weights() directly keeps the conditioning record, which is the
+      ## one place the free path can fail quietly.
+      stack.info <- stack_weights(
+        as.matrix(crossprod(y.external)),
+        as.numeric(crossprod(y.external, y))
+      )
+      w <- stack.info$weights
     } else if (family == "binomial") {
       fit <- do.call(stacking_binomial, optim.args)
       w <- fit$weights
+      ## the same field names the gaussian and constrained solves use, so a
+      ## caller can read $stack without branching on the family
+      stack.info <- list(
+        weights     = w,
+        constrained = FALSE,
+        value       = fit$value,
+        convergence = fit$convergence,
+        kkt         = NA_real_
+      )
     } else if (family == "poisson") {
       fit <- do.call(stacking_poisson, optim.args)
       w <- fit$weights
+      ## the same field names the gaussian and constrained solves use, so a
+      ## caller can read $stack without branching on the family
+      stack.info <- list(
+        weights     = w,
+        constrained = FALSE,
+        value       = fit$value,
+        convergence = fit$convergence,
+        kkt         = NA_real_
+      )
     }
+    y.external <- y.external %*% w
+  } else if (multi.method == "stacking.c") {
+    stack.info <- stack_weights_response(y.external, y, family = family)
+    w <- stack.info$weights
     y.external <- y.external %*% w
   }
   list(
     beta.external = beta.external,
     y.external    = y.external,
-    external.pca  = external.pca
+    external.pca  = external.pca,
+    stack         = stack.info
   )
 }
 
@@ -617,7 +653,11 @@ calcExtY <- function(
 #'
 #' @keywords internal
 stacking_gaussian <- function(Y, z) {
-  solve(as.matrix(t(Y) %*% Y), crossprod(Y, z))
+  ## Was solve(t(Y) %*% Y, crossprod(Y, z)): normal equations, which square the
+  ## condition number and fail outright on a collinear panel. Same estimator,
+  ## solved through the shared routine so the individual-level and summary-level
+  ## shapes cannot drift apart.
+  stack_weights(as.matrix(crossprod(Y)), as.numeric(crossprod(Y, z)))$weights
 }
 
 

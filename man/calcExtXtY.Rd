@@ -14,23 +14,25 @@ calcExtXtY(XtX, XtY, beta.external, multi.method, pca.var = 0.8)
 \item{beta.external}{A p x M matrix of external model coefficients
 (no intercept).}
 
-\item{multi.method}{A string: "ind", "PCA", "stacking", or "PCstacking".}
+\item{multi.method}{A string: "ind", "PCA", "stacking", or "stacking.c".}
 
-\item{pca.var}{Fraction of the variance retained by the principal-component
-reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.}
+\item{pca.var}{Retained for backward compatibility; unused since the
+PCstacking option was removed.}
 }
 \value{
 A list with three elements:
 \describe{
-\item{beta.external}{The external coefficient matrix. For \code{"PCA"} and
-\code{"stacking"}, this is a p x 1 aggregated coefficient vector; for
-\code{"PCstacking"} it is the p x k principal-component panel collapsed by
-stacking to p x 1; for \code{"ind"}, this is the original input.}
+\item{beta.external}{The external coefficient matrix. For \code{"PCA"},
+\code{"stacking"} and \code{"stacking.c"} this is a p x 1 aggregated
+coefficient vector; for \code{"ind"} it is the original input.}
 \item{XtY.external}{A p x M' matrix of external XtY predictions, where
-M' = 1 for \code{"PCA"}, \code{"stacking"} and \code{"PCstacking"}, and
+M' = 1 for \code{"PCA"}, \code{"stacking"} and \code{"stacking.c"}, and
 M' = M for \code{"ind"}.}
-\item{external.pca}{The \code{\link{reduceExternalsPCA}} record under
-\code{"PCstacking"}, and \code{NULL} otherwise.}
+\item{stack}{For \code{"stacking"} and \code{"stacking.c"}, the record
+returned by \code{stack_weights()}: the weights, whether the constraint
+was imposed, the conditioning of the stacking Gram matrix before and after
+equilibration, how many directions were truncated, and the KKT residual.
+\code{NULL} otherwise.}
 }
 }
 \description{
@@ -41,8 +43,8 @@ combined prediction. Aggregation is controlled by \code{multi.method}:
 first principal component of the normalised external coefficients,
 \code{"stacking"} learns optimal stacking weights by minimising the
 summary-statistic least-squares criterion using \code{XtX} and \code{XtY},
-and \code{"PCstacking"} first projects the panel onto its leading principal
-directions with \code{\link{reduceExternalsPCA}} and then stacks those.
+and \code{"stacking.c"} minimises that same quadratic under the constraint
+that the weights are non-negative and sum to one.
 }
 \details{
 Used internally by \code{\link{BRIERs}}, but exposed for users who want to

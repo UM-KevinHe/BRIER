@@ -14,7 +14,7 @@
 #' @param beta.external A numeric matrix of external model coefficients
 #'   ((p+1) x M). Must include the intercept as the first row.
 #' @param multi.method A string specifying how to combine multiple external
-#'   models: "ind", "PCA", "stacking", or "PCstacking". See \code{\link{BRIERi}}.
+#'   models: "ind", "PCA", "stacking", or "stacking.c". See \code{\link{BRIERi}}.
 #' @param optim.args A list of arguments passed to \code{optim()} when using
 #'   stacking with binomial or Poisson families.
 #' @param ... Additional arguments passed to \code{BRIERi.eta}.
@@ -29,7 +29,7 @@
 #' @param parallel Logical. If TRUE and on a non-Windows platform, fits the eta
 #'   grid in parallel using \code{parallel::mclapply}.
 #' @param pca.var Fraction of the variance retained by the principal-component
-#'   reduction under \code{multi.method = "PCstacking"}. Ignored otherwise.
+#'   reduction; retained for backward compatibility and unused.
 #' @param dedup.cor Similarity threshold for dropping redundant external models
 #'   before anything else runs, keeping the first occurrence of each
 #'   near-identical set. \code{NULL} or \code{NA} disables the step. See
@@ -81,7 +81,7 @@ BRIERi.cv <- function(
   X, y, family = c("gaussian", "binomial", "poisson"),
   eta.list = c(0, exp(seq(log(0.1), log(10), length.out = 20))), 
   beta.external = rep(0, ncol(X) + 1),
-  multi.method = c("ind", "PCA", "stacking", "PCstacking"), optim.args = list(),
+  multi.method = c("ind", "PCA", "stacking", "stacking.c"), optim.args = list(),
   ...,
   nfolds = 5, fold = NULL, seed = NULL,
   returnY = FALSE, trace = FALSE,
@@ -313,6 +313,7 @@ BRIERi.cv <- function(
     M              = M,
     external.dedup = if (dedup$applied) dedup else NULL,
     external.pca   = ext$external.pca,
+    stack          = ext$stack,
 
     # CV-specific fields
     criteria         = "cve",

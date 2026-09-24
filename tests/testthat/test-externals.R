@@ -1,6 +1,6 @@
 # Tests for the external-panel preparation: de-duplication, which every
-# multi-source fit runs first, and the principal-component reduction behind
-# multi.method = "PCstacking".
+# multi-source fit runs first, and the principal-component reduction that
+# reduceExternalsPCA performs on its own.
 #
 # Both steps read only beta.external, so they are tested directly on small
 # hand-built panels where the right answer is known by construction, and then
@@ -305,17 +305,32 @@ test_that("a panel with nothing redundant is fitted identically either way", {
   expect_equal(on.$res[[2]]$beta, off.$res[[2]]$beta)
 })
 
-test_that("de-duplication rescues a stacking solve that is otherwise singular", {
+test_that("a singular stacking panel is survived, not crashed on, and is reported", {
+  # This test used to assert that turning de-duplication OFF made the fit ERROR,
+  # because t(B) XtX B is singular the moment two columns carry the same
+  # information and solve() refuses it. The solve no longer refuses: it
+  # equilibrates, truncates the directions below tolerance, and SAYS SO. So the
+  # assertion is now about the report rather than about the error, and
+  # de-duplication is the thing that keeps the panel identifiable rather than
+  # the thing standing between the user and a crash.
   d <- make_summary_data()
   e <- ext_panel(nrow(d$sumstats))
   panel <- cbind(e$sig, e$dup, e$alt)
 
-  # t(B) XtX B is singular the moment two columns carry the same information.
-  expect_error(
-    BRIERs(d$sumstats, d$XtX, family = "gaussian", eta.list = c(0, 1),
-           beta.external = panel, multi.method = "stacking", dedup.cor = NULL,
-           nlambda = 10, parallel = FALSE, ncores = 1)
-  )
+  undeduped <- suppressWarnings(suppressMessages(BRIERs(
+    d$sumstats, d$XtX, family = "gaussian", eta.list = c(0, 1),
+    beta.external = panel, multi.method = "stacking", dedup.cor = NULL,
+    nlambda = 10, parallel = FALSE, ncores = 1
+  )))
+  expect_s3_class(undeduped, "BRIER")
+  expect_true(all(is.finite(undeduped$stack$weights)))
+  # the duplicate column costs exactly one direction, and the report names it
+  expect_gt(undeduped$stack$n_dropped, 0L)
+  # An EXACT duplicate makes the Gram exactly rank deficient, so both condition
+  # numbers are 0 and equilibration cannot help: rescaling fixes disparity of
+  # SCALE, not deficiency of RANK, and truncation is what carries this case.
+  # The equilibration claim is tested where it bites, in test-stacking.R.
+  expect_equal(undeduped$stack$rcond_raw, 0)
 
   fit <- suppressWarnings(suppressMessages(BRIERs(
     d$sumstats, d$XtX, family = "gaussian", eta.list = c(0, 1),
@@ -324,6 +339,8 @@ test_that("de-duplication rescues a stacking solve that is otherwise singular", 
   )))
   expect_s3_class(fit, "BRIER")
   expect_equal(fit$M, 1)
+  # with the duplicate gone the panel has full rank and nothing is truncated
+  expect_identical(fit$stack$n_dropped, 0L)
 })
 
 test_that("BRIERi.cv drops a duplicate too", {
@@ -344,29 +361,37 @@ test_that("BRIERi.cv drops a duplicate too", {
 })
 
 
-# -- multi.method = "PCstacking" ------------------------------------------------
+# -- multi.method = "stacking.c" ----------------------------------------------
+#
+# The solver itself is tested in test-stacking.R. What is tested HERE is the
+# WIRING: that the constrained method reaches every entry point, collapses the
+# panel to one eta, and leaves a fit the rest of the package can consume. That
+# is the coverage the removed PCstacking block used to provide, which is why
+# these were rewritten rather than deleted.
 
-test_that("PCstacking reduces then stacks, leaving a single eta", {
+test_that("stacking.c combines the panel, leaving a single eta", {
   d <- make_individual_data()
   B <- correlated_panel(d$p)
   panel <- rbind(0, B)
 
   fit <- suppressMessages(BRIERi(
     d$X, d$y, family = "gaussian", eta.list = c(0, 1, 5),
-    beta.external = panel, multi.method = "PCstacking",
+    beta.external = panel, multi.method = "stacking.c",
     penalty = "LASSO", nlambda = 10, parallel = FALSE, ncores = 1
   ))
 
   expect_equal(fit$M, 1)
   expect_equal(ncol(fit$eta.grid), 1)
-  expect_true(fit$external.pca$applied)
-  expect_true(fit$external.pca$n.pcs < ncol(B))
+  expect_false(is.null(fit$stack))
+  expect_true(fit$stack$constrained)
+  expect_equal(sum(fit$stack$weights), 1, tolerance = 1e-8)
+  expect_true(all(fit$stack$weights >= -1e-12))
   # The stored panel is the one the caller supplied, so plot.box still compares
-  # against the real external models rather than against components.
+  # against the real external models rather than against a combination.
   expect_equal(ncol(fit$beta.external), ncol(B))
 })
 
-test_that("PCstacking is not the same fit as plain stacking", {
+test_that("stacking.c is not the same fit as unconstrained stacking", {
   d <- make_individual_data()
   panel <- rbind(0, correlated_panel(d$p))
   args <- list(
@@ -375,52 +400,67 @@ test_that("PCstacking is not the same fit as plain stacking", {
     parallel = FALSE, ncores = 1
   )
 
-  pcs <- suppressMessages(do.call(BRIERi, c(args, list(multi.method = "PCstacking"))))
+  con <- suppressMessages(do.call(BRIERi, c(args, list(multi.method = "stacking.c"))))
   stk <- suppressMessages(do.call(BRIERi, c(args, list(multi.method = "stacking"))))
-  expect_false(isTRUE(all.equal(pcs$y.external, stk$y.external)))
+  expect_false(isTRUE(all.equal(con$y.external, stk$y.external)))
+  # the constraint is what separates them: the free weights need not sum to one
+  expect_equal(sum(con$stack$weights), 1, tolerance = 1e-8)
+  expect_false(isTRUE(all.equal(sum(stk$stack$weights), 1, tolerance = 1e-6)))
 })
 
-test_that("pca.var reaches the fitters rather than being fixed at its default", {
+test_that("both stacking methods report their solve through every fitter", {
+  # The report is how a user sees that a near-collinear panel was truncated.
+  # It is worth nothing if it is present on one entry point and absent on
+  # another, so pin it on all of them.
   d <- make_individual_data()
   panel <- rbind(0, correlated_panel(d$p))
-  args <- list(
-    X = d$X, y = d$y, family = "gaussian", eta.list = c(0, 1),
-    beta.external = panel, multi.method = "PCstacking",
-    penalty = "LASSO", nlambda = 10, parallel = FALSE, ncores = 1
-  )
+  for (mm in c("stacking", "stacking.c")) {
+    fit <- suppressMessages(BRIERi(
+      d$X, d$y, family = "gaussian", eta.list = c(0, 1),
+      beta.external = panel, multi.method = mm,
+      penalty = "LASSO", nlambda = 10, parallel = FALSE, ncores = 1
+    ))
+    expect_false(is.null(fit$stack), info = mm)
+    expect_identical(fit$stack$constrained, mm == "stacking.c", info = mm)
 
-  loose  <- suppressMessages(do.call(BRIERi, c(args, list(pca.var = 0.5))))
-  strict <- suppressMessages(do.call(BRIERi, c(args, list(pca.var = 0.999))))
-  expect_true(strict$external.pca$n.pcs > loose$external.pca$n.pcs)
+    cv <- suppressWarnings(suppressMessages(BRIERi.cv(
+      d$X, d$y, family = "gaussian", eta.list = c(0, 1),
+      beta.external = panel, multi.method = mm,
+      penalty = "LASSO", nlambda = 10, nfolds = 3, seed = 1,
+      parallel = FALSE, ncores = 1
+    )))
+    expect_false(is.null(cv$stack), info = paste("cv", mm))
+  }
 })
 
-test_that("PCstacking works in the summary module and in cross-validation", {
+test_that("stacking.c works in the summary module and in cross-validation", {
   ds <- make_summary_data()
   Bs <- correlated_panel(nrow(ds$sumstats))
   s <- suppressWarnings(suppressMessages(BRIERs(
     ds$sumstats, ds$XtX, family = "gaussian", eta.list = c(0, 1),
-    beta.external = Bs, multi.method = "PCstacking",
+    beta.external = Bs, multi.method = "stacking.c",
     nlambda = 10, parallel = FALSE, ncores = 1
   )))
   expect_equal(s$M, 1)
-  expect_true(s$external.pca$applied)
+  expect_true(s$stack$constrained)
+  expect_equal(sum(s$stack$weights), 1, tolerance = 1e-8)
 
   d <- make_individual_data()
   cv <- suppressWarnings(suppressMessages(BRIERi.cv(
     d$X, d$y, family = "gaussian", eta.list = c(0, 1),
-    beta.external = rbind(0, correlated_panel(d$p)), multi.method = "PCstacking",
+    beta.external = rbind(0, correlated_panel(d$p)), multi.method = "stacking.c",
     penalty = "LASSO", nlambda = 10, nfolds = 3, seed = 1,
     parallel = FALSE, ncores = 1
   )))
   expect_equal(cv$M, 1)
-  expect_true(cv$external.pca$applied)
+  expect_true(cv$stack$constrained)
 })
 
-test_that("a PCstacking fit is a plain BRIER object downstream", {
+test_that("a stacking.c fit is a plain BRIER object downstream", {
   d <- make_individual_data()
   fit <- suppressMessages(BRIERi(
     d$X, d$y, family = "gaussian", eta.list = c(0, 1, 5),
-    beta.external = rbind(0, correlated_panel(d$p)), multi.method = "PCstacking",
+    beta.external = rbind(0, correlated_panel(d$p)), multi.method = "stacking.c",
     penalty = "LASSO", nlambda = 10, parallel = FALSE, ncores = 1
   ))
 
@@ -457,7 +497,7 @@ test_that("BRIERi.bopt subsets the search box to the surviving sources", {
   expect_equal(fit$external.dedup$dropped$index, 2L)
 })
 
-test_that("BRIERs.bopt accepts PCstacking and searches a single eta", {
+test_that("BRIERs.bopt accepts stacking.c and searches a single eta", {
   ds <- make_summary_data()
   Bs <- correlated_panel(nrow(ds$sumstats))
 
@@ -467,12 +507,13 @@ test_that("BRIERs.bopt accepts PCstacking and searches a single eta", {
 
   fit <- suppressWarnings(suppressMessages(BRIERs.bopt(
     ds$sumstats, ds$XtX, family = "gaussian", beta.external = Bs,
-    multi.method = "PCstacking", criteria = "gaussian.mspe",
+    multi.method = "stacking.c", criteria = "gaussian.mspe",
     X.val = ds$X.val, y.val = ds$y.val,
     init.points = 2, n.iter = 1, nlambda = 10, verbose = FALSE
   )))
 
   expect_equal(fit$M, 1)
-  expect_true(fit$external.pca$applied)
+  expect_true(fit$stack$constrained)
+  expect_equal(sum(fit$stack$weights), 1, tolerance = 1e-8)
   expect_s3_class(fit, "BRIER.bopt")
 })

@@ -38,7 +38,7 @@ weights on the input models.}
 Projects a panel of external coefficient vectors onto the leading directions
 of its singular value decomposition, keeping components until \code{pca.var}
 of the variance is covered. This is the first half of
-\code{multi.method = "PCstacking"}, whose second half combines the retained
+\code{multi.method = "stacking.c"}, whose second half combines the retained
 components by stacking.
 }
 \details{
