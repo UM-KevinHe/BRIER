@@ -94,11 +94,12 @@
 #'   moments are taken from each fold's training folds and applied to the
 #'   held-out fold, so a pre-standardised split would let the held-out samples
 #'   set their own scale.
-#' @param covariates An optional n x q matrix of covariates to residualise
-#'   \code{y.val} against, refitted SEPARATELY within each piece of each fold so
-#'   neither piece sees the other. Gaussian only, ignored otherwise. Omit it if
-#'   \code{y.val} is already residualised, accepting that a single global
-#'   residual has let every fold see every other.
+#' @param covariates An optional n x q matrix or data frame of covariates to
+#'   residualise \code{y.val} against. For a gaussian outcome, \code{y.val} is
+#'   residualised on these (when given) and then STANDARDISED, both refitted
+#'   SEPARATELY within each piece of each fold so neither piece sees the other.
+#'   The result does not depend on the scale \code{y.val} is supplied on. Binary
+#'   and count outcomes are used as given.
 #' @param corr A length-p vector of the target's marginal correlations.
 #'   Required by the validation-free screen.
 #' @param XtX A p x p LD matrix, sparse or dense. Required by the
@@ -389,14 +390,31 @@ screenExternals <- function(
   if (!is.null(seed)) { set.seed(seed) }
   fold <- sample(rep_len(seq_len(nfolds), N))
 
-  ## Residualise y WITHIN each piece of each fold, refitting separately, so
-  ## neither piece has seen the other. A single global residual computed once on
-  ## the whole split would let every fold see every other.
+  ## The outcome transform, applied WITHIN each piece of each fold and refitted
+  ## separately, so neither piece has seen the other: residualise on the
+  ## covariates when given, then STANDARDISE by the piece's own moments. This is
+  ## exactly 81_cv_baseline.R's .within_resid.
+  ##
+  ## The standardisation is not optional. The null clip (MSPE 1 - 1/n) and the
+  ## external's fixed slope both assume a standardised outcome, so an outcome on
+  ## any other scale moves every ratio. v1.4.1 residualised WITHOUT
+  ## standardising, and used y untouched when no covariates were given.
+  ## Binary and count outcomes are left on their own scale.
   within.resid <- function(i) {
     yi <- y.val[i]
-    if (bin || is.null(covariates)) { return(yi) }
-    Ci <- as.matrix(covariates)[i, , drop = FALSE]
-    as.numeric(stats::resid(stats::lm(yi ~ Ci)))
+    if (!identical(family, "gaussian")) { return(yi) }
+    if (!is.null(covariates)) {
+      Ci <- as.data.frame(covariates)[i, , drop = FALSE]
+      yi <- as.numeric(stats::residuals(stats::lm(
+        .y ~ ., data = data.frame(.y = yi, Ci, check.names = FALSE)
+      )))
+    }
+    s <- stats::sd(yi)
+    if (!is.finite(s) || s <= 0) {
+      stop(sprintf("the outcome has no spread on a fold piece of %d samples.",
+                   length(i)), call. = FALSE)
+    }
+    (yi - mean(yi)) / s
   }
 
   ratio.loss <- matrix(NA_real_, M, nfolds)
