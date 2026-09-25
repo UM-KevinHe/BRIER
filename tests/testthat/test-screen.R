@@ -68,7 +68,7 @@ test_that("the validation-free screen removes what carries nothing", {
                  is.finite(e$r2) & e$r2 > s$floor)
 })
 
-test_that("the no-signal floor moves with n, and is 0.5 for a binomial outcome", {
+test_that("the no-signal floor moves with n, and is 1/n for EVERY family", {
   d <- make_summary()
   lo <- screenExternals(d$B, corr = d$corr, XtX = d$XtX, n = 100,
                         family = "gaussian", dedup.cor = NULL)
@@ -76,9 +76,14 @@ test_that("the no-signal floor moves with n, and is 0.5 for a binomial outcome",
                         family = "gaussian", dedup.cor = NULL)
   expect_gt(lo$floor, hi$floor)
   expect_gte(sum(lo$externals$keep), sum(hi$externals$keep))
+  # r2 is a squared correlation, not an AUC, so a binary outcome does NOT move
+  # the floor to 0.5. v1.4.0 got this wrong and this test asserted the bug.
   bn <- screenExternals(d$B, corr = d$corr, XtX = d$XtX, n = 5000,
                         family = "binomial", dedup.cor = NULL)
-  expect_equal(bn$floor, 0.5)
+  ga <- screenExternals(d$B, corr = d$corr, XtX = d$XtX, n = 5000,
+                        family = "gaussian", dedup.cor = NULL)
+  expect_equal(bn$floor, 1 / 5000)
+  expect_identical(bn$externals$keep, ga$externals$keep)
 })
 
 test_that("the validation-free screen refuses to guess n", {

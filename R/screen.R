@@ -78,8 +78,11 @@
 #' \eqn{d^2} is \eqn{1 - \mathrm{MSPE}} for a standardised outcome, so the first
 #' leg asks that the score beat the mean at its published scale. The second is
 #' the squared correlation the score would achieve after the best rescaling, so
-#' it is scale free, and its floor is the no-signal level \eqn{1/n} (0.5 for a
-#' binomial outcome), with \code{n} the GWAS sample size of the target.
+#' it is scale free, and its floor is the no-signal level \eqn{1/n}, with
+#' \code{n} the GWAS sample size of the target. The floor is \eqn{1/n} for EVERY
+#' family, binary outcomes included: \eqn{R^2} here is a squared correlation on
+#' the correlation scale BRIERs works in, not an AUC, so the 0.5 floor that belongs
+#' to an AUC does not apply to it.
 #' }
 #'
 #' @param beta.external A p x M matrix of external coefficients, no intercept
@@ -321,7 +324,14 @@ screenExternals <- function(
 
   d2 <- 2 * btr - bRb                              # 1 - MSPE at the published scale
   r2 <- ifelse(is.finite(bRb) & bRb > 0, btr^2 / bRb, NA_real_)
-  fl <- .acc_floor(family, n)
+  # 1/n for EVERY family. r2 is a squared correlation on the correlation scale
+  # BRIERs works in, whatever the outcome's family: a binary trait enters through
+  # how corr was derived, not through what r2 measures. The 0.5 of .acc_floor() is
+  # an AUC floor and belongs to the CV screen, which measures a real AUC on held-out
+  # samples. v1.4.0 applied 0.5 here, and since a PGS r2 is typically 0.01 to 0.1 it
+  # dropped every external on a binary summary target (cad, t2d, ckd: 0 kept, where
+  # the application's 1/N floor keeps 15, 84 and 11).
+  fl <- 1 / n
   keep <- !degenerate &
     is.finite(d2) & d2 > 0 &
     is.finite(r2) & r2 > fl

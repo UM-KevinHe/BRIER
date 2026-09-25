@@ -150,8 +150,11 @@ the LD alone, so it needs no held-out samples and cannot leak any. With
 \eqn{d^2} is \eqn{1 - \mathrm{MSPE}} for a standardised outcome, so the first
 leg asks that the score beat the mean at its published scale. The second is
 the squared correlation the score would achieve after the best rescaling, so
-it is scale free, and its floor is the no-signal level \eqn{1/n} (0.5 for a
-binomial outcome), with \code{n} the GWAS sample size of the target.
+it is scale free, and its floor is the no-signal level \eqn{1/n}, with
+\code{n} the GWAS sample size of the target. The floor is \eqn{1/n} for EVERY
+family, binary outcomes included: \eqn{R^2} here is a squared correlation on
+the correlation scale BRIERs works in, not an AUC, so the 0.5 floor that belongs
+to an AUC does not apply to it.
 }
 }
 \examples{
