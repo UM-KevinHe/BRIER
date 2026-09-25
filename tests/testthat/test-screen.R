@@ -223,6 +223,30 @@ test_that("keep is the conjunction of both legs at the bar", {
   expect_true(all(which(hard$externals$keep) %in% which(e$keep)))
 })
 
+test_that("the CV screen does not depend on the scale y.val is supplied on", {
+  # The outcome is standardised within each fold piece, as the application
+  # does, so a shifted and rescaled y must give the SAME ratios. v1.4.1 did not
+  # standardise, and this is the assertion that would have caught it.
+  d <- make_cv_case()
+  base <- suppressWarnings(suppressMessages(BRIERi(
+    d$X, d$y, family = "gaussian", eta.list = 0,
+    beta.external = rbind(0, d$B[, "zero", drop = FALSE]),
+    nlambda = 10, parallel = FALSE, ncores = 1
+  )))
+  run <- function(yv, cov = NULL) suppressWarnings(suppressMessages(screenExternals(
+    d$B, fit = base, X.val = d$X.val, y.val = yv, covariates = cov,
+    family = "gaussian", nfolds = 3, seed = 1, dedup.cor = NULL
+  )))$externals
+  a <- run(d$y.val)
+  b <- run(10 * d$y.val + 5)
+  expect_equal(a$ratio_loss, b$ratio_loss, tolerance = 1e-8)
+  expect_equal(a$ratio_acc, b$ratio_acc, tolerance = 1e-8)
+  # and covariates are accepted as a data frame, not only a matrix
+  cv <- data.frame(age = rnorm(length(d$y.val)), sex = rbinom(length(d$y.val), 1, 0.5))
+  withcov <- run(d$y.val, cv)
+  expect_true(all(is.finite(withcov$ratio_loss[!withcov$degenerate])))
+})
+
 test_that("nfolds is an argument and 3 is only its default", {
   d <- make_cv_case()
   base <- suppressWarnings(suppressMessages(BRIERi(

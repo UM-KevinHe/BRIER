@@ -40,11 +40,12 @@ moments are taken from each fold's training folds and applied to the
 held-out fold, so a pre-standardised split would let the held-out samples
 set their own scale.}
 
-\item{covariates}{An optional n x q matrix of covariates to residualise
-\code{y.val} against, refitted SEPARATELY within each piece of each fold so
-neither piece sees the other. Gaussian only, ignored otherwise. Omit it if
-\code{y.val} is already residualised, accepting that a single global
-residual has let every fold see every other.}
+\item{covariates}{An optional n x q matrix or data frame of covariates to
+residualise \code{y.val} against. For a gaussian outcome, \code{y.val} is
+residualised on these (when given) and then STANDARDISED, both refitted
+SEPARATELY within each piece of each fold so neither piece sees the other.
+The result does not depend on the scale \code{y.val} is supplied on. Binary
+and count outcomes are used as given.}
 
 \item{corr}{A length-p vector of the target's marginal correlations.
 Required by the validation-free screen.}
