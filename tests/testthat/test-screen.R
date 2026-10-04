@@ -270,3 +270,35 @@ test_that("nfolds is an argument and 3 is only its default", {
     "samples"
   )
 })
+
+
+test_that("a binary BRIERi target gives the external an intercept, as it has one", {
+  # At 30 percent prevalence an external scored with no intercept is centred at
+  # p = 0.5 and loses to the target even when it IS the true model. v1.4.2 did
+  # this for every fit; a BRIERi fit has an intercept, so the external gets one.
+  set.seed(20261003)
+  n <- 900; p <- 20
+  X <- matrix(rnorm(n * p), n, p)
+  b <- c(rep(0.6, 5), rep(0, p - 5))
+  lin <- function(Z) drop(Z %*% b) - 1.2
+  y <- rbinom(n, 1, plogis(lin(X)))
+  Xv <- matrix(rnorm(n * p), n, p)
+  yv <- rbinom(n, 1, plogis(lin(Xv)))
+  B <- cbind(true = b, noise = rnorm(p, 0, 0.05), zero = 0)
+  base <- suppressWarnings(suppressMessages(BRIERi(
+    X, y, family = "binomial", eta.list = 0,
+    beta.external = rbind(0, B[, "zero", drop = FALSE]),
+    nlambda = 10, parallel = FALSE, ncores = 1
+  )))
+  s <- suppressWarnings(suppressMessages(screenExternals(
+    B, fit = base, X.val = Xv, y.val = yv,
+    family = "binomial", nfolds = 3, seed = 1, dedup.cor = NULL
+  )))
+  e <- s$externals
+  expect_true(e$keep[e$label == "true"])
+  expect_gt(e$ratio_loss[e$label == "true"], e$ratio_loss[e$label == "noise"])
+  expect_false(e$keep[e$label == "noise"])
+  # the intercept is the one the score needs, not a fixed 0
+  sc <- drop(X %*% b)
+  expect_lt(abs(.offset_intercept(sc, y) - (-1.2)), 0.3)
+})

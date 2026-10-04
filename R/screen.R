@@ -65,6 +65,12 @@
 #' measured on roughly \code{1/nfolds} of the samples, and averaging folds cuts
 #' the variance of the estimate but not its null bias, so the floor stays where
 #' the measurement happened.
+#'
+#' For a binary outcome the external's intercept follows the target's. Against
+#' a \code{BRIERs} fit, which has no intercept, the external gets none and the
+#' null is \eqn{p = 0.5}. Against a \code{BRIERi} fit, which has one, the
+#' external's intercept is fitted off-fold, \code{glm(y ~ 1, offset = score)},
+#' and the null is the training folds' prevalence.
 #' }
 #'
 #' \subsection{The validation-free screen}{
@@ -384,6 +390,14 @@ screenExternals <- function(
   summary.module <- !is.null(fit$XtY)
   M <- ncol(B)
   bin <- identical(family, "binomial")
+  ## A BINARY outcome's intercept follows the TARGET, because the screen only ever
+  ## compares the two. A BRIERs fit has no intercept, so neither does the external
+  ## and the null is p = 0.5 (81_cv_baseline.R). A BRIERi fit HAS one, so the
+  ## external gets one too, fitted off-fold like the Gaussian mean offset, and the
+  ## null is the training folds' prevalence. Without it an individual-level screen
+  ## centres every external at p = 0.5 and drops even the true model whenever the
+  ## prevalence is far from a half.
+  bin.icpt <- bin && !summary.module
   mm <- .screen_metrics(family)
   sel.crit <- mm[["loss"]]
 
@@ -449,7 +463,13 @@ screenExternals <- function(
 
     ## THE NULL MODEL on these same samples, measured rather than assumed, so the
     ## clip sits on the same scale as the thing it clips.
-    null.loss <- if (bin) evalMetric(rep(0.5, n.h), y.hold, mm[["loss"]]) else 1 - 1 / n.h
+    null.loss <- if (bin.icpt) {
+      evalMetric(rep(mean(y.trn), n.h), y.hold, mm[["loss"]])
+    } else if (bin) {
+      evalMetric(rep(0.5, n.h), y.hold, mm[["loss"]])
+    } else {
+      1 - 1 / n.h
+    }
     acc.fl <- .acc_floor(family, n.h)
     loss.ref <- min(t.loss, null.loss)
     acc.ref <- max(t.acc, acc.fl)
@@ -460,7 +480,13 @@ screenExternals <- function(
     Pt <- Xt %*% B
     Ph <- Xh %*% B
     for (m in seq_len(M)) {
-      pm <- if (bin) stats::plogis(Ph[, m]) else mean(y.trn - Pt[, m]) + Ph[, m]
+      pm <- if (bin.icpt) {
+        stats::plogis(.offset_intercept(Pt[, m], y.trn) + Ph[, m])
+      } else if (bin) {
+        stats::plogis(Ph[, m])
+      } else {
+        mean(y.trn - Pt[, m]) + Ph[, m]
+      }
       if (all(is.na(pm))) { next }
       e.loss <- evalMetric(pm, y.hold, mm[["loss"]])
       e.acc <- .acc_value(pm, y.hold, family)
@@ -498,6 +524,19 @@ screenExternals <- function(
       stringsAsFactors = FALSE
     )
   )
+}
+
+
+#' The logistic intercept of a score whose slope is fixed at 1: glm(y ~ 1,
+#' offset = score). NA when the score overflows the link, which the caller then
+#' records as an unscorable external rather than a number.
+#'
+#' @keywords internal
+.offset_intercept <- function(score, y) {
+  a <- tryCatch(suppressWarnings(stats::coef(stats::glm(
+    y ~ 1, offset = score, family = stats::binomial()
+  ))[[1L]]), error = function(e) NA_real_)
+  if (is.finite(a)) a else NA_real_
 }
 
 
