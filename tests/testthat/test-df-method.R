@@ -95,3 +95,15 @@ test_that("BRIERs: divergence = the active count for the LASSO; MCP exceeds it",
   act <- fm$k > 0
   expect_true(all(fm$df.eff[act] >= fm$k[act] - 1e-8))
 })
+
+test_that("the sparse LD trace is solved block by block and equals the dense trace", {
+  set.seed(7)
+  blk <- function(k) { A <- matrix(rnorm(k * 40), 40, k); stats::cor(A) }
+  R <- Matrix::bdiag(blk(5), blk(8), blk(3), blk(6))
+  R <- methods::as(methods::as(R, "generalMatrix"), "CsparseMatrix")
+  curv <- runif(ncol(R), 0, 0.3)
+  expect_identical(as.integer(.block_ends(R)), c(5L, 13L, 16L, 22L))
+  expect_equal(.df_trace(R, curv), .df_trace_dense(as.matrix(R), curv), tolerance = 1e-10)
+  Rs <- Matrix::forceSymmetric(R)            # upper-triangle storage reads the same
+  expect_identical(as.integer(.block_ends(Rs)), c(5L, 13L, 16L, 22L))
+})
