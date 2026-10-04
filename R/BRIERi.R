@@ -285,6 +285,15 @@ BRIERi = function(
 #' @param nvar.max An integer specifying the maximum number of selected variables.
 #' @param returnX Logical. If TRUE, the standardised data list is returned in
 #'   the output for diagnostics.
+#' @param df.method How the degrees of freedom in the information criteria are
+#'   computed: \code{"active"} (default, the number of nonzero coefficients, as in
+#'   Zhang, Li and Tsai 2010 and ncvreg), \code{"divergence"} (the local Stein df,
+#'   \eqn{tr\{(H_A + diag\,p''(|b_A|))^{-1} H_A\}}, equal to the active count for
+#'   the LASSO and larger for MCP and SCAD) or \code{"lqa"} (Fan and Li's local
+#'   quadratic approximation, \eqn{tr\{(H_A + diag\,p'(|b_A|)/|b_A|)^{-1} H_A\}}).
+#'   Where the matrix is not positive definite the active count is used for that
+#'   lambda, and \code{df.fallback} counts how often. The df with respect to y is
+#'   this divided by \code{1 + sum(eta)}.
 #'
 #' @return An object of class \code{"BRIER.eta"} containing model specification,
 #'   coefficients, fit statistics, and data.
@@ -299,11 +308,13 @@ BRIERi.eta = function(
   penalty.factor = rep(1, ncol(X)), penalty = c("LASSO", "SCAD", "MCP"), 
   alpha = 1, gamma = ifelse(penalty == "SCAD", 3.7, 3), 
   lambda, nlambda = 100, lambda.min = { if (nrow(X) > ncol(X)) 1e-4 else .05 }, log.lambda = TRUE, 
-  max.iter = 1e6, eps = 1e-4, nvar.max = NULL, returnX = FALSE
+  max.iter = 1e6, eps = 1e-4, nvar.max = NULL, returnX = FALSE,
+  df.method = c("active", "divergence", "lqa")
 ){
 
   family <- match.arg(family)
   penalty <- match.arg(penalty)
+  df.method <- match.arg(df.method)
 
   # -- Validation of y --
   if (is.data.frame(y)){ y <- as.matrix(y) }
@@ -447,6 +458,15 @@ BRIERi.eta = function(
     warning("Algorithm failed to converge for some values of lambda", call. = FALSE)
   }
 
+  # -- Degrees of freedom for the information criteria (df.R) --
+  # On the standardized scale the path was solved on, before unstandardizing.
+  df.eff <- NULL; df.fallback <- 0L
+  if (!identical(df.method, "active")) {
+    dd <- .df_path_i(XX.list$std.X, b, as.numeric(b0), lambda, XX.list$penalty.factor,
+                     alpha, gamma, penalty, family, weights, df.method)
+    df.eff <- dd$df; df.fallback <- dd$fallback
+  }
+
   # -- Unstandardize --
   beta <- matrix(0, nrow = (ncol(X) + 1), ncol = length(lambda))
   bb <- b/XX.list$scale[XX.list$nz]
@@ -480,6 +500,9 @@ BRIERi.eta = function(
     beta  = beta,
     df = df, 
     k = k,
+    df.method = df.method,
+    df.eff = df.eff,
+    df.fallback = df.fallback,
 
     # Fit Statistics
     deviance = deviance,
