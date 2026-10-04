@@ -240,8 +240,9 @@ ic_selection <- function(i, object, n, criteria, dispersion = NULL, var_y = NULL
 
   if (is.null(dev)) { stop("fit$deviance is required for model selection.", call. = FALSE) }
 
-  # effective df adjusted for external information
-  df <- fit$k / (1 + sum(eta))
+  # effective df adjusted for external information. df.eff is the trace df when the
+  # fit was made with df.method = "divergence" or "lqa"; else the active count.
+  df <- (if (!is.null(fit$df.eff)) fit$df.eff else fit$k) / (1 + sum(eta))
 
   # dispersion
   if (is.null(dispersion)) {

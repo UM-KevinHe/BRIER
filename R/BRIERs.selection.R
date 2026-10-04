@@ -169,7 +169,8 @@ ic_selection_S <- function(i, object, XtX, sumstats, TN, h2, criteria) {
 
   if (is.null(dev)) { stop("fit$deviance is required for model selection.", call. = FALSE) }
 
-  df <- fit$k / (1 + sum(eta))
+  # The trace df when the fit was made with df.method = "divergence" or "lqa".
+  df <- (if (!is.null(fit$df.eff)) fit$df.eff else fit$k) / (1 + sum(eta))
 
   measure <- if (criteria == "Cp") {
     if (is.null(h2)) {

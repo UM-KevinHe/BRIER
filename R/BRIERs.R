@@ -252,6 +252,17 @@ BRIERs <- function(
 #' @param eps A numeric scalar for the convergence tolerance.
 #' @param nvar.max An integer specifying the maximum number of selected variables.
 #' @param varnames Optional character vector of variant names (length p).
+#' @param df.method How the degrees of freedom in the information criteria are
+#'   computed: \code{"active"} (default, the number of nonzero coefficients, as in
+#'   Zhang, Li and Tsai 2010 and ncvreg), \code{"divergence"} (the local Stein df,
+#'   \eqn{tr\{(R_{AA} + diag\,p''(|b_A|))^{-1} R_{AA}\}}, equal to the active count for
+#'   the LASSO and larger for MCP and SCAD) or \code{"lqa"} (Fan and Li's local
+#'   quadratic approximation, \eqn{tr\{(R_{AA} + diag\,p'(|b_A|)/|b_A|)^{-1} R_{AA}\}}).
+#'   Where the matrix is not positive definite the active count is used for that
+#'   lambda, and \code{df.fallback} counts how often. The df with respect to y is
+#'   this divided by \code{1 + sum(eta)}. With no intercept, the
+#'   Hessian is the LD block of the active set.
+#'
 #'
 #' @return An object of class \code{"BRIER.eta"} containing model specification,
 #'   coefficients, fit statistics, and data. The \code{summary = TRUE} flag
@@ -270,10 +281,11 @@ BRIERs.eta <- function(
   alpha = 1, gamma = ifelse(penalty == "SCAD", 3.7, 3),
   lambda, nlambda = 100, lambda.min = 0.001, log.lambda = TRUE,
   max.iter = 1e6, eps = 1e-4, nvar.max = NULL,
-  varnames = NULL
+  varnames = NULL, df.method = c("active", "divergence", "lqa")
 ) {
 
   penalty <- match.arg(penalty)
+  df.method <- match.arg(df.method)
   family <- match.arg(family)
 
   XtY <- as.numeric(as.vector(XtY))
@@ -393,6 +405,12 @@ BRIERs.eta <- function(
 
   # -- Degree of freedom --
   k <- colSums(abs(beta) >= eps)
+  df.eff <- NULL; df.fallback <- 0L
+  if (!identical(df.method, "active")) {
+    dd <- .df_path_s(XtX, as.matrix(beta), lambda, penalty.factor, alpha, gamma,
+                     penalty, eps, df.method)
+    df.eff <- dd$df; df.fallback <- dd$fallback
+  }
 
   out <- list(
     # Model specification
@@ -408,6 +426,9 @@ BRIERs.eta <- function(
     beta           = beta,
     df             = df,
     k              = k,
+    df.method      = df.method,
+    df.eff         = df.eff,
+    df.fallback    = df.fallback,
 
     # Fit statistics
     deviance       = deviance,

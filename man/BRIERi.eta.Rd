@@ -26,7 +26,8 @@ BRIERi.eta(
   max.iter = 1e+06,
   eps = 1e-04,
   nvar.max = NULL,
-  returnX = FALSE
+  returnX = FALSE,
+  df.method = c("active", "divergence", "lqa")
 )
 }
 \arguments{
@@ -69,6 +70,16 @@ Use \code{eta = 0} to ignore external information.}
 
 \item{returnX}{Logical. If TRUE, the standardised data list is returned in
 the output for diagnostics.}
+
+\item{df.method}{How the degrees of freedom in the information criteria are
+computed: \code{"active"} (default, the number of nonzero coefficients, as in
+Zhang, Li and Tsai 2010 and ncvreg), \code{"divergence"} (the local Stein df,
+\eqn{tr\{(H_A + diag\,p''(|b_A|))^{-1} H_A\}}, equal to the active count for
+the LASSO and larger for MCP and SCAD) or \code{"lqa"} (Fan and Li's local
+quadratic approximation, \eqn{tr\{(H_A + diag\,p'(|b_A|)/|b_A|)^{-1} H_A\}}).
+Where the matrix is not positive definite the active count is used for that
+lambda, and \code{df.fallback} counts how often. The df with respect to y is
+this divided by \code{1 + sum(eta)}.}
 }
 \value{
 An object of class \code{"BRIER.eta"} containing model specification,

@@ -21,7 +21,8 @@ BRIERs.eta(
   max.iter = 1e+06,
   eps = 1e-04,
   nvar.max = NULL,
-  varnames = NULL
+  varnames = NULL,
+  df.method = c("active", "divergence", "lqa")
 )
 }
 \arguments{
@@ -60,6 +61,17 @@ to ignore external information.}
 \item{nvar.max}{An integer specifying the maximum number of selected variables.}
 
 \item{varnames}{Optional character vector of variant names (length p).}
+
+\item{df.method}{How the degrees of freedom in the information criteria are
+computed: \code{"active"} (default, the number of nonzero coefficients, as in
+Zhang, Li and Tsai 2010 and ncvreg), \code{"divergence"} (the local Stein df,
+\eqn{tr\{(R_{AA} + diag\,p''(|b_A|))^{-1} R_{AA}\}}, equal to the active count for
+the LASSO and larger for MCP and SCAD) or \code{"lqa"} (Fan and Li's local
+quadratic approximation, \eqn{tr\{(R_{AA} + diag\,p'(|b_A|)/|b_A|)^{-1} R_{AA}\}}).
+Where the matrix is not positive definite the active count is used for that
+lambda, and \code{df.fallback} counts how often. The df with respect to y is
+this divided by \code{1 + sum(eta)}. With no intercept, the
+Hessian is the LD block of the active set.}
 }
 \value{
 An object of class \code{"BRIER.eta"} containing model specification,
