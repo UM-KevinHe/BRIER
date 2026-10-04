@@ -138,6 +138,12 @@ The accuracy floor uses the FOLD's n, not the split's. Each metric is
 measured on roughly \code{1/nfolds} of the samples, and averaging folds cuts
 the variance of the estimate but not its null bias, so the floor stays where
 the measurement happened.
+
+For a binary outcome the external's intercept follows the target's. Against
+a \code{BRIERs} fit, which has no intercept, the external gets none and the
+null is \eqn{p = 0.5}. Against a \code{BRIERi} fit, which has one, the
+external's intercept is fitted off-fold, \code{glm(y ~ 1, offset = score)},
+and the null is the training folds' prevalence.
 }
 
 \subsection{The validation-free screen}{
