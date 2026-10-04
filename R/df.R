@@ -46,13 +46,46 @@
 }
 
 ## tr{ (G + diag(curv))^{-1} G }, or NA when G + diag(curv) is not positive definite.
-.df_trace <- function(G, curv) {
+.df_trace_dense <- function(G, curv) {
   if (!length(curv)) return(0)
   M <- G
   diag(M) <- diag(M) + curv
   ch <- tryCatch(chol(M), error = function(e) NULL)
   if (is.null(ch)) return(NA_real_)
   sum(diag(backsolve(ch, forwardsolve(t(ch), G))))
+}
+
+## The ends of the diagonal blocks of a sparse symmetric matrix: column j closes a block
+## when no column up to j has a nonzero below row j. Berisa LD blocks are contiguous in
+## variant order, so these are the LD blocks; were they not, the blocks found would be
+## larger, never wrong.
+.block_ends <- function(G) {
+  G <- methods::as(methods::as(G, "generalMatrix"), "CsparseMatrix")
+  pp <- G@p; ii <- G@i
+  m <- ncol(G)
+  last <- vapply(seq_len(m), function(j) {
+    if (pp[j + 1L] > pp[j]) max(ii[(pp[j] + 1L):pp[j + 1L]]) + 1L else j
+  }, 1L)
+  which(cummax(pmax(last, seq_len(m))) == seq_len(m))
+}
+
+## The trace for any G. A SPARSE G (the LD block of a summary fit) is block diagonal, and
+## the trace of a block-diagonal product is the sum over blocks, so each block is solved
+## on its own. BRIERs' lambda path runs to 0.001 * lambda.max, where the active set nears
+## p and a single dense factor costs minutes per lambda.
+.df_trace <- function(G, curv) {
+  if (!length(curv)) return(0)
+  if (!inherits(G, "sparseMatrix")) return(.df_trace_dense(G, curv))
+  ends <- .block_ends(G)
+  starts <- c(1L, utils::head(ends, -1L) + 1L)
+  tot <- 0
+  for (k in seq_along(ends)) {
+    ix <- starts[k]:ends[k]
+    d <- .df_trace_dense(as.matrix(G[ix, ix, drop = FALSE]), curv[ix])
+    if (!is.finite(d)) return(NA_real_)
+    tot <- tot + d
+  }
+  tot
 }
 
 ## df along a BRIERi path. std.X: the standardized design; b: p x L standardized
@@ -91,7 +124,7 @@
   out <- numeric(L); fallback <- 0L
   for (l in seq_len(L)) {
     A <- which(abs(b[, l]) >= eps)
-    G <- as.matrix(XtX[A, A, drop = FALSE])
+    G <- methods::as(XtX[A, A, drop = FALSE], "CsparseMatrix")
     curv <- .df_curvature(b[A, l], lambda[l] * penalty.factor[A] * alpha,
                           lambda[l] * penalty.factor[A] * (1 - alpha),
                           penalty, gamma, method)
