@@ -256,16 +256,25 @@ ic_selection <- function(i, object, n, criteria, dispersion = NULL, var_y = NULL
     stop("Length of dispersion does not match length of lambda.", call. = FALSE)
   }
 
-  ## THE SCALE. BRIERi.eta normalises the observation weights to sum to one, so
+  ## THE n SCALE. BRIERi.eta normalises the observation weights to sum to one, so
   ## `dev` is a MEAN deviance (RSS / n for a Gaussian outcome). The penalties are
   ## therefore divided by n, as BRIERs.selection's Cp and GIC already are. Before
   ## v1.4.4 they were not, which made every penalty n times too heavy: on a
   ## simulation with 10 true effects in 50 (n = 2000) BIC chose the empty model.
+  ## THE GAUSSIAN SCALE. The criterion penalises the SCALED deviance, RSS / sigma^2,
+  ## so RSS / n on its own ties the choice to the units of y: before v1.4.5, multiplying
+  ## y by 10 took BIC from 12 to 48 of 50 predictors, and by 0.1 to the empty model. For a
+  ## Gaussian outcome AIC and BIC therefore use the profile likelihood, n log(RSS / n) +
+  ## kappa df, divided by n, which needs no sigma^2 and does not move with the units.
+  ## Binomial and Poisson have dispersion 1, so their mean deviance is already scaled.
+  gauss.ic <- family == "gaussian" && criteria %in% c("AIC", "BIC")
+  if (gauss.ic && any(dev <= 0)) { dev[dev <= 0] <- .Machine$double.eps }
+  fit.term <- if (gauss.ic) log(dev) else dev
   measure <- if (criteria == "AIC") {
-    dev + 2 * df / n
+    fit.term + 2 * df / n
 
   } else if (criteria == "BIC") {
-    dev + log(n) * df / n
+    fit.term + log(n) * df / n
 
   } else if (criteria == "Cp") {
     if (family == "gaussian") {
