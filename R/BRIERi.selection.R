@@ -256,20 +256,25 @@ ic_selection <- function(i, object, n, criteria, dispersion = NULL, var_y = NULL
     stop("Length of dispersion does not match length of lambda.", call. = FALSE)
   }
 
+  ## THE SCALE. BRIERi.eta normalises the observation weights to sum to one, so
+  ## `dev` is a MEAN deviance (RSS / n for a Gaussian outcome). The penalties are
+  ## therefore divided by n, as BRIERs.selection's Cp and GIC already are. Before
+  ## v1.4.4 they were not, which made every penalty n times too heavy: on a
+  ## simulation with 10 true effects in 50 (n = 2000) BIC chose the empty model.
   measure <- if (criteria == "AIC") {
-    dev + 2 * df
+    dev + 2 * df / n
 
   } else if (criteria == "BIC") {
-    dev + log(n) * df
+    dev + log(n) * df / n
 
   } else if (criteria == "Cp") {
     if (family == "gaussian") {
       if (is.null(var_y)) {
         stop("var_y must be provided for Gaussian Cp.", call. = FALSE)
       }
-      dev / var_y + 2 * df
+      dev / var_y + 2 * df / n
     } else {
-      dev / dispersion + 2 * df - n
+      dev / dispersion + 2 * df / n - 1
     }
 
   } else if (criteria == "gcv") {
