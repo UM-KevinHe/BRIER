@@ -21,7 +21,7 @@ lambda is selected over a regularisation path."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,12 +72,14 @@ lambda is selected over a regularisation path.</p>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
 <span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  beta.external <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">sumstats</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span><span class="op">)</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span>, <span class="st">"stacking.c"</span><span class="op">)</span>,</span>
 <span>  optim.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  trace <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ncores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="op">(</span><span class="va">ncores</span> <span class="op">&gt;</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span>  parallel <span class="op">=</span> <span class="op">(</span><span class="va">ncores</span> <span class="op">&gt;</span> <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>  pca.var <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  dedup.cor <span class="op">=</span> <span class="fl">0.9</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -115,7 +117,7 @@ all external models with a warning.</p></dd>
 
 <dt id="arg-multi-method">multi.method<a class="anchor" aria-label="anchor" href="#arg-multi-method"></a></dt>
 <dd><p>A string specifying how to combine multiple external
-models: "ind", "PCA", or "stacking". See <code><a href="BRIERi.html">BRIERi</a></code>.</p></dd>
+models: "ind", "PCA", "stacking", or "stacking.c". See <code><a href="BRIERi.html">BRIERi</a></code>.</p></dd>
 
 
 <dt id="arg-optim-args">optim.args<a class="anchor" aria-label="anchor" href="#arg-optim-args"></a></dt>
@@ -138,6 +140,20 @@ stacking.</p></dd>
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
 <dd><p>Logical. If TRUE and on a non-Windows platform, fits the eta
 grid in parallel using <code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mclapply</a></code>.</p></dd>
+
+
+<dt id="arg-pca-var">pca.var<a class="anchor" aria-label="anchor" href="#arg-pca-var"></a></dt>
+<dd><p>Retained for backward compatibility; unused since the
+PCstacking option was removed.</p></dd>
+
+
+<dt id="arg-dedup-cor">dedup.cor<a class="anchor" aria-label="anchor" href="#arg-dedup-cor"></a></dt>
+<dd><p>Similarity threshold for dropping redundant external models
+before anything else runs, keeping the first occurrence of each
+near-identical set. Particularly relevant here, since the stacking weights
+are obtained by inverting <code>t(B) XtX B</code>, which is singular the moment
+two external models carry the same information. <code>NULL</code> or <code>NA</code>
+disables the step. See <code><a href="dedupExternals.html">dedupExternals</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -169,6 +185,20 @@ summary-stat models).</p></dd>
 
 <dt>varnames</dt>
 <dd><p>The variant names.</p></dd>
+
+<dt>external.dedup</dt>
+<dd><p>The de-duplication record, or <code>NULL</code> when nothing
+was removed.</p></dd>
+
+<dt>stack</dt>
+<dd><p>The stacking report under <code>"stacking"</code> and
+<code>"stacking.c"</code>: the weights, the condition numbers before and after
+equilibration, how many eigen-directions were truncated, and the KKT
+residual of the constrained solve. <code>NULL</code> for other methods.</p></dd>
+
+<dt>external.pca</dt>
+<dd><p>Always <code>NULL</code>. Retained so that objects written
+before the PCstacking option was removed still read back.</p></dd>
 
 
 </dl></div>

@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -303,13 +303,11 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="co"># Best eta:  3.594 </span></span>
 <span><span class="co"># Best lambda: 0.181</span></span></code></pre></div>
 <p>For continuous, binary, and count outcomes, users can also utilize information-based criteria to tune the optimal hyperparameters <span class="math inline">\((\eta, \lambda)\)</span>. We implemented Bayesian information criteria (BIC), Mallow’s <span class="math inline">\(C_p\)</span> (<span class="math inline">\(C_p\)</span>), and generalized cross validation (GCV;). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in <a href="Appendix_IC.html">Appendix: Information Criteria for Hyper-parameter Tuning</a>.</p>
-<p>Based on extensive simulation studies and real-data applications, we recommend <code>BIC</code>, as it consistently achieves better predictive performance.</p>
+<p>Based on simulation studies with continuous and binary outcomes, we recommend <code>Cp</code> when no validation set is available: it came closest to selection on a validation set, while <code>BIC</code> keeps too few predictors when the target and external populations differ.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.selection.html">BRIERi.selection</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"BIC"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co"># Best eta:  10 </span></span>
-<span><span class="co"># Best lambda: 0.561</span></span></code></pre></div>
+<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"Cp"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The function <code>plot.eta</code> can be used to guide and visualize the selection of the optimal integration weight <span class="math inline">\(\eta\)</span> based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of <span class="math inline">\(\eta\)</span>, while the right panel shows the corresponding information-criterion curve (e.g., BIC). The optimal integration weight is identified as the value of <span class="math inline">\(\eta\)</span> that minimizes (or maximizes, depending on the metric) the evaluation criterion.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.eta.html">plot.eta</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -349,7 +347,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <span><span class="va">XtX.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calLD.html">calLD</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">summary</span><span class="op">)</span></span>
 <span><span class="va">summary</span><span class="op">$</span><span class="va">corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/p2cor.html">p2cor</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">pval</span>, <span class="va">summary</span><span class="op">$</span><span class="va">n</span>, sign <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign</a></span><span class="op">(</span><span class="va">summary</span><span class="op">$</span><span class="va">stats</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">beta.external</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">beta.external</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span></code></pre></div>
-<p>For genetic risk prediction using GWAS summary statistics, <code>BRIER</code> also provides the helper function <code>PreprocessS()</code> for standard preprocessing in <code>BRIERs</code> modeling. Details are provided in <a href="Appendix_Preprocess.html">Appendix: Data Preprocessing When Modeling with Genotypes</a>.</p>
+<p>For genetic risk prediction using GWAS summary statistics, <code>BRIER</code> also provides the helper function <code><a href="../reference/preprocessS.html">preprocessS()</a></code> for standard preprocessing in <code>BRIERs</code> modeling. Details are provided in <a href="Appendix_Preprocess.html">Appendix: Data Preprocessing When Modeling with Genotypes</a>.</p>
 </div>
 <div class="section level3">
 <h3 id="fitting-briers">5.2 Fitting <code>BRIERs</code><a class="anchor" aria-label="anchor" href="#fitting-briers"></a>
