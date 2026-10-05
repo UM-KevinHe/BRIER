@@ -21,7 +21,7 @@ coordinate-descent C++ routine."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,8 @@ coordinate-descent C++ routine.</p>
 <span>  max.iter <span class="op">=</span> <span class="fl">1e+06</span>,</span>
 <span>  eps <span class="op">=</span> <span class="fl">1e-04</span>,</span>
 <span>  nvar.max <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  returnX <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  returnX <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  df.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"active"</span>, <span class="st">"divergence"</span>, <span class="st">"lqa"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -170,6 +171,18 @@ Use <code>eta = 0</code> to ignore external information.</p></dd>
 <dt id="arg-returnx">returnX<a class="anchor" aria-label="anchor" href="#arg-returnx"></a></dt>
 <dd><p>Logical. If TRUE, the standardised data list is returned in
 the output for diagnostics.</p></dd>
+
+
+<dt id="arg-df-method">df.method<a class="anchor" aria-label="anchor" href="#arg-df-method"></a></dt>
+<dd><p>How the degrees of freedom in the information criteria are
+computed: <code>"active"</code> (default, the number of nonzero coefficients, as in
+Zhang, Li and Tsai 2010 and ncvreg), <code>"divergence"</code> (the local Stein df,
+\(tr\{(H_A + diag\,p''(|b_A|))^{-1} H_A\}\), equal to the active count for
+the LASSO and larger for MCP and SCAD) or <code>"lqa"</code> (Fan and Li's local
+quadratic approximation, \(tr\{(H_A + diag\,p'(|b_A|)/|b_A|)^{-1} H_A\}\)).
+Where the matrix is not positive definite the active count is used for that
+lambda, and <code>df.fallback</code> counts how often. The df with respect to y is
+this divided by <code>1 + sum(eta)</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

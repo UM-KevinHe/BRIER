@@ -1,7 +1,5 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://um-kevinhe.github.io/BRIER/404.html</loc></url>
-<url><loc>https://um-kevinhe.github.io/BRIER/AGENTS.html</loc></url>
-<url><loc>https://um-kevinhe.github.io/BRIER/CLAUDE.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/articles/Appendix_BayesianOptimization.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/articles/Appendix_Distr.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/articles/Appendix_GWAS.html</loc></url>
@@ -14,12 +12,15 @@
 <url><loc>https://um-kevinhe.github.io/BRIER/authors.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/index.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIER-package.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERfull.bopt.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERfull.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERfull.selection.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERi.bopt.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERi.cv.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERi.eta.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERi.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERi.selection.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERs.bopt.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERs.eta.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERs.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/BRIERs.selection.html</loc></url>
@@ -41,6 +42,13 @@
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/cd_wglm_fit_ssr.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/coef.BRIER.eta.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/coef.BRIER.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dedupExternals.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-constrained_solve.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-kkt_residual.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-offset_intercept.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-project_weights.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-screen_cv.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-screen_valfree.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/evalMetric.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/g_link.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/getLDB.html</loc></url>
@@ -58,6 +66,11 @@
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/preprocessI.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/preprocessS.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/pseudo_validation.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/reduceExternalsPCA.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/screenExternals.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/stack_weights.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/stack_weights_response.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/stack_weights_softmax.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/stacking_binomial.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/stacking_gaussian.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/stacking_poisson.html</loc></url>

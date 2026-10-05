@@ -1,17 +1,15 @@
 
 # Description
 
-`BRIER` is a comprehensive Bregman-divergence–based integration framework for **improving genetic risk prediction** of complex traits in a **local target** cohort 
+`BRIER` is a comprehensive Bregman-divergence based integration framework for **improving genetic risk prediction** of complex traits in a **local target** cohort 
 by leveraging information **from external sources** under diverse data-availability settings. 
 It flexibly accommodates a broad range of outcome types, including continuous, binary, count, and time-to-event traits. 
-The framework is implemented through three principled functions, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`, 
-which address the major data-access constraints encountered in biomedical and statistical-genetics research.
+The framework has three modules, `BRIER.FULL`, `BRIER.I`, and `BRIER.S`, fitted by the functions
+`BRIERfull()`, `BRIERi()`, and `BRIERs()`, which address the major data-access constraints encountered in biomedical and statistical-genetics research.
 
 # Using BRIER with an AI assistant?
 
 We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/llms.txt>** following the [llms.txt convention](https://llmstxt.org/). It gives the assistant a compact map of the package: decision tree, parameter semantics, worked examples drawn from the verified vignettes, and a list of common pitfalls, without forcing it to ingest the full pkgdown site. Point your assistant at the URL or paste the contents into the chat at the start of a session.
-
-For a more interactive workflow inside **Claude Desktop**, we provide a companion **MCP server** at [UM-KevinHe/BRIER-MCP](https://github.com/UM-KevinHe/BRIER-MCP). The server bridges Claude Desktop to your local R installation: describe your data and your question in natural language, and Claude inspects the file, picks the appropriate BRIER variant (`BRIER.I`, `BRIER.FULL`, or `BRIER.S`), calls the corresponding R function on your machine, and explains the results. All computation runs locally; patient-level data never leaves your computer. Install instructions and a worked example are in the [BRIER-MCP README](https://github.com/UM-KevinHe/BRIER-MCP#readme).
 
 # Models
 
@@ -31,7 +29,7 @@ For a more interactive workflow inside **Claude Desktop**, we provide a companio
 </tr>
 
 <tr style="border-bottom:1px solid black;">
-    <td><code>BRIER.FULL</code></td>    
+    <td><code>BRIER.FULL</code><br><code>BRIERfull()</code></td>    
     <td rowspan="2">
         Individual-level data <br>
         (e.g. outcome y and design matrix X)
@@ -45,7 +43,7 @@ For a more interactive workflow inside **Claude Desktop**, we provide a companio
 </tr>
 
 <tr style="border-bottom:1px solid black;">  
-    <td><code>BRIER.I</code></td>
+    <td><code>BRIER.I</code><br><code>BRIERi()</code></td>
     <td>
         Pretrained models <br>
         (e.g., penalized regression coefficients)
@@ -53,7 +51,7 @@ For a more interactive workflow inside **Claude Desktop**, we provide a companio
 </tr>
 
 <tr style="border-bottom:1px solid black;">   
-    <td><code>BRIER.S</code></td>
+    <td><code>BRIER.S</code><br><code>BRIERs()</code></td>
     <td>
         Summary-level data <br>
         (e.g., GWAS summary statistics, local LD matrix)

@@ -40,7 +40,7 @@ Use `BRIERfull.selection()`, `BRIERi.selection()`, or `BRIERs.selection()` when:
 
 ## Core concepts
 
-- `eta`: integration weight controlling borrowing from external information; supplied through `eta.list`. The default candidate set is `c(0, exp(seq(log(0.1), log(10), length.out = 20)))` — `0` (no borrowing) plus 20 log-spaced values between 0.1 and 10. For `multi.method = "ind"`, supply `eta.list` as a *list of vectors of length M* rather than a single vector.
+- `eta`: integration weight controlling borrowing from external information; supplied through `eta.list`. The default candidate set is `c(0, exp(seq(log(0.1), log(10), length.out = 20)))` — `0` (no borrowing) plus 20 log-spaced values between 0.1 and 10. For `multi.method = "ind"`, supply `eta.list` as a *list of vectors of length M* rather than a single vector. As an alternative to this exhaustive grid, `BRIERfull.bopt()` / `BRIERi.bopt()` / `BRIERs.bopt()` tune `eta` by Bayesian optimization over a continuous box, at a cost the user sets rather than one that grows multiplicatively with M. See "Bayesian optimization of eta" below.
 - `lambda`: sparsity regularization parameter; the package builds a data-driven regularization path for each `eta`.
 - `family`: outcome distribution. Currently supported: `"gaussian"` (default), `"binomial"`, and `"poisson"`. `"cox"` is appropriate only for `BRIERfull()` and `BRIERi()` and is on the roadmap but not yet functional; `BRIERs()` will not support `"cox"` (summary-level workflow is incompatible with Cox partial likelihood). `"negbin"` appears in `Appendix_Distr` but is not yet functional for any fitting function.
 - `penalty`: regularization penalty. Options are `"LASSO"`, `"MCP"`, and `"SCAD"`.
@@ -48,13 +48,16 @@ Use `BRIERfull.selection()`, `BRIERi.selection()`, or `BRIERs.selection()` when:
 - `beta.external`: pretrained external coefficients. For `BRIERi()` this is `(p + 1) x M` and **includes the intercept as the first row**. For `BRIERs()` this is `p x M` with **no intercept row**.
 - `multi.method`: external-model aggregation strategy for `BRIERi()` and `BRIERs()` when M external models are supplied.
   - `"ind"`: one independent integration weight per external model. Hyperparameter space grows multiplicatively with M, so practical only for small M (typically M ≤ 3). For M ≥ 5 this becomes computationally prohibitive.
-  - `"PCA"`: reduce the external coefficient matrix to leading principal components before integration.
-  - `"stacking"`: stack the external models into a single ensemble first, then integrate via a one-dimensional `eta`. Recommended default — comparable predictive performance to `"ind"` with far lower compute cost.
+  - `"PCA"`: collapse the external coefficient matrix onto its first principal direction before integration, giving a single combined predictor.
+  - `"stacking"`: stack the external models into a single ensemble first, then integrate via a one-dimensional `eta`. Recommended default — comparable predictive performance to `"ind"` with far lower compute cost. The weights are unconstrained: they may be negative and they do not sum to one.
+  - `"stacking.c"`: the same stacking loss, minimised under the constraint that the weights are **non-negative and sum to one**. The combined external model is then a convex combination of the supplied models, so it cannot leave their range, and a model the target gives no weight to is dropped with an exact zero rather than a small non-zero coefficient. Use it when the panel is a set of published scores on a common scale and a weight outside [0, 1] would not be interpretable, or when the unconstrained solve is unstable because the panel is near-collinear. It is a restriction of `"stacking"`, so its in-sample fit is never better; it buys interpretability and stability, not fit. Available for `BRIERs()` and, in all three families, for `BRIERi()`.
+  - `pca.var` is retained only so that old calls do not break. It is unused: the `"PCstacking"` option it configured has been removed.
+  - **Redundant externals are dropped automatically.** Before anything else, `BRIERi()` / `BRIERi.cv()` / `BRIERs()` / `BRIERi.bopt()` / `BRIERs.bopt()` remove external models that duplicate one already kept, keeping the **first occurrence** of each near-identical set. The threshold is `dedup.cor` (default `0.9`, absolute cosine similarity on the coefficient vectors); `NULL` or `NA` disables it. All-zero columns and columns the kept set spans exactly are removed too. This matters because the `"stacking"` weights come from inverting `t(B) XtX B`, which is singular the moment two externals carry the same information — a catalogue of published scores ships near-copies routinely. When columns are dropped, `M` falls, and `eta.list` (and `bounds` / `init.grid` for the `.bopt` functions) are subset to the survivors rather than raising a length mismatch. The drop is always reported with a `message()`, and the record is on the fit as `$external.dedup`.
   - **Recommended diagnostic before joint integration:** fit one external model at a time (single-external `BRIERi()` / `BRIERs()` with `beta.external = beta_external[, m]`), tune via `*.selection()`, and inspect `plot.eta()` / `plot.box()` to assess each external model's heterogeneity with the target. Drop high-heterogeneity sources before the joint multi-external fit. Slower upfront but produces a defensible model selection. See `Appendix_Multiple` §2.
-- `sumstats` and `XtX`: summary-level inputs for `BRIERs()`. `sumstats$corr` is the standardized marginal correlation vector; `XtX` is the predictor correlation or LD matrix on the same SNP ordering. Build `XtX` with `calLD(X, SNP.info, LDB = NULL, tau = 0)`, where `X` is a reference-panel genotype matrix, `SNP.info` is a data frame of column-level metadata with `CHR` and `BP` (required when `LDB` is supplied), `LDB` is an optional m x 3 block-boundary matrix (chr, start, stop) for block-structured LD (e.g., Berisa and Pickrell 2016), and `tau` is a soft-threshold below which `|LD|` entries are set to zero. For SNP predictors with large p, block-structured LD is highly recommended for memory and speed. Returns an object of class `"LD"` with `$XtX` (sparse LD matrix), `$blk` (block boundaries, `NULL` when `LDB` is `NULL`), and `$nz` (indices of non-constant columns retained). Pass `ld$XtX` to `BRIERs()`; subset `SNP.info` and `sumstats` by `ld$nz` to keep alignment.
+- `sumstats` and `XtX`: summary-level inputs for `BRIERs()`. `sumstats$corr` is the standardized marginal correlation vector; `XtX` is the predictor correlation or LD matrix on the same SNP ordering. Build `XtX` with `calLD(X, SNP.info = NULL, LDB = NULL, tau = 0)`, where `X` is a reference-panel genotype matrix, `SNP.info` is an optional data frame of column-level metadata with `CHR` and `BP` (required only when `LDB` is supplied), `LDB` is an optional m x 3 block-boundary matrix (chr, start, stop) for block-structured LD (e.g., Berisa and Pickrell 2016), and `tau` is a soft-threshold below which `|LD|` entries are set to zero. For SNP predictors with large p, block-structured LD is highly recommended for memory and speed. Returns an object of class `"LD"` with `$XtX` (sparse LD matrix), `$blk` (block boundaries, `NULL` when `LDB` is `NULL`), and `$nz` (indices of non-constant columns retained). Pass `ld$XtX` to `BRIERs()`; subset `SNP.info` and `sumstats` by `ld$nz` to keep alignment.
 - `getLDB()`: ships predefined Berisa-Pickrell (2016) LD block coordinates in the BRIER package. Returns the file path to a BED file for a given ancestry and genome build. Usage: `getLDB(ancestry = "EUR", build = "hg38")`. Supported ancestries: `"AFR"`, `"EAS"`, `"EUR"`. Supported builds: `"hg19"`, `"hg38"` (default). Read with `read.table(path, header = TRUE)` and pass to `calLD()` as `LDB` after numeric chromosome conversion (`as.numeric(sub("chr", "", LDB[, 1]))`).
 - `penalty.factor`: per-predictor penalty multiplier on `lambda`, following the glmnet convention. Default is `1` for every predictor; set to `0` for predictors that should be unpenalized (e.g., demographic covariates such as age, sex, genotype PCs). Available in all three of `BRIERfull()`, `BRIERi()`, and `BRIERs()`.
-- `criteria`: evaluation metric for `*.selection()` and `plot.*()` functions. Family-specific validation-set options currently supported: `"gaussian.mspe"`, `"gaussian.rsq"`, `"binomial.dev"`, `"binomial.tjurrsq"`, `"binomial.AUC"`, `"poisson.dev"`. (`"negbin.dev"`, `"cox.dev"`, `"cox.Cindex"` are documented but not yet end-to-end functional.) Information-criterion options: `"BIC"`, `"Cp"`, `"GCV"` for `BRIERi`; `"Cp"`, `"GIC"`, `"pseu.val"` for `BRIERs`. Recommended defaults from extensive simulations: `"BIC"` for `BRIERi`, `"GIC"` or `"Cp"` for `BRIERs`.
+- `criteria`: evaluation metric for `*.selection()` and `plot.*()` functions. Family-specific validation-set options currently supported: `"gaussian.mspe"`, `"gaussian.rsq"`, `"binomial.dev"`, `"binomial.mcfrsq"`, `"binomial.tjursq"`, `"binomial.auc"`, `"poisson.dev"`. (`"negbin.dev"`, `"cox.dev"`, `"cox.Cindex"` are documented but not yet end-to-end functional.) Information-criterion options: `"gcv"`, `"AIC"`, `"BIC"`, `"Cp"` for `BRIERi`; `"Cp"`, `"GIC"`, `"pseu.val"` for `BRIERs`. `BRIERfull.selection()` does not support information criteria — only validation-set criteria. Recommended defaults when there is no validation set: `"Cp"` for `BRIERi`, `"GIC"` for `BRIERs`. On 100-seed simulations with a continuous and a binary outcome (LASSO, three heritabilities, three levels of target-external heterogeneity), `BRIERi` Cp came within 0.0005 R^2 and 0.004 AUC of selection on a validation set and beat BIC, which keeps too few predictors and leans to large `eta` at high heterogeneity; `BRIERs` GIC was within 0.003 R^2 and 0.006 AUC, while `BRIERs` Cp and `pseu.val` on the training statistics were clearly worse. `BRIERi`'s `AIC`, `BIC` and `Cp` divide their penalty by n, because the stored deviance is a MEAN (the weights sum to one), as `BRIERs`'s `Cp` and `GIC` already did; before v1.4.4 they did not, the penalty was n times too heavy, and BIC chose the empty model on data with real signal. For a Gaussian outcome `AIC` and `BIC` use the profile likelihood, `log(RSS/n) + kappa df/n`, so they do not depend on the units of y (v1.4.4 penalised RSS/n directly, and rescaling y by 10 moved BIC from 12 to 48 of 50 predictors). The df in every criterion is the active count by default (as in Zhang, Li and Tsai 2010 and ncvreg); pass `df.method = "divergence"` to `BRIERi`/`BRIERs` (forwarded to the `.eta` fit) for the local Stein df, tr{(H_A + diag p''(|b_A|))^{-1} H_A}, which equals the active count for the LASSO, exceeds it for MCP/SCAD and falls below it with a ridge part; `"lqa"` gives Fan and Li's approximation, which is biased low for the LASSO. Either way it is divided by 1 + sum(eta).
 - Fitted-object classes: `BRIER` for grid fits (multiple `eta`/`lambda`), `BRIER.eta` for single-`eta` fits.
 
 ## Common workflow: BRIERfull
@@ -96,10 +99,10 @@ fit = BRIERi(
 )
 
 # Information-criterion selection (no held-out data needed)
-# Recommended default for BRIERi: criteria = "BIC"
+# Recommended default for BRIERi: criteria = "Cp"
 sel_ic = BRIERi.selection(
   object   = fit,
-  criteria = "BIC"
+  criteria = "Cp"
 )
 
 # Validation-set selection
@@ -168,7 +171,7 @@ sel_val = BRIERs.selection(
 )
 
 # Information-criterion alternative (no validation set needed)
-# Recommended default for BRIERs: criteria = "GIC" or "Cp"
+# Recommended default for BRIERs: criteria = "GIC"
 # TN = target-cohort sample size; h2 = SNP heritability estimate.
 # If h2 cannot be estimated reliably, pass h2 = 0 as a safe fallback.
 # Otherwise estimate with the ldscr package:
@@ -227,6 +230,49 @@ fit = BRIERi(
 )
 ```
 
+## Bayesian optimization of eta
+
+`BRIERfull.bopt()`, `BRIERi.bopt()` and `BRIERs.bopt()` replace the exhaustive `eta.list` grid with a sequential model-based search. Each proposed `eta` triggers one penalized fit over the full lambda path, scored with the SAME criterion the corresponding `*.selection()` function applies, so a bopt result and a grid result are directly comparable (evaluating bopt at a set of eta values reproduces the grid's `measure.min`, `lambda.min` and `lambda.min.index` exactly). Only `eta` is optimized this way; `lambda` is still selected exhaustively along its path inside each fit.
+
+Requires the suggested package `rBayesianOptimization` (`install.packages("rBayesianOptimization")`).
+
+When to prefer it over a grid: with `multi.method = "ind"` and M external sources the grid is the Cartesian product of the per-source candidate sets, so it grows multiplicatively (10 values per source means 1,000 fits at M = 3 and 100,000 at M = 5). A Bayesian search costs `init.points + n.iter` fits regardless of M. For a single external source with an affordable grid, a grid remains the more predictable choice.
+
+Key arguments (shared by all three):
+
+- `bounds`: named list of length-2 numeric vectors, one per external source, e.g. `list(eta_1 = c(0, 10))`. Defaults to `c(0, 10)` per source. The lower bound cannot be negative since `eta >= 0`.
+- `init.grid`: optional initial design evaluated before the sequential search; a data.frame with one column per source, or a plain numeric vector when M is 1. Use it to force `eta = 0` (the no-borrowing model) into the candidate set.
+- `init.points`: number of random initial draws when `init.grid` is not given. At least 2 are required to fit the surrogate.
+- `n.iter`: number of sequential proposals after initialization.
+- `acq`: `"ucb"` (default, tuned by `kappa`), `"ei"` or `"poi"` (tuned by `acq.eps`).
+- `acq.eps`: acquisition exploration parameter. Named this way because `eps` is the coordinate-descent convergence tolerance passed through `...` to the fitter.
+- `criteria` and its supporting arguments follow the module's own `*.selection()`: `BRIERi.bopt` accepts information criteria (no held-out data needed) or validation criteria; `BRIERs.bopt` accepts `Cp`/`GIC` (need `TN`) , `pseu.val` (uses `XtX.val`/`sumstats.val`, defaulting to the fitting inputs) or validation criteria; `BRIERfull.bopt` accepts validation criteria only, so `X.val` and `y.val` are required.
+- `...`: passed to the fitter (`penalty`, `alpha`, `gamma`, `penalty.factor`, `nlambda`, `eps`, ...), exactly as for the grid fitters.
+
+The return value is a standard selection object of class `c("BRIER.bopt", "BRIER.selection", "BRIER")`, with the evaluated points stored in `eta.grid` sorted ascending and `res` aligned row by row, so `coef()`, `predict()`, `plot.eta()`, `plot.box()` and `plot.importance()` work on it unchanged. The extra `bopt` element records the search: `bounds`, `history` (one row per proposal with its score), `best.par`, `best.value`, `n.failed` and `failed.eta`. A fit that fails at some eta does not abort the run: it is warned about, scored as the worst point seen so far, and counted in `n.failed`.
+
+```r
+set.seed(1)   # the initial design is random unless init.grid is supplied
+
+fit <- BRIERi.bopt(
+  X = X, y = y, family = "gaussian",
+  beta.external = beta_external,
+  multi.method  = "ind",              # M weights, where a grid would be prohibitive
+  criteria      = "gaussian.mspe",
+  X.val = X_val, y.val = y_val,
+  bounds        = list(eta_1 = c(0, 10), eta_2 = c(0, 10), eta_3 = c(0, 5)),
+  init.points   = 20,
+  n.iter        = 40,
+  penalty       = "LASSO"
+)
+
+fit$eta.min          # one weight per external source
+coef(fit)
+predict(fit, X = X_test, type = "response")
+```
+
+For `BRIERs.bopt()` the summary-module standardization rule is unchanged: pass an already-standardized `X.val`, and standardize `y.val` only for `family = "gaussian"`.
+
 ## Choosing and diagnosing the eta range
 
 The default `eta.list` is `c(0, exp(seq(log(0.1), log(10), length.out = 20)))`, which spans no-borrowing (`eta = 0`) plus 20 log-spaced values from 0.1 to 10. This default is a reasonable starting grid for most workflows, but the right range depends on how informative the external information actually is for your target population. There is no way to know this a priori; the recommended workflow is to fit with the default, diagnose, and adjust.
@@ -282,21 +328,36 @@ These are exported but typically called by the grid fitters above, not directly 
 
 ### Model selection
 
-- `BRIERfull.selection()` — model selection for `BRIERfull` fits using held-out validation data.
+- `BRIERfull.selection()` — model selection for `BRIERfull` fits using held-out validation data. Validation-only; information criteria are not supported. `X.val` and `y.val` are required.
 - `BRIERi.selection()` — model selection for `BRIERi` fits using information criteria or validation data.
-- `BRIERs.selection()` — model selection for `BRIERs` fits using Cp, GIC, pseudo-validation, or validation data.
+- `BRIERs.selection()` — model selection for `BRIERs` fits using Cp, GIC, pseudo-validation, or validation data. Two validation-set paths are supported: individual-level (`X.val` + `y.val`, where `X.val` must be pre-standardized and `y.val` must be pre-standardized for `family = "gaussian"`) or summary-level (`XtX` + `sumstats`, where `sumstats` is a held-out summary-stats cohort and `XtX` is its LD matrix). The summary-level path is useful when no individual-level held-out cohort is available. For information criteria (`Cp`, `GIC`, `pseu.val`), pass `TN` (training cohort sample size) and `h2` (SNP heritability estimate, or `0` as fallback).
+
+### Bayesian optimization of eta
+
+These fit and tune in one call: they do NOT take an already-fitted object. Each supports the same criteria as its module's `*.selection()`. See "Bayesian optimization of eta" above for arguments and the returned object. Requires the suggested package `rBayesianOptimization`.
+
+- `BRIERfull.bopt()` — Bayesian optimization of the per-cohort weights for `BRIERfull`. Validation criteria only, so `X.val` and `y.val` are required.
+- `BRIERi.bopt()` — Bayesian optimization of eta for `BRIERi`, using an information criterion (no held-out data needed) or validation data.
+- `BRIERs.bopt()` — Bayesian optimization of eta for `BRIERs`, using `Cp`/`GIC`/`pseu.val` or validation data.
 
 ### Preprocessing and external-data handling
 
 - `preprocessI()` — harmonization for `BRIERi()` when target individual-level **genotype** data and external SNP-level coefficients are both available. Standardizes SNP annotation to `CHR`/`BP`/`REF`/`ALT`, normalizes chromosome labels (`1`–`22`, `X`, `Y`, `MT`, `XY`), removes multi-allelic and (optionally) strand-ambiguous SNPs, and aligns external coefficients to the target allele orientation (flipping signs or zeroing conflicts as needed). Returns `target.info.keep` (column indices for subsetting the target genotype matrix) and aligned `external.ss` with `coef1`, `coef2`, ... columns. See `Appendix_Preprocess`.
 - `preprocessS()` — same allele/SNP harmonization for `BRIERs()` when only target summary statistics, a target LD reference panel, and external SNP-level coefficients are available. With `target.ind = "gwas"`, converts GWAS p-values + sample sizes + effect signs (or betas) into standardized marginal correlations. The **target LD reference panel** is treated as the canonical SNP order and allele orientation. Returns `target.ld.keep` for subsetting a precomputed LD matrix. See `Appendix_Preprocess`.
 - `mergeExternals()` — combine multiple external SNP-level coefficient data frames (each with `CHR`, `BP`, `REF`, `ALT`, `coef`) into a single wide data frame with the union of SNPs and aligned coefficient columns `coef1`, ..., `coefM`. The **first external model defines the canonical `REF`/`ALT` orientation**; subsequent models are flipped or zeroed accordingly. Output can be passed to `preprocessI()` or `preprocessS()` via `external.coef.cols = paste0("coef", seq_len(M))`.
+- `dedupExternals(beta.external, cor.min = 0.9, intercept.row = FALSE, labels = NULL)` — drop external models that duplicate one already kept, keeping the first occurrence. Removes near-duplicates by absolute cosine similarity, all-zero columns, and columns the kept set spans exactly. Set `intercept.row = TRUE` for the `BRIERi()` convention, where the intercept is held out of the comparison and carried along with its column. Returns `$beta.external`, `$keep` (surviving input indices), `$dropped` (a data frame with the reason for each), and `$note`. The fitters call this automatically; use it directly to inspect a panel first.
+- `screenExternals(beta.external, ...)` — the screening cascade: drop degenerate models, apply EXACTLY ONE screen, rank the survivors, de-duplicate them IN RANK ORDER, optionally keep the best K. Which screen runs is decided by what you supply, and supplying both is an error rather than a precedence rule.
+  - **Cross-validated** (`fit`, `X.val`, `y.val`): each external judged RELATIVE to the target-only model on the same held-out samples. `nfolds` (default 3) folds of the validation split; two folds choose `lambda` and fit the external's free intercept, the third is scored. Nothing is refitted, `fit` supplies the path. Both legs must clear `bar` (default 1), and each relative bar is clipped by the null model: without the loss cap the bar goes slack exactly when the target is weak, without the accuracy floor it falls below chance when `bar < 1`. For a binary outcome the external's intercept follows the target's: none against a `BRIERs` fit (null at p = 0.5), fitted off-fold against a `BRIERi` fit (null at the prevalence); v1.4.2 gave none in both cases and dropped even the true model on an individual target far from 50 percent prevalence. Ranks on `ratio_loss`. Pass `covariates` to residualise `y.val` within each piece of each fold; a `y.val` residualised once globally has let every fold see every other.
+  - **Validation-free** (`corr`, `XtX`, `n`): `d2 = 2b'r - b'Rb > 0` and `r2 = (b'r)^2/(b'Rb) > 1/n`, for EVERY family: `r2` is a squared correlation, not an AUC, so a binary outcome does not move the floor to 0.5 (v1.4.0 did, and dropped every external on a binary summary target). Needs no held-out samples and cannot leak any. Ranks on `r2`. `n` is the target's GWAS sample size and is required, not guessed.
+  - The two are ALTERNATIVES, never stages. Chaining them, so a model must clear both, is a different and stricter rule: on the ten-trait application it moves pooled sensitivity 0.834 to 0.884 and specificity 0.496 to 0.418, and leaves three of ten traits with one survivor or none.
+  - Returns `$externals` (per-model statistics plus `keep`, `dedup`, `rank`), `$survivors` (passed the screen, pre-dedup), `$kept` (the final set, IN RANK ORDER), and what each stage removed.
+- `reduceExternalsPCA(beta.external, pca.var = 0.8, intercept.row = FALSE)` — project a panel onto its leading principal directions, keeping components until `pca.var` of the variance is covered. The SVD is **uncentred** on purpose (each column is a model, not a draw from a population, so a mean model is not a meaningful reference), and the result is `B %*% V[, 1:k]`, which stays on the coefficient scale `eta` shrinks toward. Returns `$beta.external`, `$n.pcs`, `$variance.explained`, `$cumulative`, `$rotation`. It is a standalone utility: no `multi.method` calls it, since the `"PCstacking"` option it served has been removed.
 - `standardize_X()` — standardize a design matrix.
 - `wstandardize_X()` — weighted standardization of a design matrix.
 
 ### LD and summary-statistics utilities
 
-- `calLD(X, SNP.info, LDB = NULL, tau = 0)` — build a sparse LD reference matrix from individual-level genotypes for `BRIERs()`. Supply `LDB` (m x 3 chr/start/stop block boundaries, e.g., from `getLDB()`) for block-structured LD; omit it for the full `p x p` LD matrix (or for non-genetic predictors). `tau` soft-thresholds entries with `|LD| < tau` to zero. Returns a class-`"LD"` list with `$XtX` (sparse LD matrix), `$blk` (block boundaries or `NULL`), and `$nz` (indices of non-constant columns retained; use to subset `SNP.info` and `sumstats` for alignment). Warns and drops constant columns. See `Appendix_Preprocess` §3.3.
+- `calLD(X, SNP.info = NULL, LDB = NULL, tau = 0)` — build a sparse LD reference matrix from individual-level genotypes for `BRIERs()`. `SNP.info` is required only when `LDB` is supplied (the function uses `CHR`/`BP` to assign SNPs to blocks); for the full `p x p` LD matrix or for non-genetic predictors, both `SNP.info` and `LDB` can be omitted. `tau` soft-thresholds entries with `|LD| < tau` to zero. Returns a class-`"LD"` list with `$XtX` (sparse LD matrix), `$blk` (block boundaries or `NULL`), and `$nz` (indices of non-constant columns retained; use to subset `SNP.info` and `sumstats` for alignment). Warns and drops constant columns. See `Appendix_Preprocess` §3.3.
 - `getLDB(ancestry, build)` — return the path to a bundled Berisa-Pickrell (2016) LD block BED file. `ancestry` is one of `"AFR"`, `"EAS"`, `"EUR"`. `build` is one of `"hg19"`, `"hg38"` (default). Load with `read.table(path, header = TRUE)` and convert chromosome labels to numeric (`as.numeric(sub("chr", "", LDB[, 1]))`) before passing to `calLD()`.
 - `LD_blocks()` — assign SNPs to LD blocks given `chr`, `bp`, and an `LDB` matrix. Used internally by `calLD()`.
 - `LD_sigma()` — compute the block-structured LD matrix given standardized genotypes, block assignments, and `tau`. Used internally by `calLD()`.
@@ -334,6 +395,7 @@ These are **regular exported functions** despite the dotted names — they are n
 
 - Get started: https://um-kevinhe.github.io/BRIER/articles/BRIER.html
 - Integration of multiple external models: https://um-kevinhe.github.io/BRIER/articles/Appendix_Multiple.html
+- Selecting the integration weight by Bayesian optimization: https://um-kevinhe.github.io/BRIER/articles/Appendix_BayesianOptimization.html
 - Genotype preprocessing and LD calculation (`preprocessI` / `preprocessS` / `calLD` / `getLDB`): https://um-kevinhe.github.io/BRIER/articles/Appendix_Preprocess.html
 - Model details: https://um-kevinhe.github.io/BRIER/articles/Appendix_Model.html
 - Distribution families and evaluation metrics: https://um-kevinhe.github.io/BRIER/articles/Appendix_Distr.html
@@ -347,7 +409,7 @@ These are **regular exported functions** despite the dotted names — they are n
 - For `BRIERs()`, `beta.external` does not include an intercept.
 - Restrict to shared predictors when pooling target and external individual-level data for `BRIERfull()`.
 - Use a cohort vector `cohort` where `0` denotes target samples and positive integers denote external cohorts.
-- **`BRIERfull()` cannot fit a target-only model** (i.e., `eta.list = 0` alone is not supported and the function will not return a sensible no-borrowing fit). To fit a target-only baseline for comparison against integrated models, use `BRIERi()` with `eta = 0` instead, even when raw external data are available. This matters for the eta-range diagnostics described above: when comparing target-only vs external-only performance, use `BRIERi(eta = 0)` for the target-only side.
+- **`BRIERfull()` requires at least one external cohort.** The function validates the `cohort` vector and errors out with "At least one external cohort (cohort > 0) is required" when every entry is `0`, regardless of `eta.list`. To fit a target-only baseline for comparison against integrated models, use `BRIERi()` with `eta = 0` instead, even when raw external data are available. This matters for the eta-range diagnostics described above: when comparing target-only vs external-only performance, use `BRIERi(eta = 0)` for the target-only side.
 - For summary-level modeling, ensure that `sumstats` and `XtX` use the same SNP order.
 - Match LD reference ancestry and genome build to the target summary statistics.
 - For GWAS summary statistics, prefer SNP-specific `N` when converting z-scores to marginal correlations.
@@ -364,8 +426,16 @@ These are **regular exported functions** despite the dotted names — they are n
 - LD-prune or clump the SNP set before fitting when starting from a large genome-wide panel; helps memory and runtime.
 - **`BRIERs()` returns standardized coefficients, and `BRIERs.selection()` / `plot.eta()` do NOT standardize their inputs internally.** You must pass an already-standardized validation/testing `X` (e.g., via `standardize_X()`). The validation `y` should be standardized **only for `family = "gaussian"`** — for `"binomial"` and `"poisson"` (and the planned `"cox"` / `"negbin"`), pass `y` on its natural scale, since the inverse-link function handles the conversion when computing deviance, AUC, etc.
 - **`BRIERi.selection()` and `BRIERfull.selection()` also do not standardize `X.val`/`y.val` internally**, but unlike `BRIERs` there is no fixed rule — the right choice depends on how the training data were preprocessed before calling `BRIERi()` / `BRIERfull()`. If you fit on standardized `X` (and `y`, for gaussian), standardize `X.val`/`y.val` to match. If you fit on raw scales, pass them raw. Training-and-validation preprocessing must be consistent; there is no internal alignment.
-- **`multi.method = "ind"` is computationally prohibitive for large M.** It tunes an independent `eta` per external model, so the grid grows multiplicatively. Practical for M ≤ 3; avoid for M ≥ 5. Prefer `"stacking"` (recommended default) or `"PCA"` when M is large.
+- **`multi.method = "ind"` is computationally prohibitive for large M.** It tunes an independent `eta` per external model, so the grid grows multiplicatively. Practical for M ≤ 3; avoid for M ≥ 5. Prefer `"stacking"` (recommended default), `"stacking.c"`, or `"PCA"` when M is large.
 - For `multi.method = "ind"`, `eta.list` must be supplied as a *list of vectors of length M*, not a single vector.
+- **`M` can be smaller than `ncol(beta.external)`.** De-duplication runs before the fit, so a panel containing near-copies produces fewer sources than were supplied. Check the `message()` and `fit$external.dedup` rather than assuming the panel came through intact; `dedup.cor = NULL` turns the step off.
+- **`"PCA"` combines on the coefficient scale, stacking on the prediction scale.** `"PCA"` collapses the panel onto one direction using `prcomp()` of the normalized coefficient Gram matrix with absolute loadings, and returns an aggregated `beta.external`. `"stacking"` and `"stacking.c"` leave `beta.external` alone and combine the *predictions* the panel makes on the target, which is why they need target data (`y` for `BRIERi()`, `XtX` and `XtY` for `BRIERs()`) and `"PCA"` does not.
+- **`"stacking.c"` reaching an exact zero is a result, not a failure.** The constrained solve sits on a boundary whenever the target gives a model no weight, so zeros are expected and are the interpretable output. What it cannot do is express a negative weight, so if a panel genuinely needs one (a mis-signed or mis-scaled external), the constrained fit will be visibly worse than the free one rather than silently correcting it. Compare both on a held-out split before choosing.
+- **The stacking Gram matrix is solved through an equilibrated eigendecomposition, not `solve()`.** Forming `t(B) XtX B` squares the condition number, and a panel of published scores is routinely near-collinear, so a plain solve can return weights of enormous magnitude without erroring. The solve rescales the Gram to unit diagonal, truncates eigen-directions below a relative tolerance, and reports what it did in `$stack` (`rcond_raw`, `rcond_equilibrated`, `n_dropped`). Read those before trusting stacking weights on a large panel.
+- **The `*.bopt()` functions fit and tune in one call.** They take the same data arguments as the fitting function, not a fitted object, so do not call `BRIERi()` first and pass the result. Their `bounds` argument replaces `eta.list`; supplying both is not meaningful.
+- **`acq.eps`, not `eps`, is the acquisition parameter in `*.bopt()`.** `eps` is the coordinate-descent convergence tolerance and is passed straight through `...` to the fitter, so writing `eps = 0.01` intending exploration silently loosens the fit instead.
+- **Bayesian optimization is stochastic** unless `init.grid` is supplied: the initial design is drawn at random, so set a seed for reproducibility and report the number of evaluations along with the selected eta. It does not guarantee a global optimum; with few evaluations in a high-dimensional box it can settle in a local one.
+- `*.bopt()` returns a continuous eta rather than a grid point. `predict(fit, eta = ...)` matches rows of `eta.grid` to within `1e-10`, so pass a value taken from `fit$eta.grid` rather than a rounded one.
 - `BRIERi.cv()` does **not** standardize `X` or `y` internally. However, if you pass `X` or `y` that has already been preprocessed at the *full-dataset* level — for example, column-standardized `X`, scaled `y`, or `y` taken as residuals from regressing out demographic effects on the whole sample — that preprocessing leaks information across CV folds and yields optimistic estimates. Pass raw `X` and `y`, or apply such preprocessing inside each fold yourself. Use the `seed` argument for reproducibility. Prefer `BRIERi.selection()` with `X.val`/`y.val` when a genuine held-out set is available.
 - Always specify `family` explicitly, especially for `BRIERs()`. A mismatched family (e.g., `gaussian` for binary summary stats) is not caught at fit time but breaks `predict(..., type = "response")` — it will silently return `X %*% beta` instead of the predicted probability or rate.
 - `plot.eta()`, `plot.box()`, and `plot.importance()` are exported as regular functions (not S3 methods), despite the dotted names. Call them directly (`plot.eta(fit)`), not via `plot(fit)`.
