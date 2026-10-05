@@ -21,7 +21,7 @@ so the result is directly comparable to a grid search."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,6 @@ so the result is directly comparable to a grid search."></head><body>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/UM-KevinHe/BRIER-MCP" aria-label="BRIER MCP server (Claude Desktop integration)">Claude Desktop (MCP)</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/um-kevinhe/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -72,7 +71,7 @@ so the result is directly comparable to a grid search.</p>
 <span>  <span class="va">y</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
 <span>  beta.external <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,</span>
-<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span>, <span class="st">"PCstacking"</span><span class="op">)</span>,</span>
+<span>  multi.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ind"</span>, <span class="st">"PCA"</span>, <span class="st">"stacking"</span>, <span class="st">"stacking.c"</span><span class="op">)</span>,</span>
 <span>  optim.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  criteria <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gcv"</span>, <span class="st">"AIC"</span>, <span class="st">"BIC"</span>, <span class="st">"Cp"</span>, <span class="st">"gaussian.mspe"</span>, <span class="st">"gaussian.rsq"</span>,</span>
 <span>    <span class="st">"binomial.dev"</span>, <span class="st">"binomial.mcfrsq"</span>, <span class="st">"binomial.tjursq"</span>, <span class="st">"binomial.auc"</span>, <span class="st">"poisson.dev"</span><span class="op">)</span>,</span>
@@ -118,7 +117,7 @@ with the intercept in the first row.</p></dd>
 
 <dt id="arg-multi-method">multi.method<a class="anchor" aria-label="anchor" href="#arg-multi-method"></a></dt>
 <dd><p>External aggregation strategy: "ind", "PCA", "stacking",
-or "PCstacking". Passed to <code><a href="BRIERi.html">BRIERi</a></code>'s external reduction, which is
+or "stacking.c". Passed to <code><a href="BRIERi.html">BRIERi</a></code>'s external reduction, which is
 computed once and reused across every evaluation.</p></dd>
 
 
@@ -187,7 +186,7 @@ passed through <code>...</code> to the fitter.</p></dd>
 
 <dt id="arg-pca-var">pca.var<a class="anchor" aria-label="anchor" href="#arg-pca-var"></a></dt>
 <dd><p>Fraction of the variance retained by the principal-component
-reduction under <code>multi.method = "PCstacking"</code>. Ignored otherwise.</p></dd>
+reduction; retained for backward compatibility and unused.</p></dd>
 
 
 <dt id="arg-dedup-cor">dedup.cor<a class="anchor" aria-label="anchor" href="#arg-dedup-cor"></a></dt>

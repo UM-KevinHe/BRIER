@@ -43,6 +43,12 @@
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/coef.BRIER.eta.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/coef.BRIER.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/dedupExternals.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-constrained_solve.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-kkt_residual.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-offset_intercept.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-project_weights.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-screen_cv.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/dot-screen_valfree.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/evalMetric.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/g_link.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/getLDB.html</loc></url>
@@ -61,6 +67,10 @@
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/preprocessS.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/pseudo_validation.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/reduceExternalsPCA.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/screenExternals.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/stack_weights.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/stack_weights_response.html</loc></url>
+<url><loc>https://um-kevinhe.github.io/BRIER/reference/stack_weights_softmax.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/stacking_binomial.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/stacking_gaussian.html</loc></url>
 <url><loc>https://um-kevinhe.github.io/BRIER/reference/stacking_poisson.html</loc></url>

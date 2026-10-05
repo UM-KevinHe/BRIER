@@ -12,16 +12,16 @@ combined prediction. Aggregation is controlled by multi.method:
 first principal component of the normalised external coefficients,
 "stacking" learns optimal stacking weights by minimising the
 summary-statistic least-squares criterion using XtX and XtY,
-and "PCstacking" first projects the panel onto its leading principal
-directions with reduceExternalsPCA and then stacks those.'><meta property="og:description" content='Compute external-model XtY predictions in the summary-statistics setting and,
+and "stacking.c" minimises that same quadratic under the constraint
+that the weights are non-negative and sum to one.'><meta property="og:description" content='Compute external-model XtY predictions in the summary-statistics setting and,
 when more than one external model is supplied, aggregate them into a single
 combined prediction. Aggregation is controlled by multi.method:
 "ind" keeps each model independent, "PCA" aggregates via the
 first principal component of the normalised external coefficients,
 "stacking" learns optimal stacking weights by minimising the
 summary-statistic least-squares criterion using XtX and XtY,
-and "PCstacking" first projects the panel onto its leading principal
-directions with reduceExternalsPCA and then stacks those.'></head><body>
+and "stacking.c" minimises that same quadratic under the constraint
+that the weights are non-negative and sum to one.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -29,7 +29,7 @@ directions with reduceExternalsPCA and then stacks those.'></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,6 @@ directions with reduceExternalsPCA and then stacks those.'></head><body>
     <li><a class="dropdown-item" href="../articles/Appendix_GWAS.html">Recovering Summary-level Input from GWAS Results</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/UM-KevinHe/BRIER-MCP" aria-label="BRIER MCP server (Claude Desktop integration)">Claude Desktop (MCP)</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/um-kevinhe/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -73,8 +72,8 @@ combined prediction. Aggregation is controlled by <code>multi.method</code>:
 first principal component of the normalised external coefficients,
 <code>"stacking"</code> learns optimal stacking weights by minimising the
 summary-statistic least-squares criterion using <code>XtX</code> and <code>XtY</code>,
-and <code>"PCstacking"</code> first projects the panel onto its leading principal
-directions with <code><a href="reduceExternalsPCA.html">reduceExternalsPCA</a></code> and then stacks those.</p>
+and <code>"stacking.c"</code> minimises that same quadratic under the constraint
+that the weights are non-negative and sum to one.</p>
     </div>
 
     <div class="section level2">
@@ -100,30 +99,32 @@ directions with <code><a href="reduceExternalsPCA.html">reduceExternalsPCA</a></
 
 
 <dt id="arg-multi-method">multi.method<a class="anchor" aria-label="anchor" href="#arg-multi-method"></a></dt>
-<dd><p>A string: "ind", "PCA", "stacking", or "PCstacking".</p></dd>
+<dd><p>A string: "ind", "PCA", "stacking", or "stacking.c".</p></dd>
 
 
 <dt id="arg-pca-var">pca.var<a class="anchor" aria-label="anchor" href="#arg-pca-var"></a></dt>
-<dd><p>Fraction of the variance retained by the principal-component
-reduction under <code>multi.method = "PCstacking"</code>. Ignored otherwise.</p></dd>
+<dd><p>Retained for backward compatibility; unused since the
+PCstacking option was removed.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with three elements:</p><dl><dt>beta.external</dt>
-<dd><p>The external coefficient matrix. For <code>"PCA"</code> and
-<code>"stacking"</code>, this is a p x 1 aggregated coefficient vector; for
-<code>"PCstacking"</code> it is the p x k principal-component panel collapsed by
-stacking to p x 1; for <code>"ind"</code>, this is the original input.</p></dd>
+<dd><p>The external coefficient matrix. For <code>"PCA"</code>,
+<code>"stacking"</code> and <code>"stacking.c"</code> this is a p x 1 aggregated
+coefficient vector; for <code>"ind"</code> it is the original input.</p></dd>
 
 <dt>XtY.external</dt>
 <dd><p>A p x M' matrix of external XtY predictions, where
-M' = 1 for <code>"PCA"</code>, <code>"stacking"</code> and <code>"PCstacking"</code>, and
+M' = 1 for <code>"PCA"</code>, <code>"stacking"</code> and <code>"stacking.c"</code>, and
 M' = M for <code>"ind"</code>.</p></dd>
 
-<dt>external.pca</dt>
-<dd><p>The <code><a href="reduceExternalsPCA.html">reduceExternalsPCA</a></code> record under
-<code>"PCstacking"</code>, and <code>NULL</code> otherwise.</p></dd>
+<dt>stack</dt>
+<dd><p>For <code>"stacking"</code> and <code>"stacking.c"</code>, the record
+returned by <code><a href="stack_weights.html">stack_weights()</a></code>: the weights, whether the constraint
+was imposed, the conditioning of the stacking Gram matrix before and after
+equilibration, how many directions were truncated, and the KKT residual.
+<code>NULL</code> otherwise.</p></dd>
 
 
 </dl></div>

@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,6 @@
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/UM-KevinHe/BRIER-MCP" aria-label="BRIER MCP server (Claude Desktop integration)">Claude Desktop (MCP)</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/um-kevinhe/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
@@ -490,15 +489,14 @@ information criteria (BIC), Mallow’s <span class="math inline">\(C_p\)</span> 
 summarized in the table below. Detailed formula of information criteria
 is summarized in <a href="Appendix_IC.html">Appendix: Information
 Criteria for Hyper-parameter Tuning</a>.</p>
-<p>Based on extensive simulation studies and real-data applications, we
-recommend <code>BIC</code>, as it consistently achieves better
-predictive performance.</p>
+<p>Based on simulation studies with continuous and binary outcomes, we
+recommend <code>Cp</code> when no validation set is available: it came
+closest to selection on a validation set, while <code>BIC</code> keeps
+too few predictors when the target and external populations differ.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERi.selection.html">BRIERi.selection</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"BIC"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co"># Best eta:  10 </span></span>
-<span><span class="co"># Best lambda: 0.561</span></span></code></pre></div>
+<span>  <span class="va">fit</span>, criteria <span class="op">=</span> <span class="st">"Cp"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The function <code>plot.eta</code> can be used to guide and visualize
 the selection of the optimal integration weight <span class="math inline">\(\eta\)</span> based on predictive performance
 under different evaluation metrics from cross-validation and an

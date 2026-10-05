@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,6 @@
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/UM-KevinHe/BRIER-MCP" aria-label="BRIER MCP server (Claude Desktop integration)">Claude Desktop (MCP)</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/um-kevinhe/BRIER" aria-label="GitHub repository"><span class="fa fa-github fa-lg"></span></a></li>
@@ -119,24 +118,20 @@ through a single one-dimensional integration weight <span class="math inline">\(
 multiple external-model weights while retaining flexible information
 borrowing across sources.</li>
 <li>
-<code>"PCstacking"</code>: a combination of the two preceding
-strategies. The panel is first projected onto its leading principal
-directions, keeping as many components as are needed to cover a fraction
-<code>pca.var</code> of the variance (default <span class="math inline">\(0.8\)</span>), and the retained components are
-then combined by stacking. Unlike <code>"PCA"</code>, which always
-reduces to a single direction, this keeps several and lets the stacking
-weights choose among them. See Section 3.4.</li>
+<code>"stacking.c"</code>: the same stacking criterion, minimised
+subject to the stacking weights being non-negative and summing to one.
+The ensemble is then a convex combination of the supplied models. See
+Section 3.4.</li>
 </ul>
 <p>Based on extensive simulation studies and real-data analyses, we
 recommend the <code>"stacking"</code> strategy as a default. It
 consistently achieves predictive performance comparable to the
 gold-standard <code>"ind"</code> approach (which jointly tunes a
 separate integration weight for each external model) while substantially
-reducing computational burden. When the external models overlap heavily
-with one another, as a set of published polygenic scores for the same
-trait typically does, <code>"PCstacking"</code> is worth comparing
-against it. Methodological details for all four strategies are provided
-in the <a href="Appendix_Model.html">Appendix: Model Details</a>.</p>
+reducing computational burden. When the external models are published
+scores reported on a common scale, and a weight outside <span class="math inline">\([0, 1]\)</span> would therefore not be
+interpretable, <code>"stacking.c"</code> is worth comparing against it.
+Methodological details for all four strategies are provided in the <a href="Appendix_Model.html">Appendix: Model Details</a>.</p>
 <p>In this vignette, we use <code><a href="../reference/BRIERs.html">BRIERs()</a></code> (summary-level data)
 as an illustrative example. The same workflow applies to
 <code><a href="../reference/BRIERi.html">BRIERi()</a></code> (individual-level target data with pre-trained
@@ -269,7 +264,7 @@ now a matrix and the aggregation strategy is specified through
 <span><span class="op">)</span></span></code></pre></div>
 <p>To use a different aggregation strategy, simply replace
 <code>multi.method</code> with <code>"PCA"</code>,
-<code>"PCstacking"</code>, or <code>"ind"</code>. We note that
+<code>"stacking.c"</code>, or <code>"ind"</code>. We note that
 <code>multi.method = "ind"</code> introduces one integration weight per
 external model, so the candidate set passed to <code>eta.list</code>
 should be specified as a list of vectors of length <span class="math inline">\(M\)</span> rather than a single vector. See the <a href="LINK">Methods Appendix</a> for additional details.</p>
@@ -317,56 +312,81 @@ near-exact copies, or <code>NULL</code> to disable the step entirely and
 reproduce the behaviour of earlier versions.</p>
 </div>
 <div class="section level3">
-<h3 id="reducing-the-panel-before-combining-it-multi-method-pcstacking">3.4 Reducing the panel before combining it:
-<code>multi.method = "PCstacking"</code><a class="anchor" aria-label="anchor" href="#reducing-the-panel-before-combining-it-multi-method-pcstacking"></a>
+<h3 id="constraining-the-stacking-weights-multi-method-stacking-c">3.4 Constraining the stacking weights:
+<code>multi.method = "stacking.c"</code><a class="anchor" aria-label="anchor" href="#constraining-the-stacking-weights-multi-method-stacking-c"></a>
 </h3>
-<p>Screened panels of published scores remain highly overlapping even
-after exact duplicates are removed. On a real application with ten
-retained scores, the participation ratio of their score-correlation
-eigenvalues indicated roughly five effectively independent directions.
-Combining all ten therefore means solving a ten-dimensional system whose
-low-variance directions carry mostly noise.</p>
-<p><code>multi.method = "PCstacking"</code> addresses this by projecting
-the panel onto its leading principal directions before combining.
-Components are added in order until the cumulative variance share
-reaches <code>pca.var</code>, and the retained components are then
-combined by stacking:</p>
+<p>The stacking weights of Section 3.3 are unconstrained. They are
+whatever minimises the stacking criterion, which means a weight may be
+negative, and the weights need not sum to one. That is the right default
+when the external models are on arbitrary scales, because the weights
+then have to absorb the scaling. It is the wrong default when they are
+not: a panel of published polygenic scores reported on a common scale is
+a set of competing estimates of the same quantity, and a combination
+that puts <span class="math inline">\(-0.4\)</span> on one of them is
+hard to defend as a model of anything.</p>
+<p><code>multi.method = "stacking.c"</code> minimises the same criterion
+under the constraint that the weights are non-negative and sum to
+one:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIERs.html">BRIERs</a></span><span class="op">(</span></span>
 <span>  sumstats <span class="op">=</span> <span class="va">summary</span>,</span>
 <span>  XtX <span class="op">=</span> <span class="va">XtX.list</span><span class="op">$</span><span class="va">XtX</span>,</span>
 <span>  beta.external <span class="op">=</span> <span class="va">beta.external</span>,</span>
 <span>  eta.list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  multi.method <span class="op">=</span> <span class="st">"PCstacking"</span>,</span>
-<span>  pca.var <span class="op">=</span> <span class="fl">0.8</span></span>
+<span>  multi.method <span class="op">=</span> <span class="st">"stacking.c"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit</span><span class="op">$</span><span class="va">external.pca</span><span class="op">$</span><span class="va">n.pcs</span>        <span class="co"># how many components were kept</span></span>
-<span><span class="va">fit</span><span class="op">$</span><span class="va">external.pca</span><span class="op">$</span><span class="va">cumulative</span>   <span class="co"># cumulative variance share</span></span>
-<span><span class="va">fit</span><span class="op">$</span><span class="va">external.pca</span><span class="op">$</span><span class="va">rotation</span>     <span class="co"># the weight each model carries in each component</span></span></code></pre></div>
-<p>The decomposition is deliberately uncentred. Centring across sources
-would subtract a mean model, which is not a meaningful reference here:
-each column is a model rather than a draw from a population, and a zero
-coefficient means the variant has no effect, not that it is below
-average. What enters the fit is the projection of the original models
-onto the leading directions, so the reduced panel stays on the same
-coefficient scale that <span class="math inline">\(\eta\)</span> shrinks
-toward.</p>
-<p>The reduction can also be applied on its own, which is useful for
-inspecting a panel before committing to a fit:</p>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">stack</span><span class="op">$</span><span class="va">weights</span>      <span class="co"># the constrained weights, summing to one</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">stack</span><span class="op">$</span><span class="va">kkt</span>          <span class="co"># the KKT residual certifying the solution</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">stack</span><span class="op">$</span><span class="va">n_dropped</span>    <span class="co"># directions truncated in the unconstrained comparison</span></span></code></pre></div>
+<p>Three consequences are worth stating plainly.</p>
+<p>The combined model <strong>cannot leave the range of the models it
+combines</strong>, so a prediction from the ensemble is always a
+prediction some weighted panel of the supplied scores would have made.
+This is what makes the weights readable as a share of the
+combination.</p>
+<p>A model the target data gives no support to receives an <strong>exact
+zero</strong>, not a small non-zero coefficient. The constrained optimum
+sits on the boundary of the weight simplex whenever that happens, and
+the solver reaches the boundary exactly rather than approaching it, so
+the set of contributing models can be read off the weight vector
+directly.</p>
+<p>The constraint set is a subset of the unconstrained one, so the
+constrained fit <strong>cannot fit better in sample</strong>. What it
+buys is interpretability and stability, not fit. In particular it cannot
+express a negative weight, so if a panel genuinely needs one, because an
+external model is mis-signed or mis-scaled relative to the others, the
+constrained fit will be visibly worse rather than silently correcting
+the problem. Fit both and compare on a held-out split; a large gap is
+itself a diagnostic that something in the panel is not on the scale you
+assumed.</p>
+<p>For <code><a href="../reference/BRIERi.html">BRIERi()</a></code> the same constrained criterion is available
+for all three families. The weights are fit on the response scale,
+against the Gaussian, binomial and Poisson log-likelihoods respectively,
+so <code>"stacking.c"</code> means the same thing whichever outcome is
+being modelled.</p>
+<div class="section level4">
+<h4 id="a-note-on-conditioning">A note on conditioning<a class="anchor" aria-label="anchor" href="#a-note-on-conditioning"></a>
+</h4>
+<p>Both stacking methods solve a system built from <span class="math inline">\(B^\top X^\top X B\)</span> (summary level) or
+<span class="math inline">\(Y^\top Y\)</span> (individual level).
+Forming that product squares the condition number of the panel, and a
+panel of published scores for one trait is routinely near-collinear even
+after the de-duplication of Section 3.3. The solve therefore rescales
+the matrix to unit diagonal before decomposing it and truncates
+directions below a relative tolerance, rather than calling
+<code><a href="https://rdrr.io/r/base/solve.html" class="external-link">solve()</a></code> on the raw normal equations, which can return
+weights of enormous magnitude without raising an error. What it did is
+reported:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">red</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/reduceExternalsPCA.html">reduceExternalsPCA</a></span><span class="op">(</span><span class="va">beta.external</span>, pca.var <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
-<span><span class="va">red</span><span class="op">$</span><span class="va">n.pcs</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">red</span><span class="op">$</span><span class="va">cumulative</span>, <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p>Two caveats are worth stating. First, the reduction is
-<strong>unsupervised</strong>, so it follows variance, and a mis-scaled
-external score is exactly the column with the most variance.
-<code>"PCstacking"</code> is therefore appropriate only for a panel that
-has already been screened for calibration against the target; applied to
-an unscreened panel, it can amplify precisely the models that should
-have been removed. Second, whether it improves on plain stacking is an
-empirical question for a given panel. Fit both and compare on a held-out
-split rather than assuming either ordering.</p>
+<code class="sourceCode R"><span><span class="va">fit</span><span class="op">$</span><span class="va">stack</span><span class="op">$</span><span class="va">rcond_raw</span>             <span class="co"># conditioning of the raw system</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">stack</span><span class="op">$</span><span class="va">rcond_equilibrated</span>    <span class="co"># after rescaling to unit diagonal</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">stack</span><span class="op">$</span><span class="va">n_dropped</span>             <span class="co"># directions below the relative tolerance</span></span></code></pre></div>
+<p>A <code>n_dropped</code> above zero means the panel did not have full
+rank at working precision. That is a statement about the panel, not
+about the fit: it is worth returning to the screening step rather than
+reading the weights as if all of the models had contributed.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="hyperparameter-tuning">3.5 Hyperparameter tuning<a class="anchor" aria-label="anchor" href="#hyperparameter-tuning"></a>
@@ -447,7 +467,7 @@ and an intercept row included;</li>
 additionally supports cross-validation (<code><a href="../reference/BRIERi.cv.html">BRIERi.cv()</a></code>) in
 addition to validation-set and information-criterion-based tuning.</li>
 </ul>
-<p>De-duplication and <code>multi.method = "PCstacking"</code> behave
+<p>De-duplication and <code>multi.method = "stacking.c"</code> behave
 identically in <code><a href="../reference/BRIERi.html">BRIERi()</a></code>, <code><a href="../reference/BRIERi.cv.html">BRIERi.cv()</a></code>, and the
 Bayesian-optimization entry points <code><a href="../reference/BRIERi.bopt.html">BRIERi.bopt()</a></code> and
 <code><a href="../reference/BRIERs.bopt.html">BRIERs.bopt()</a></code>. The only difference is the intercept row:
