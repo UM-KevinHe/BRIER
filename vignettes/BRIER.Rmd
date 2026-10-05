@@ -278,14 +278,12 @@ fit <- BRIERi.selection(
 
 For continuous, binary, and count outcomes, users can also utilize information-based criteria to tune the optimal hyperparameters \((\eta, \lambda)\). We implemented Bayesian information criteria (BIC), Mallow's $C_p$ ($C_p$), and generalized cross validation (GCV;). The required arguments of different tuning methods are summarized in the table below. Detailed formula of information criteria is summarized in [Appendix: Information Criteria for Hyper-parameter Tuning](Appendix_IC.html).
 
-Based on extensive simulation studies and real-data applications, we recommend `BIC`, as it consistently achieves better predictive performance.
+Based on simulation studies with continuous and binary outcomes, we recommend `Cp` when no validation set is available: it came closest to selection on a validation set, while `BIC` keeps too few predictors when the target and external populations differ.
 
 ```{r, echo = TRUE, eval = FALSE}
 fit <- BRIERi.selection(
-  fit, criteria = "BIC"
+  fit, criteria = "Cp"
 )
-# Best eta:  10 
-# Best lambda: 0.561
 ```
 
 The function `plot.eta` can be used to guide and visualize the selection of the optimal integration weight $\eta$ based on predictive performance under different evaluation metrics from cross-validation and an independent validation set, or based on information-criterion values. The left panel displays the predictive performance (here, MSPE for a Gaussian outcome) evaluated on the validation set as a function of $\eta$, while the right panel shows the corresponding information-criterion curve (e.g., BIC). The optimal integration weight is identified as the value of $\eta$ that minimizes (or maximizes, depending on the metric) the evaluation criterion.

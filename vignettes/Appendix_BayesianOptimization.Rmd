@@ -95,7 +95,7 @@ y_pred <- predict(fit_bopt, X = data$target$testing$X, type = "response")
 plot.eta(fit_bopt)
 ```
 
-When no validation set is available, supply an information criterion instead and omit `X.val` and `y.val` entirely. For `BRIERi` the recommended default is `"BIC"`:
+When no validation set is available, supply an information criterion instead and omit `X.val` and `y.val` entirely. For `BRIERi` the recommended default is `"Cp"`:
 
 ```{r, echo = TRUE, eval = FALSE}
 fit_bopt_ic <- BRIERi.bopt(
@@ -104,7 +104,7 @@ fit_bopt_ic <- BRIERi.bopt(
   family = "gaussian",
   beta.external = data$beta.external,
   multi.method = "stacking",
-  criteria = "BIC",
+  criteria = "Cp",
   bounds = list(eta_1 = c(0, 10)),
   init.points = 10,
   n.iter = 15
