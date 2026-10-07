@@ -19,7 +19,7 @@ Defaults to the optimal eta and lambda if selection has been performed."></head>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,8 +85,9 @@ Defaults to the optimal eta and lambda if selection has been performed.</p>
 
 <dt id="arg-eta">eta<a class="anchor" aria-label="anchor" href="#arg-eta"></a></dt>
 <dd><p>Optional matrix of eta combinations to look up in
-<code>object$eta.grid</code>. If <code>NULL</code> (default), <code>which.eta</code> is
-used to select etas directly.</p></dd>
+<code>object$eta.grid</code> (each row matched to the nearest fitted eta within a
+relative tolerance of 1\<!-- %; see \code{\link{subsetEta}}). If \code{NULL} -->
+(default), <code>which.eta</code> is used to select etas directly.</p></dd>
 
 
 <dt id="arg-which-eta">which.eta<a class="anchor" aria-label="anchor" href="#arg-which-eta"></a></dt>
@@ -101,8 +102,10 @@ Only meaningful when a single <code>which.eta</code> is selected.</p></dd>
 
 
 <dt id="arg-which-lambda">which.lambda<a class="anchor" aria-label="anchor" href="#arg-which-lambda"></a></dt>
-<dd><p>Optional integer vector of lambda indices. Defaults
-to <code>object$lambda.min.index</code>.</p></dd>
+<dd><p>Optional integer vector of lambda indices. If omitted, the
+best lambda for the requested eta: <code>object$lambda.min.index</code> for the
+selected eta, and that eta's own entry in <code>object$eta.lambda</code> for any
+other eta of a tuned object.</p></dd>
 
 
 <dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>

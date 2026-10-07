@@ -39,6 +39,7 @@ export(preprocessS)
 export(reduceExternalsPCA)
 export(screenExternals)
 export(standardize_X)
+export(subsetEta)
 export(wstandardize_X)
 importFrom(Matrix,
   Matrix,
