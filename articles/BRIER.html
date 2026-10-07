@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -862,6 +862,22 @@ the target and external data is high.</p>
 </div>
 </div>
 <div class="section level4">
+<h4 id="comparing-with-the-target-only-model">Comparing with the target-only model<a class="anchor" aria-label="anchor" href="#comparing-with-the-target-only-model"></a>
+</h4>
+<p>A tuned fit already contains the target-only model: the
+<code>eta = 0</code> fit, with its own best <code>lambda</code> from the
+same selection. <code><a href="../reference/subsetEta.html">subsetEta()</a></code> returns it as a selection
+object, so it is predicted and evaluated like the integrated model.
+Comparing the two on the testing set shows what borrowing from the
+external information added.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">X_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_X.html">standardize_X</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_X.html">standardize_X</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">target.only</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subsetEta.html">subsetEta</a></span><span class="op">(</span><span class="va">fit</span>, eta <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/evalMetric.html">evalMetric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">target.only</span>, <span class="va">X_test</span><span class="op">)</span>, <span class="va">y_test</span>, <span class="st">"gaussian.rsq"</span><span class="op">)</span>   <span class="co"># target-only</span></span>
+<span><span class="fu"><a href="../reference/evalMetric.html">evalMetric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">X_test</span><span class="op">)</span>, <span class="va">y_test</span>, <span class="st">"gaussian.rsq"</span><span class="op">)</span>           <span class="co"># integrated BRIER</span></span></code></pre></div>
+</div>
+<div class="section level4">
 <h4 id="visualizing-predictive-performance-between-the-target-external-and-brier-model">Visualizing predictive performance between the target, external, and
 BRIER model<a class="anchor" aria-label="anchor" href="#visualizing-predictive-performance-between-the-target-external-and-brier-model"></a>
 </h4>
@@ -881,7 +897,7 @@ appropriately integrating external information, the <code>BRIER</code>
 model further improves predictive accuracy, demonstrating the benefit of
 information borrowing when external sources are well aligned with the
 target population.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -910,7 +926,7 @@ information does not improve (and may even degrade) predictive
 performance. This pattern suggests that the external source is not well
 matched to the target population and may be excluded from joint
 integration.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -947,7 +963,7 @@ reflect noise or dataset-specific fluctuations. This diagnostic is
 particularly valuable in high-dimensional genomic settings, where model
 sparsity and sampling variability can obscure truly informative
 predictors.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.importance.html">plot.importance</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -977,7 +993,7 @@ samples with different underlying outcomes. To quantify this separation,
 the difference between the median observed outcomes of the upper and
 lower strata is reported in the panel title; larger values indicate
 stronger discrimination.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">plot.strat</span><span class="op">(</span>  </span>
 <span>  <span class="va">fit</span>, </span>
 <span>  lower <span class="op">=</span> <span class="fl">0.4</span>, upper <span class="op">=</span> <span class="fl">0.4</span>,</span>
