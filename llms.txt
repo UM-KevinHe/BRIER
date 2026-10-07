@@ -283,7 +283,7 @@ The default `eta.list` is `c(0, exp(seq(log(0.1), log(10), length.out = 20)))`, 
 
 **Two diagnostics for whether the current range is appropriate:**
 
-1. **Target-only vs external-only comparison on a held-out test set.** Fit a target-only model (use `BRIERi()` with `eta = 0`; do not use `BRIERfull()` for this, see the pitfall about `BRIERfull` not supporting target-only fits) and an external-only model (apply the external coefficients directly). Compare predictive performance.
+1. **Target-only vs external-only comparison on a held-out test set.** Take the target-only model from the tuned fit itself, `subsetEta(sel, eta = 0)`, which is the eta = 0 model at its own best lambda (for a `BRIERfull` analysis, fit `BRIERi()` with `eta = 0` instead; see the pitfall about `BRIERfull` not supporting target-only fits), and an external-only model (apply the external coefficients directly). Compare predictive performance.
    - External outperforms target-only: external is informative; borrowing is worthwhile; wider eta range is reasonable.
    - External underperforms target-only: external is heterogeneous; narrow eta range toward zero or consider not integrating at all.
 
@@ -374,6 +374,7 @@ These fit and tune in one call: they do NOT take an already-fitted object. Each 
 ### Prediction and coefficients
 
 - `predict(<BRIER>)` — predict from a `BRIER` grid object.
+- `subsetEta()` — restrict a fit or a tuned selection to some of its eta values, returning the same kind of object: one eta on a tuned object pins it there with that eta's own best lambda (`subsetEta(sel, eta = 0)` is the target-only model); several are re-selected within; an untuned fit is simply subset.
 - `predict(<BRIER.eta>)` — predict from a single-`eta` fit.
 - `coef(<BRIER>)` — coefficients from a `BRIER` grid object.
 - `coef(<BRIER.eta>)` — coefficients from a single-`eta` fit.
@@ -435,7 +436,8 @@ These are **regular exported functions** despite the dotted names — they are n
 - **The `*.bopt()` functions fit and tune in one call.** They take the same data arguments as the fitting function, not a fitted object, so do not call `BRIERi()` first and pass the result. Their `bounds` argument replaces `eta.list`; supplying both is not meaningful.
 - **`acq.eps`, not `eps`, is the acquisition parameter in `*.bopt()`.** `eps` is the coordinate-descent convergence tolerance and is passed straight through `...` to the fitter, so writing `eps = 0.01` intending exploration silently loosens the fit instead.
 - **Bayesian optimization is stochastic** unless `init.grid` is supplied: the initial design is drawn at random, so set a seed for reproducibility and report the number of evaluations along with the selected eta. It does not guarantee a global optimum; with few evaluations in a high-dimensional box it can settle in a local one.
-- `*.bopt()` returns a continuous eta rather than a grid point. `predict(fit, eta = ...)` matches rows of `eta.grid` to within `1e-10`, so pass a value taken from `fit$eta.grid` rather than a rounded one.
+- `*.bopt()` returns a continuous eta rather than a grid point. `predict(fit, eta = ...)`, `coef()` and `subsetEta()` match each requested eta to the nearest row of `eta.grid` within a relative difference of 1% (so a rounded 3.59 finds 3.5938, and 0 matches only 0); a value with no fitted row that close is an error listing the fitted grid.
+- **At an eta other than the selected one, omit `which.lambda`.** Since v1.5.0, `predict(sel, X, eta = e)` and `coef(sel, eta = e)` use eta `e`'s own best lambda from the selection. Before v1.5.0 they used `lambda.min.index`, the best lambda of the SELECTED eta, so `predict(sel, X, eta = 0)` was not the tuned target-only model. Passing `which.lambda` explicitly still uses that index at any eta.
 - `BRIERi.cv()` does **not** standardize `X` or `y` internally. However, if you pass `X` or `y` that has already been preprocessed at the *full-dataset* level — for example, column-standardized `X`, scaled `y`, or `y` taken as residuals from regressing out demographic effects on the whole sample — that preprocessing leaks information across CV folds and yields optimistic estimates. Pass raw `X` and `y`, or apply such preprocessing inside each fold yourself. Use the `seed` argument for reproducibility. Prefer `BRIERi.selection()` with `X.val`/`y.val` when a genuine held-out set is available.
 - Always specify `family` explicitly, especially for `BRIERs()`. A mismatched family (e.g., `gaussian` for binary summary stats) is not caught at fit time but breaks `predict(..., type = "response")` — it will silently return `X %*% beta` instead of the predicted probability or rate.
 - `plot.eta()`, `plot.box()`, and `plot.importance()` are exported as regular functions (not S3 methods), despite the dotted names. Call them directly (`plot.eta(fit)`), not via `plot(fit)`.

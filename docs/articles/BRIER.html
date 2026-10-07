@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -509,12 +509,23 @@ A collection of downstream analysis and visualization tools is provided to facil
 </div>
 </div>
 <div class="section level4">
+<h4 id="comparing-with-the-target-only-model">Comparing with the target-only model<a class="anchor" aria-label="anchor" href="#comparing-with-the-target-only-model"></a>
+</h4>
+<p>A tuned fit already contains the target-only model: the <code>eta = 0</code> fit, with its own best <code>lambda</code> from the same selection. <code><a href="../reference/subsetEta.html">subsetEta()</a></code> returns it as a selection object, so it is predicted and evaluated like the integrated model. Comparing the two on the testing set shows what borrowing from the external information added.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">X_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_X.html">standardize_X</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardize_X.html">standardize_X</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">target.only</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subsetEta.html">subsetEta</a></span><span class="op">(</span><span class="va">fit</span>, eta <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/evalMetric.html">evalMetric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">target.only</span>, <span class="va">X_test</span><span class="op">)</span>, <span class="va">y_test</span>, <span class="st">"gaussian.rsq"</span><span class="op">)</span>   <span class="co"># target-only</span></span>
+<span><span class="fu"><a href="../reference/evalMetric.html">evalMetric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">X_test</span><span class="op">)</span>, <span class="va">y_test</span>, <span class="st">"gaussian.rsq"</span><span class="op">)</span>           <span class="co"># integrated BRIER</span></span></code></pre></div>
+</div>
+<div class="section level4">
 <h4 id="visualizing-predictive-performance-between-the-target-external-and-brier-model">Visualizing predictive performance between the target, external, and BRIER model<a class="anchor" aria-label="anchor" href="#visualizing-predictive-performance-between-the-target-external-and-brier-model"></a>
 </h4>
 <p>The <code><a href="../reference/plot.box.html">plot.box()</a></code> function provides a complementary perspective for evaluating <code>BRIER</code> models. It visualizes the distribution of predictive performance across bootstrap resamples using boxplots, thereby capturing variability introduced by sampling randomness. Below, we illustrate <code><a href="../reference/plot.box.html">plot.box()</a></code> under settings where the external information exhibits low and high heterogeneity relative to the target (target) data.</p>
 <p><strong>Integrating low heterogeneous external information</strong></p>
 <p>In the example below, the external model achieves stronger predictive performance than the target-only model (higher Pearson <span class="math inline">\(R^2\)</span> and lower MSPE), suggesting relatively low heterogeneity between the target and external data. By appropriately integrating external information, the <code>BRIER</code> model further improves predictive accuracy, demonstrating the benefit of information borrowing when external sources are well aligned with the target population.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -534,7 +545,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 </div>
 <p><strong>Integrating high heterogeneous external information</strong></p>
 <p>In contrast, the example below illustrates a setting where the external model performs poorly relative to the target-only model (lower Pearson <span class="math inline">\(R^2\)</span> and higher MSPE), indicating substantial heterogeneity between the target and external data. As the integration weight increases, incorporating external information does not improve (and may even degrade) predictive performance. This pattern suggests that the external source is not well matched to the target population and may be excluded from joint integration.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.box.html">plot.box</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">testing</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -558,7 +569,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <h3 id="sec-importance">6.2 Variable importance<a class="anchor" aria-label="anchor" href="#sec-importance"></a>
 </h3>
 <p>The <code><a href="../reference/plot.importance.html">plot.importance()</a></code> function provides a stability-based assessment of variable importance by repeatedly re-validation the fitted model on bootstrap resamples of the validation data. For each replication, the procedure records which predictors enter the model, and it summarizes their selection frequencies across all resamples. The resulting plot displays the predictors ranked by how consistently they are selected, offering an interpretable measure of feature importance that complements effect-size estimates. High-frequency markers indicate stable, reproducible signals that contribute to prediction performance, whereas low-frequency markers may reflect noise or dataset-specific fluctuations. This diagnostic is particularly valuable in high-dimensional genomic settings, where model sparsity and sampling variability can obscure truly informative predictors.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.importance.html">plot.importance</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, </span>
 <span>  X <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">X</span>, covar.data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">target</span><span class="op">$</span><span class="va">validation</span><span class="op">$</span><span class="va">y</span>, </span>
@@ -574,7 +585,7 @@ A collection of downstream analysis and visualization tools is provided to facil
 <h3 id="sec-prs_strat">6.3 PRS stratification<a class="anchor" aria-label="anchor" href="#sec-prs_strat"></a>
 </h3>
 <p>The <code>plot.strat</code> function visualizes the discriminative power of each fitted model by stratifying testing-set samples according to predicted risk and comparing their observed outcome distributions. Specifically, samples are partitioned into a high-risk group and a low-risk group based on user-specified upper and lower percentile cut-offs (e.g., the top 40% and bottom 40%) of the predicted values from the target-only model, the external-only model, and the integrated <code>BRIER</code> model. The resulting density plots overlay the observed outcome distributions of the two strata for each model, providing a direct visual comparison of how well each model separates samples with different underlying outcomes. To quantify this separation, the difference between the median observed outcomes of the upper and lower strata is reported in the panel title; larger values indicate stronger discrimination.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">plot.strat</span><span class="op">(</span>  </span>
 <span>  <span class="va">fit</span>, </span>
 <span>  lower <span class="op">=</span> <span class="fl">0.4</span>, upper <span class="op">=</span> <span class="fl">0.4</span>,</span>

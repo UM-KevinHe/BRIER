@@ -131,15 +131,18 @@ predict.BRIER.eta <- function(
 #'
 #' @param object An object of class \code{"BRIER"}.
 #' @param eta Optional matrix of eta combinations to look up in
-#'   \code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
-#'   used to select etas directly.
+#'   \code{object$eta.grid} (each row matched to the nearest fitted eta within a
+#'   relative tolerance of 1\%; see \code{\link{subsetEta}}). If \code{NULL}
+#'   (default), \code{which.eta} is used to select etas directly.
 #' @param which.eta Optional integer vector of row indices into
 #'   \code{object$eta.grid}. Defaults to \code{object$eta.min.index}.
 #' @param lambda Optional numeric vector of lambda values at which to extract
 #'   coefficients. If \code{NULL} (default), \code{which.lambda} is used.
 #'   Only meaningful when a single \code{which.eta} is selected.
-#' @param which.lambda Optional integer vector of lambda indices. Defaults
-#'   to \code{object$lambda.min.index}.
+#' @param which.lambda Optional integer vector of lambda indices. If omitted, the
+#'   best lambda for the requested eta: \code{object$lambda.min.index} for the
+#'   selected eta, and that eta's own entry in \code{object$eta.lambda} for any
+#'   other eta of a tuned object.
 #' @param drop Logical. If TRUE, drop singleton dimensions from the output.
 #' @param ... Unused; present for S3 method compatibility.
 #'
@@ -171,16 +174,7 @@ coef.BRIER <- function(
         "Got ", ncol(eta), "."
       ), call. = FALSE)
     }
-    which.eta <- apply(eta, 1, function(e) {
-      idx <- which(apply(object$eta.grid, 1, function(row) { all(abs(row - e) < 1e-10) }))
-      if (length(idx) == 0) {
-        stop(
-          "eta = (", paste(round(e, 4), collapse = ", "),
-          ") does not match any row in eta.grid.", call. = FALSE
-        )
-      }
-      idx[1]
-    })
+    which.eta <- .eta_rows(object, eta)
   }
 
   # -- Validate which.eta --
@@ -197,6 +191,12 @@ coef.BRIER <- function(
 
   # -- Single eta: use lambda/which.lambda directly --
   if (length(which.eta) == 1) {
+    # The default lambda belongs to the SELECTED eta. For any other eta, use that eta's
+    # own best lambda from the selection (eta.lambda), as the multi-eta branch does:
+    # otherwise eta = 0 would be predicted at the integrated model's lambda index.
+    if (!has.lambda && missing(which.lambda)) {
+      which.lambda <- .lambda_for_eta(object, which.eta, which.lambda)
+    }
     if (!has.lambda && (is.null(which.lambda) || length(which.lambda) == 0)) {
       stop("No lambda selected. Please supply 'lambda' or 'which.lambda'.", call. = FALSE)
     }
@@ -240,15 +240,18 @@ coef.BRIER <- function(
 #' @param object An object of class \code{"BRIER"}.
 #' @param X A numeric matrix of predictors.
 #' @param eta Optional matrix of eta combinations to look up in
-#'   \code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
-#'   used to select etas directly.
+#'   \code{object$eta.grid} (each row matched to the nearest fitted eta within a
+#'   relative tolerance of 1\%; see \code{\link{subsetEta}}). If \code{NULL}
+#'   (default), \code{which.eta} is used to select etas directly.
 #' @param which.eta Optional integer vector of row indices into
 #'   \code{object$eta.grid}. Defaults to \code{object$eta.min.index}.
 #' @param lambda Optional numeric vector of lambda values for prediction.
 #'   If \code{NULL} (default), \code{which.lambda} is used. Only meaningful
 #'   when a single \code{which.eta} is selected.
-#' @param which.lambda Optional integer vector of lambda indices. Defaults
-#'   to \code{object$lambda.min.index}.
+#' @param which.lambda Optional integer vector of lambda indices. If omitted, the
+#'   best lambda for the requested eta: \code{object$lambda.min.index} for the
+#'   selected eta, and that eta's own entry in \code{object$eta.lambda} for any
+#'   other eta of a tuned object.
 #' @param type A string: "link", "response", "coefficients", "vars", or "nvars".
 #'   See \code{\link{predict.BRIER.eta}}.
 #' @param drop Logical. If TRUE, drop singleton dimensions from the output.
@@ -284,16 +287,7 @@ predict.BRIER <- function(
         "Got ", ncol(eta), "."
       ), call. = FALSE)
     }
-    which.eta <- apply(eta, 1, function(e) {
-      idx <- which(apply(object$eta.grid, 1, function(row) {
-        all(abs(row - e) < 1e-10)
-      }))
-      if (length(idx) == 0) {
-        stop("eta = (", paste(round(e, 4), collapse = ", "),
-             ") does not match any row in eta.grid.", call. = FALSE)
-      }
-      idx[1]
-    })
+    which.eta <- .eta_rows(object, eta)
   }
 
   # -- Validate which.eta --
@@ -312,6 +306,12 @@ predict.BRIER <- function(
 
   # -- Single eta: use lambda/which.lambda directly --
   if (length(which.eta) == 1) {
+    # The default lambda belongs to the SELECTED eta. For any other eta, use that eta's
+    # own best lambda from the selection (eta.lambda), as the multi-eta branch does:
+    # otherwise eta = 0 would be predicted at the integrated model's lambda index.
+    if (!has.lambda && missing(which.lambda)) {
+      which.lambda <- .lambda_for_eta(object, which.eta, which.lambda)
+    }
     if (!has.lambda && (is.null(which.lambda) || length(which.lambda) == 0)) {
       stop("No lambda selected. Please supply 'lambda' or 'which.lambda'.", call. = FALSE)
     }
@@ -344,4 +344,62 @@ predict.BRIER <- function(
     paste0("(", paste(round(row, 4), collapse = ", "), ")")
   })
   out
+}
+
+# Rows of object$eta.grid matching each row of `eta`. A typed value need not equal the
+# fitted one to the last digit (3.59 for 3.5938...): each row is matched to the NEAREST
+# fitted row, accepted when every component's relative difference |a - b| / max(|a|, |b|)
+# is within `tol`. So 0 matches only 0, and a small value never snaps to a different one
+# (0.005 is not 0.01). Nothing unfitted is ever returned: a value with no fitted row
+# within tolerance is an error that lists the fitted grid.
+.eta_rows <- function(object, eta, tol = 1e-2) {
+  grid <- as.matrix(object$eta.grid)
+  eta <- as.matrix(eta)
+  if (ncol(eta) != ncol(grid)) {
+    if (ncol(grid) == 1) {
+      eta <- matrix(as.numeric(eta), ncol = 1)
+    } else {
+      stop(paste0(
+        "eta must have ", ncol(grid), " columns (one per external model). ",
+        "Got ", ncol(eta), "."
+      ), call. = FALSE)
+    }
+  }
+  apply(eta, 1, function(e) {
+    diff <- abs(sweep(grid, 2, e, "-"))
+    denom <- pmax(abs(grid), matrix(abs(e), nrow(grid), ncol(grid), byrow = TRUE))
+    rel <- ifelse(denom == 0, 0, diff / denom)
+    dist <- apply(rel, 1, max)
+    i <- which.min(dist)
+    if (length(i) == 0 || dist[i] > tol) {
+      stop(
+        "eta = (", paste(signif(e, 4), collapse = ", "), ") does not match any row in ",
+        "eta.grid (it was not fitted). Fitted eta values: ",
+        paste(apply(signif(grid, 4), 1, paste, collapse = ", "), collapse = "; "),
+        ". Refit with it in eta.list, or use one of these.", call. = FALSE
+      )
+    }
+    i
+  })
+}
+
+# The best lambda index for one eta row of a tuned object: its own entry in eta.lambda.
+# For the selected eta this equals object$lambda.min.index (every selection function
+# sets lambda.min.index from eta.lambda), so the default is unchanged there. An untuned
+# object (no eta.lambda) keeps the given default.
+.lambda_for_eta <- function(object, which.eta, default) {
+  el <- object$eta.lambda
+  if (is.null(el) || is.null(el$eta.index)) {
+    return(default)
+  }
+  idx <- el$lambda.min.index[el$eta.index == which.eta]
+  if (length(idx) == 0) {
+    warning(
+      "eta row ", which.eta, " has no entry in eta.lambda; using lambda.min.index, ",
+      "the best lambda of the SELECTED eta. Pass which.lambda to choose one.",
+      call. = FALSE
+    )
+    return(default)
+  }
+  idx[1]
 }

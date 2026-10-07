@@ -543,6 +543,18 @@ out$plot
 </div>
 
 
+### Comparing with the target-only model
+
+A tuned fit already contains the target-only model: the `eta = 0` fit, with its own best `lambda` from the same selection. `subsetEta()` returns it as a selection object, so it is predicted and evaluated like the integrated model. Comparing the two on the testing set shows what borrowing from the external information added.
+
+```{r eval = FALSE}
+X_test <- standardize_X(data$target$testing$X)[[1]]
+y_test <- standardize_X(as.matrix(data$target$testing$y))[[1]]
+target.only <- subsetEta(fit, eta = 0)
+evalMetric(predict(target.only, X_test), y_test, "gaussian.rsq")   # target-only
+evalMetric(predict(fit, X_test), y_test, "gaussian.rsq")           # integrated BRIER
+```
+
 ### Visualizing predictive performance between the target, external, and BRIER model
 
 The `plot.box()` function provides a complementary perspective for evaluating `BRIER` models. It visualizes the distribution of predictive performance across bootstrap resamples using boxplots, thereby capturing variability introduced by sampling randomness. Below, we illustrate `plot.box()` under settings where the external information exhibits low and high heterogeneity relative to the target (target) data.

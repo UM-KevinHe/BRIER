@@ -18,8 +18,9 @@
 \item{object}{An object of class \code{"BRIER"}.}
 
 \item{eta}{Optional matrix of eta combinations to look up in
-\code{object$eta.grid}. If \code{NULL} (default), \code{which.eta} is
-used to select etas directly.}
+\code{object$eta.grid} (each row matched to the nearest fitted eta within a
+relative tolerance of 1\\%; see \code{\link{subsetEta}}). If \code{NULL}
+(default), \code{which.eta} is used to select etas directly.}
 
 \item{which.eta}{Optional integer vector of row indices into
 \code{object$eta.grid}. Defaults to \code{object$eta.min.index}.}
@@ -28,8 +29,10 @@ used to select etas directly.}
 coefficients. If \code{NULL} (default), \code{which.lambda} is used.
 Only meaningful when a single \code{which.eta} is selected.}
 
-\item{which.lambda}{Optional integer vector of lambda indices. Defaults
-to \code{object$lambda.min.index}.}
+\item{which.lambda}{Optional integer vector of lambda indices. If omitted, the
+best lambda for the requested eta: \code{object$lambda.min.index} for the
+selected eta, and that eta's own entry in \code{object$eta.lambda} for any
+other eta of a tuned object.}
 
 \item{drop}{Logical. If TRUE, drop singleton dimensions from the output.}
 

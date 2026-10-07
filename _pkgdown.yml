@@ -86,6 +86,7 @@ reference:
     - predict.BRIER.eta
     - coef.BRIER
     - coef.BRIER.eta
+    - subsetEta
 - title: "Data processing"
   desc: >
     Data processing of input data
