@@ -409,7 +409,10 @@ BRIERi.eta = function(
   if (is.null(nvar.max)) nvar.max <- p
 
   # -- Main algorithm BRIERi.eta  --
-  if (missing(lambda)) {
+  # user.lambda tells cd_wglm_fit_ssr to fit the first lambda too; without it the
+  # glm solver assumes lambda[1] is lambda.max and returns the null model there.
+  user.lambda <- !missing(lambda)
+  if (!user.lambda) {
     lambda.seq <- setupLambda(
       XX.list$std.X, XX.list$yy, n, p, weights, XX.list$penalty.factor, alpha,
       family, lambda.min, log.lambda, nlambda
@@ -436,7 +439,7 @@ BRIERi.eta = function(
     fit <- cd_wglm_fit_ssr(
       XX.list$std.X, XX.list$yy, weights, family, 
       XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
-      lam.max, max.iter, nvar.max, eps
+      lam.max, max.iter, nvar.max, eps, user.lambda
     )
     b0 <- fit$beta0
     b <- fit$beta
