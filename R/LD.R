@@ -74,7 +74,6 @@ calLD <- function(X, SNP.info = NULL, LDB = NULL, tau = 0) {
     }
 
     ## Calculate LD matrix from reference data
-    blk <- LD_blocks(chr, pos, LDB)
     XX.list <- standardize_X(X)
     std.X  <- XX.list[[1]]
     center <- XX.list[[2]]
@@ -90,6 +89,9 @@ calLD <- function(X, SNP.info = NULL, LDB = NULL, tau = 0) {
         call. = FALSE
       )
     }
+    ## Block boundaries are 0-based column indices, so they must be computed on
+    ## the columns that remain after constant columns are dropped
+    blk <- LD_blocks(chr[nz], pos[nz], LDB)
     XtX <- LD_sigma(X = std.X, blk = blk, tau = tau)
     out <- list(
       XtX = XtX,
