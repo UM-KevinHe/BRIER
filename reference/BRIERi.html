@@ -19,7 +19,7 @@ predictions are integrated into the target response via a tunable eta parameter
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +76,8 @@ predictions are integrated into the target response via a tunable eta parameter
 <span>  ncores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="op">(</span><span class="va">ncores</span> <span class="op">&gt;</span> <span class="fl">1L</span><span class="op">)</span>,</span>
 <span>  pca.var <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span>  dedup.cor <span class="op">=</span> <span class="fl">0.9</span></span>
+<span>  dedup.cor <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  ssr <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -158,6 +159,14 @@ before anything else runs. Any model whose absolute cosine similarity with
 an already-kept model reaches this value is removed, and the first
 occurrence of each near-identical set is the one kept. <code>NULL</code> or
 <code>NA</code> disables the step. See <code><a href="dedupExternals.html">dedupExternals</a></code>.</p></dd>
+
+
+<dt id="arg-ssr">ssr<a class="anchor" aria-label="anchor" href="#arg-ssr"></a></dt>
+<dd><p>Logical. Sequential strong rule screening. <code>TRUE</code> (default)
+screens variables with the strong rule at each lambda and repairs any
+violation by a KKT check; <code>FALSE</code> fits without screening. The solutions
+agree up to the convergence tolerance for the LASSO and the elastic net,
+while MCP and SCAD may reach a different stationary point.</p></dd>
 
 </dl></div>
     <div class="section level2">
