@@ -137,8 +137,12 @@ reference:
     - LD_sigma
     - cd_glm_fit_ssr
     - cd_summary_fit
+    - cd_summary_fit_ssr
+    - cd_wgaussian_fit
     - cd_wgaussian_fit_ssr
+    - cd_wglm_fit
     - cd_wglm_fit_ssr
+    - check_ld_summary
     - maxlambda_summary
     - maxprod
     - unstand_beta

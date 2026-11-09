@@ -15,13 +15,16 @@ cd_summary_fit(
   eps,
   max_iter,
   dfmax,
-  user
+  user,
+  check_ld = TRUE
 )
 }
 \arguments{
 \item{XtY}{A numeric vector of marginal correlations between genotype and outcome (length p).}
 
-\item{ld_mat}{A p x p sparse matrix representing the linkage disequilibrium (LD) structure.}
+\item{ld_mat}{A p x p sparse matrix representing the linkage disequilibrium (LD) structure.
+Must be symmetric (checked unless check_ld = FALSE; then it must have passed
+check_ld_summary()) and is assumed to have a unit diagonal.}
 
 \item{multiplier}{A numeric vector of per-variable penalty multipliers (length p).}
 
@@ -41,17 +44,22 @@ cd_summary_fit(
 
 \item{user}{A logical flag. If TRUE, lambda is user-specified and iteration starts
 from the first value; if FALSE, the first lambda is skipped.}
+
+\item{check_ld}{A logical flag. If TRUE (default), run the O(nnz) LD checks
+(finite, symmetric); FALSE skips them when ld_mat was validated once with
+check_ld_summary().}
 }
 \value{
 A list with the following elements:
 \describe{
 \item{beta}{A matrix of coefficients (p x length(lam)).}
-\item{iter}{An integer vector of iteration counts for each lambda.}
+\item{iter}{An integer vector of iteration counts for each lambda (NA if not fitted).}
 \item{df}{A numeric vector of degrees of freedom for each lambda.}
 \item{dev}{A numeric vector of deviance values for each lambda.}
 }
 }
 \description{
 Coordinate-descent algorithm for penalized regression using summary
-statistics and an LD reference panel.
+statistics and an LD reference panel, with a running gradient and no
+screening.
 }

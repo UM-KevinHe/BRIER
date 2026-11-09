@@ -62,6 +62,40 @@ cd_wgaussian_fit_ssr <- function(X, y, wt, multiplier, penalty, lam, alpha, gamm
     .Call(`_BRIER_cd_wgaussian_fit_ssr`, X, y, wt, multiplier, penalty, lam, alpha, gamma, lam_max, max_iter, eps, dfmax)
 }
 
+#' Coordinate descent for weighted Gaussian regression without screening
+#'
+#' Coordinate-descent algorithm for penalised weighted Gaussian regression over a
+#' sequence of penalty values, without strong rule screening: every variable is
+#' eligible, and after the active set converges a KKT check runs over all
+#' variables not in the active set. Same algorithm as cd_wgaussian_fit_ssr with
+#' a strong set that holds every variable.
+#'
+#' @param X A numeric matrix of predictors (n x p).
+#' @param y A numeric response vector of length n.
+#' @param wt A numeric vector of observation weights (length n).
+#' @param multiplier A numeric vector of per-variable penalty multipliers (length p).
+#'   Variables with multiplier = 0 are treated as unpenalised.
+#' @param penalty A string specifying the penalty: "LASSO", "MCP", or "SCAD".
+#' @param lam A numeric vector of penalty values, sorted in decreasing order.
+#' @param alpha A numeric scalar for the elastic net mixing parameter.
+#' @param gamma A numeric scalar for MCP and SCAD penalties.
+#' @param max_iter An integer specifying the maximum total iterations allowed.
+#' @param eps A numeric scalar for the convergence tolerance.
+#' @param dfmax An integer specifying the maximum number of selected variables.
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{beta0}{A numeric vector of intercepts for each lambda.}
+#'   \item{beta}{A matrix of coefficients (p x length(lam)).}
+#'   \item{dev}{A numeric vector of weighted residual sums of squares.}
+#'   \item{eeta}{A matrix of fitted linear predictors (n x length(lam)).}
+#'   \item{df}{A numeric vector of degrees of freedom for each lambda.}
+#'   \item{iter}{An integer vector of iteration counts for each lambda.}
+#' }
+cd_wgaussian_fit <- function(X, y, wt, multiplier, penalty, lam, alpha, gamma, max_iter, eps, dfmax) {
+    .Call(`_BRIER_cd_wgaussian_fit`, X, y, wt, multiplier, penalty, lam, alpha, gamma, max_iter, eps, dfmax)
+}
+
 #' Coordinate descent for GLM with sequential strong rule
 #'
 #' Coordinate-descent algorithm for penalised generalised linear models (binomial
@@ -124,13 +158,57 @@ cd_wglm_fit_ssr <- function(X, y, wt, family, multiplier, penalty, lambda, alpha
     .Call(`_BRIER_cd_wglm_fit_ssr`, X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, lam_max, max_iter, dfmax, eps, user, warn)
 }
 
+#' Coordinate descent for weighted GLM without screening
+#'
+#' Coordinate-descent algorithm for penalised weighted generalised linear models
+#' (binomial or Poisson) over a sequence of penalty values, without strong rule
+#' screening: every variable is eligible, and after the active set converges a
+#' KKT check runs over all variables not in the active set. Same algorithm as
+#' cd_wglm_fit_ssr with a strong set that holds every variable.
+#'
+#' @param X A numeric matrix of predictors (n x p).
+#' @param y A numeric response vector of length n.
+#' @param wt A numeric vector of observation weights (length n).
+#' @param family A string: "binomial" or "poisson".
+#' @param multiplier A numeric vector of per-variable penalty multipliers (length p).
+#' @param penalty A string specifying the penalty: "LASSO", "MCP", or "SCAD".
+#' @param lambda A numeric vector of penalty values, sorted in decreasing order.
+#' @param alpha A numeric scalar for the elastic net mixing parameter.
+#' @param gamma A numeric scalar for MCP and SCAD penalties.
+#' @param max_iter An integer specifying the maximum total iterations.
+#' @param dfmax An integer specifying the maximum number of selected variables.
+#' @param eps A numeric scalar for the convergence tolerance.
+#' @param user A logical flag for user-specified lambda starting behaviour.
+#' @param warn A logical flag for saturation warnings.
+#'
+#' @return A list with beta0, beta, dev, eeta, and iter.
+cd_wglm_fit <- function(X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, max_iter, dfmax, eps, user = FALSE, warn = TRUE) {
+    .Call(`_BRIER_cd_wglm_fit`, X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, max_iter, dfmax, eps, user, warn)
+}
+
+#' Check an LD matrix once for the BRIERs fitters
+#'
+#' The O(nnz) LD checks of cd_summary_fit and cd_summary_fit_ssr (square,
+#' finite, symmetric), exported so that a driver can validate each LD (or each
+#' block) once, before mclapply over eta, and then call the fitters with
+#' check_ld = FALSE.
+#'
+#' @param ld_mat A p x p sparse matrix representing the linkage disequilibrium (LD) structure.
+#' @return Nothing; stops with an error if a check fails.
+check_ld_summary <- function(ld_mat) {
+    invisible(.Call(`_BRIER_check_ld_summary`, ld_mat))
+}
+
 #' Coordinate descent for BRIERs estimation procedure
 #'
 #' Coordinate-descent algorithm for penalized regression using summary
-#' statistics and an LD reference panel.
+#' statistics and an LD reference panel, with a running gradient and no
+#' screening.
 #'
 #' @param XtY A numeric vector of marginal correlations between genotype and outcome (length p).
 #' @param ld_mat A p x p sparse matrix representing the linkage disequilibrium (LD) structure.
+#'   Must be symmetric (checked unless check_ld = FALSE; then it must have passed
+#'   check_ld_summary()) and is assumed to have a unit diagonal.
 #' @param multiplier A numeric vector of per-variable penalty multipliers (length p).
 #' @param penalty A string specifying the penalty: "LASSO", "MCP", or "SCAD".
 #' @param lam A numeric vector of penalty values, sorted in decreasing order.
@@ -141,16 +219,60 @@ cd_wglm_fit_ssr <- function(X, y, wt, family, multiplier, penalty, lambda, alpha
 #' @param dfmax An integer specifying the maximum number of selected variables.
 #' @param user A logical flag. If TRUE, lambda is user-specified and iteration starts
 #'   from the first value; if FALSE, the first lambda is skipped.
+#' @param check_ld A logical flag. If TRUE (default), run the O(nnz) LD checks
+#'   (finite, symmetric); FALSE skips them when ld_mat was validated once with
+#'   check_ld_summary().
 #'
 #' @return A list with the following elements:
 #' \describe{
 #'   \item{beta}{A matrix of coefficients (p x length(lam)).}
-#'   \item{iter}{An integer vector of iteration counts for each lambda.}
+#'   \item{iter}{An integer vector of iteration counts for each lambda (NA if not fitted).}
 #'   \item{df}{A numeric vector of degrees of freedom for each lambda.}
 #'   \item{dev}{A numeric vector of deviance values for each lambda.}
 #' }
-cd_summary_fit <- function(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user) {
-    .Call(`_BRIER_cd_summary_fit`, XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user)
+cd_summary_fit <- function(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user, check_ld = TRUE) {
+    .Call(`_BRIER_cd_summary_fit`, XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user, check_ld)
+}
+
+#' Coordinate descent for BRIERs estimation procedure with sequential strong rule
+#'
+#' Coordinate-descent algorithm for penalized regression using summary
+#' statistics and an LD reference panel, with a running gradient and
+#' sequential strong rule (SSR) screening over a sequence of penalty values.
+#'
+#' @param XtY A numeric vector of marginal correlations between genotype and outcome (length p).
+#' @param ld_mat A p x p sparse matrix representing the linkage disequilibrium (LD) structure.
+#'   Must be symmetric (checked unless check_ld = FALSE; then it must have passed
+#'   check_ld_summary()) and is assumed to have a unit diagonal.
+#' @param multiplier A numeric vector of per-variable penalty multipliers (length p).
+#'   Variables with multiplier = 0 are unpenalised and always in the strong set.
+#' @param penalty A string specifying the penalty: "LASSO", "MCP", or "SCAD".
+#' @param lam A numeric vector of penalty values, sorted in decreasing order.
+#' @param alpha A numeric scalar for the elastic net mixing parameter.
+#' @param gamma A numeric scalar for MCP and SCAD penalties.
+#' @param lam_max A numeric scalar: lambda.max from
+#'   maxlambda_summary(XtY, ld_mat, multiplier, alpha, eps, max_iter). The
+#'   caller must pass the real value, computed even when lam is user-specified;
+#'   it is the previous lambda for l = 0. A negative or non-finite value (such
+#'   as BRIERi's user-lambda sentinel -1) is rejected.
+#' @param eps A numeric scalar for the convergence tolerance.
+#' @param max_iter An integer specifying the maximum total iterations allowed.
+#' @param dfmax An integer specifying the maximum number of selected variables.
+#' @param user A logical flag. If TRUE, lambda is user-specified and iteration starts
+#'   from the first value; if FALSE, the first lambda is skipped.
+#' @param check_ld A logical flag. If TRUE (default), run the O(nnz) LD checks
+#'   (finite, symmetric); FALSE skips them when ld_mat was validated once with
+#'   check_ld_summary().
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{beta}{A matrix of coefficients (p x length(lam)).}
+#'   \item{iter}{An integer vector of iteration counts for each lambda (NA if not fitted).}
+#'   \item{df}{A numeric vector of degrees of freedom for each lambda.}
+#'   \item{dev}{A numeric vector of deviance values for each lambda.}
+#' }
+cd_summary_fit_ssr <- function(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, lam_max, eps, max_iter, dfmax, user, check_ld = TRUE) {
+    .Call(`_BRIER_cd_summary_fit_ssr`, XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, lam_max, eps, max_iter, dfmax, user, check_ld)
 }
 
 #' Maximum scaled inner product

@@ -36,6 +36,11 @@
 #'   are obtained by inverting \code{t(B) XtX B}, which is singular the moment
 #'   two external models carry the same information. \code{NULL} or \code{NA}
 #'   disables the step. See \code{\link{dedupExternals}}.
+#' @param ssr Logical. Sequential strong rule screening. \code{TRUE} (default)
+#'   screens variables with the strong rule at each lambda and repairs any
+#'   violation by a KKT check; \code{FALSE} fits without screening. The solutions
+#'   agree up to the convergence tolerance for the LASSO and the elastic net,
+#'   while MCP and SCAD may reach a different stationary point.
 #'
 #' @return An object of class \code{"BRIER"} containing:
 #' \describe{
@@ -87,7 +92,8 @@ BRIERs <- function(
   ncores = max(1L, parallel::detectCores() - 1L),
   parallel = (ncores > 1L),
   pca.var = 0.8,
-  dedup.cor = 0.9
+  dedup.cor = 0.9,
+  ssr = TRUE
 ) {
 
   family <- match.arg(family)
@@ -180,6 +186,7 @@ BRIERs <- function(
   fit.args$XtY.external <- XtY.external
   fit.args$family <- family
   fit.args$varnames <- varnames
+  fit.args$ssr <- ssr
 
   # -- Single eta fit --
   single_eta_fit <- function(eta_row, fit.args, trace) {
@@ -262,7 +269,11 @@ BRIERs <- function(
 #'   lambda, and \code{df.fallback} counts how often. The df with respect to y is
 #'   this divided by \code{1 + sum(eta)}. With no intercept, the
 #'   Hessian is the LD block of the active set.
-#'
+#' @param ssr Logical. Sequential strong rule screening. \code{TRUE} (default)
+#'   screens variables with the strong rule at each lambda and repairs any
+#'   violation by a KKT check; \code{FALSE} fits without screening. The solutions
+#'   agree up to the convergence tolerance for the LASSO and the elastic net,
+#'   while MCP and SCAD may reach a different stationary point.
 #'
 #' @return An object of class \code{"BRIER.eta"} containing model specification,
 #'   coefficients, fit statistics, and data. The \code{summary = TRUE} flag
@@ -281,7 +292,8 @@ BRIERs.eta <- function(
   alpha = 1, gamma = ifelse(penalty == "SCAD", 3.7, 3),
   lambda, nlambda = 100, lambda.min = 0.001, log.lambda = TRUE,
   max.iter = 1e6, eps = 1e-4, nvar.max = NULL,
-  varnames = NULL, df.method = c("active", "divergence", "lqa")
+  varnames = NULL, df.method = c("active", "divergence", "lqa"),
+  ssr = TRUE
 ) {
 
   penalty <- match.arg(penalty)
@@ -331,6 +343,7 @@ BRIERs.eta <- function(
   if (gamma <= 1 && penalty == "MCP") { stop("gamma must be greater than 1 for MCP.", call. = FALSE) }
   if (gamma <= 2 && penalty == "SCAD") { stop("gamma must be greater than 2 for SCAD.", call. = FALSE) }
   if (is.null(nvar.max)) { nvar.max <- p }
+  if (!is.logical(ssr) || length(ssr) != 1L || is.na(ssr)) { stop("ssr must be TRUE or FALSE.", call. = FALSE) }
 
   # -- Variable names --
   if (is.null(varnames)) { varnames <- paste0("X", seq_len(p)) }
@@ -343,12 +356,15 @@ BRIERs.eta <- function(
   }
 
   # -- Lambda sequence --
-  if (missing(lambda)) {
-
+  # With ssr, lambda.max is computed also for a user lambda: the strong rule
+  # uses it as the previous lambda of the first fitted one.
+  if (ssr || missing(lambda)) {
     lambda.max <- maxlambda_summary(
       XtY.tilde, XtX,
       penalty.factor, alpha, eps, max.iter
     )
+  }
+  if (missing(lambda)) {
 
     if (log.lambda) {
       if (lambda.min == 0) {
@@ -371,11 +387,19 @@ BRIERs.eta <- function(
   }
 
   # -- Fit --
-  res <- cd_summary_fit(
-    XtY.tilde, XtX, 
-    penalty.factor, penalty, lambda.seq,
-    alpha, gamma, eps, max.iter, nvar.max, user
-  )
+  if (ssr) {
+    res <- cd_summary_fit_ssr(
+      XtY.tilde, XtX, 
+      penalty.factor, penalty, lambda.seq,
+      alpha, gamma, lambda.max, eps, max.iter, nvar.max, user
+    )
+  } else {
+    res <- cd_summary_fit(
+      XtY.tilde, XtX, 
+      penalty.factor, penalty, lambda.seq,
+      alpha, gamma, eps, max.iter, nvar.max, user
+    )
+  }
 
   b      <- res$beta
   iter   <- res$iter

@@ -17,7 +17,8 @@ BRIERi(
   ncores = max(1L, parallel::detectCores() - 1L),
   parallel = (ncores > 1L),
   pca.var = 0.8,
-  dedup.cor = 0.9
+  dedup.cor = 0.9,
+  ssr = TRUE
 )
 }
 \arguments{
@@ -72,6 +73,12 @@ before anything else runs. Any model whose absolute cosine similarity with
 an already-kept model reaches this value is removed, and the first
 occurrence of each near-identical set is the one kept. \code{NULL} or
 \code{NA} disables the step. See \code{\link{dedupExternals}}.}
+
+\item{ssr}{Logical. Sequential strong rule screening. \code{TRUE} (default)
+screens variables with the strong rule at each lambda and repairs any
+violation by a KKT check; \code{FALSE} fits without screening. The solutions
+agree up to the convergence tolerance for the LASSO and the elastic net,
+while MCP and SCAD may reach a different stationary point.}
 }
 \value{
 An object of class \code{"BRIER"} containing:

@@ -44,6 +44,11 @@
 #'   an already-kept model reaches this value is removed, and the first
 #'   occurrence of each near-identical set is the one kept. \code{NULL} or
 #'   \code{NA} disables the step. See \code{\link{dedupExternals}}.
+#' @param ssr Logical. Sequential strong rule screening. \code{TRUE} (default)
+#'   screens variables with the strong rule at each lambda and repairs any
+#'   violation by a KKT check; \code{FALSE} fits without screening. The solutions
+#'   agree up to the convergence tolerance for the LASSO and the elastic net,
+#'   while MCP and SCAD may reach a different stationary point.
 #'
 #' @return An object of class \code{"BRIER"} containing:
 #' \describe{
@@ -102,7 +107,8 @@ BRIERi = function(
   ncores = max(1L, parallel::detectCores() - 1L),
   parallel = (ncores > 1L),
   pca.var = 0.8,
-  dedup.cor = 0.9
+  dedup.cor = 0.9,
+  ssr = TRUE
 ){
 
   family <- match.arg(family)
@@ -202,6 +208,7 @@ BRIERi = function(
   fit.args$y <- y
   fit.args$family <- family 
   fit.args$y.external <- y.external
+  fit.args$ssr <- ssr
 
   ## Calculate null deviance
   penalty.factor <- if (!is.null(fit.args$penalty.factor)) {
@@ -294,6 +301,11 @@ BRIERi = function(
 #'   Where the matrix is not positive definite the active count is used for that
 #'   lambda, and \code{df.fallback} counts how often. The df with respect to y is
 #'   this divided by \code{1 + sum(eta)}.
+#' @param ssr Logical. Sequential strong rule screening. \code{TRUE} (default)
+#'   screens variables with the strong rule at each lambda and repairs any
+#'   violation by a KKT check; \code{FALSE} fits without screening. The solutions
+#'   agree up to the convergence tolerance for the LASSO and the elastic net,
+#'   while MCP and SCAD may reach a different stationary point.
 #'
 #' @return An object of class \code{"BRIER.eta"} containing model specification,
 #'   coefficients, fit statistics, and data.
@@ -309,7 +321,8 @@ BRIERi.eta = function(
   alpha = 1, gamma = ifelse(penalty == "SCAD", 3.7, 3), 
   lambda, nlambda = 100, lambda.min = { if (nrow(X) > ncol(X)) 1e-4 else .05 }, log.lambda = TRUE, 
   max.iter = 1e6, eps = 1e-4, nvar.max = NULL, returnX = FALSE,
-  df.method = c("active", "divergence", "lqa")
+  df.method = c("active", "divergence", "lqa"),
+  ssr = TRUE
 ){
 
   family <- match.arg(family)
@@ -391,6 +404,7 @@ BRIERi.eta = function(
   if (alpha <= 0 || alpha > 1)  { stop("alpha must be between [0, 1]; choose a small positive number instead", call. = FALSE) }
   if (gamma <= 1 && penalty == "MCP") { stop("gamma must be greater than 1 for the MCP penalty", call. = FALSE) }
   if (gamma <= 2 && penalty == "SCAD") { stop("gamma must be greater than 2 for the SCAD penalty", call. = FALSE) }
+  if (!is.logical(ssr) || length(ssr) != 1L || is.na(ssr)) { stop("ssr must be TRUE or FALSE.", call. = FALSE) }
 
   initial.p <- ncol(X)
   initial.colnames <- if (is.null(colnames(X))) {
@@ -425,22 +439,39 @@ BRIERi.eta = function(
   }
 
   # -- Fit main algorithm  --
+  # ssr = FALSE: the same fitters without the strong rule (no lam.max argument)
   if (family == "gaussian"){
-    fit <- cd_wgaussian_fit_ssr(
-      XX.list$std.X, XX.list$yy, weights, 
-      XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
-      lam.max, max.iter, eps, nvar.max
-    )
+    if (ssr) {
+      fit <- cd_wgaussian_fit_ssr(
+        XX.list$std.X, XX.list$yy, weights, 
+        XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
+        lam.max, max.iter, eps, nvar.max
+      )
+    } else {
+      fit <- cd_wgaussian_fit(
+        XX.list$std.X, XX.list$yy, weights, 
+        XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
+        max.iter, eps, nvar.max
+      )
+    }
     b0 <- fit$beta0 + XX.list$yy.center
     b <- fit$beta
     df <- fit$df
     iter <- fit$iter
   } else {
-    fit <- cd_wglm_fit_ssr(
-      XX.list$std.X, XX.list$yy, weights, family, 
-      XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
-      lam.max, max.iter, nvar.max, eps, user.lambda
-    )
+    if (ssr) {
+      fit <- cd_wglm_fit_ssr(
+        XX.list$std.X, XX.list$yy, weights, family, 
+        XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
+        lam.max, max.iter, nvar.max, eps, user.lambda
+      )
+    } else {
+      fit <- cd_wglm_fit(
+        XX.list$std.X, XX.list$yy, weights, family, 
+        XX.list$penalty.factor, penalty, lambda.seq, alpha, gamma,
+        max.iter, nvar.max, eps, user.lambda
+      )
+    }
     b0 <- fit$beta0
     b <- fit$beta
     df <- fit$df
@@ -454,7 +485,7 @@ BRIERi.eta = function(
   lambda <- lambda.seq[ind]
   df <- df[ind]
   iter <- iter[ind]
-  if (iter[1] == max.iter){
+  if (length(iter) == 0 || iter[1] == max.iter){
     stop("Algorithm failed to converge for any values of lambda", call. = FALSE)
   }
   if (any(iter == max.iter)){

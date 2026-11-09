@@ -86,6 +86,21 @@ inline double p_binomial(double eta) {
   else return exp(eta) / (1 + exp(eta));
 }
 
+// -- Iteration counts returned to R --
+
+// The fitters count iterations in an arma::ivec. Under ARMA_64BIT_WORD
+// (src/Makevars) that is a 64-bit integer vector, which RcppArmadillo returns to
+// R as double, so NA_INTEGER (an unfitted lambda) arrived as -2147483648 and
+// is.na() missed it. Copy into an R integer vector at return: NA_INTEGER maps
+// onto R's integer NA, and the counts fit in an int (bounded by max_iter).
+inline Rcpp::IntegerVector iter_to_R(const arma::ivec &iter) {
+  Rcpp::IntegerVector out(iter.n_elem);
+  for (arma::uword l = 0; l < iter.n_elem; l++) {
+    out[l] = (iter(l) == NA_INTEGER) ? NA_INTEGER : (int) iter(l);
+  }
+  return out;
+}
+
 // -- Deviance --
 
 inline double calc_deviance(const arma::vec &y, const arma::vec &mu, const std::string &family) {

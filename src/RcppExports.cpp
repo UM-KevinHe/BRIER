@@ -59,6 +59,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cd_wgaussian_fit
+List cd_wgaussian_fit(const arma::mat& X, const arma::vec& y, const arma::vec& wt, const arma::vec& multiplier, const std::string& penalty, const arma::vec& lam, double alpha, double gamma, int max_iter, double eps, int dfmax);
+RcppExport SEXP _BRIER_cd_wgaussian_fit(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP max_iterSEXP, SEXP epsSEXP, SEXP dfmaxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type wt(wtSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type multiplier(multiplierSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lam(lamSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type dfmax(dfmaxSEXP);
+    rcpp_result_gen = Rcpp::wrap(cd_wgaussian_fit(X, y, wt, multiplier, penalty, lam, alpha, gamma, max_iter, eps, dfmax));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cd_glm_fit_ssr
 Rcpp::List cd_glm_fit_ssr(const arma::mat& X, const arma::vec& y, std::string family, const arma::vec& multiplier, std::string penalty, const arma::vec& lambda, double alpha, double gamma, double lam_max, int max_iter, int dfmax, double eps, bool user, bool warn);
 RcppExport SEXP _BRIER_cd_glm_fit_ssr(SEXP XSEXP, SEXP ySEXP, SEXP familySEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP epsSEXP, SEXP userSEXP, SEXP warnSEXP) {
@@ -108,9 +129,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cd_wglm_fit
+Rcpp::List cd_wglm_fit(const arma::mat& X, const arma::vec& y, const arma::vec& wt, std::string family, const arma::vec& multiplier, std::string penalty, const arma::vec& lambda, double alpha, double gamma, int max_iter, int dfmax, double eps, bool user, bool warn);
+RcppExport SEXP _BRIER_cd_wglm_fit(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP familySEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP epsSEXP, SEXP userSEXP, SEXP warnSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type wt(wtSEXP);
+    Rcpp::traits::input_parameter< std::string >::type family(familySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type multiplier(multiplierSEXP);
+    Rcpp::traits::input_parameter< std::string >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< int >::type dfmax(dfmaxSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< bool >::type user(userSEXP);
+    Rcpp::traits::input_parameter< bool >::type warn(warnSEXP);
+    rcpp_result_gen = Rcpp::wrap(cd_wglm_fit(X, y, wt, family, multiplier, penalty, lambda, alpha, gamma, max_iter, dfmax, eps, user, warn));
+    return rcpp_result_gen;
+END_RCPP
+}
+// check_ld_summary
+void check_ld_summary(const arma::sp_mat& ld_mat);
+RcppExport SEXP _BRIER_check_ld_summary(SEXP ld_matSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::sp_mat& >::type ld_mat(ld_matSEXP);
+    check_ld_summary(ld_mat);
+    return R_NilValue;
+END_RCPP
+}
 // cd_summary_fit
-List cd_summary_fit(const arma::vec& XtY, const arma::sp_mat& ld_mat, const arma::vec& multiplier, const std::string& penalty, const arma::vec& lam, double alpha, double gamma, double eps, int max_iter, int dfmax, bool user);
-RcppExport SEXP _BRIER_cd_summary_fit(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP userSEXP) {
+List cd_summary_fit(const arma::vec& XtY, const arma::sp_mat& ld_mat, const arma::vec& multiplier, const std::string& penalty, const arma::vec& lam, double alpha, double gamma, double eps, int max_iter, int dfmax, bool user, bool check_ld);
+RcppExport SEXP _BRIER_cd_summary_fit(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP userSEXP, SEXP check_ldSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -125,7 +180,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
     Rcpp::traits::input_parameter< int >::type dfmax(dfmaxSEXP);
     Rcpp::traits::input_parameter< bool >::type user(userSEXP);
-    rcpp_result_gen = Rcpp::wrap(cd_summary_fit(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user));
+    Rcpp::traits::input_parameter< bool >::type check_ld(check_ldSEXP);
+    rcpp_result_gen = Rcpp::wrap(cd_summary_fit(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, eps, max_iter, dfmax, user, check_ld));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cd_summary_fit_ssr
+List cd_summary_fit_ssr(const arma::vec& XtY, const arma::sp_mat& ld_mat, const arma::vec& multiplier, const std::string& penalty, const arma::vec& lam, double alpha, double gamma, double lam_max, double eps, int max_iter, int dfmax, bool user, bool check_ld);
+RcppExport SEXP _BRIER_cd_summary_fit_ssr(SEXP XtYSEXP, SEXP ld_matSEXP, SEXP multiplierSEXP, SEXP penaltySEXP, SEXP lamSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP lam_maxSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP userSEXP, SEXP check_ldSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type XtY(XtYSEXP);
+    Rcpp::traits::input_parameter< const arma::sp_mat& >::type ld_mat(ld_matSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type multiplier(multiplierSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lam(lamSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double >::type lam_max(lam_maxSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< int >::type dfmax(dfmaxSEXP);
+    Rcpp::traits::input_parameter< bool >::type user(userSEXP);
+    Rcpp::traits::input_parameter< bool >::type check_ld(check_ldSEXP);
+    rcpp_result_gen = Rcpp::wrap(cd_summary_fit_ssr(XtY, ld_mat, multiplier, penalty, lam, alpha, gamma, lam_max, eps, max_iter, dfmax, user, check_ld));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -218,9 +297,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BRIER_LD_blocks", (DL_FUNC) &_BRIER_LD_blocks, 3},
     {"_BRIER_LD_sigma", (DL_FUNC) &_BRIER_LD_sigma, 3},
     {"_BRIER_cd_wgaussian_fit_ssr", (DL_FUNC) &_BRIER_cd_wgaussian_fit_ssr, 12},
+    {"_BRIER_cd_wgaussian_fit", (DL_FUNC) &_BRIER_cd_wgaussian_fit, 11},
     {"_BRIER_cd_glm_fit_ssr", (DL_FUNC) &_BRIER_cd_glm_fit_ssr, 14},
     {"_BRIER_cd_wglm_fit_ssr", (DL_FUNC) &_BRIER_cd_wglm_fit_ssr, 15},
-    {"_BRIER_cd_summary_fit", (DL_FUNC) &_BRIER_cd_summary_fit, 11},
+    {"_BRIER_cd_wglm_fit", (DL_FUNC) &_BRIER_cd_wglm_fit, 14},
+    {"_BRIER_check_ld_summary", (DL_FUNC) &_BRIER_check_ld_summary, 1},
+    {"_BRIER_cd_summary_fit", (DL_FUNC) &_BRIER_cd_summary_fit, 12},
+    {"_BRIER_cd_summary_fit_ssr", (DL_FUNC) &_BRIER_cd_summary_fit_ssr, 13},
     {"_BRIER_maxprod", (DL_FUNC) &_BRIER_maxprod, 5},
     {"_BRIER_maxlambda_summary", (DL_FUNC) &_BRIER_maxlambda_summary, 6},
     {"_BRIER_pseudo_validation", (DL_FUNC) &_BRIER_pseudo_validation, 3},

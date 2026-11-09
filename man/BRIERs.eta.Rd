@@ -22,7 +22,8 @@ BRIERs.eta(
   eps = 1e-04,
   nvar.max = NULL,
   varnames = NULL,
-  df.method = c("active", "divergence", "lqa")
+  df.method = c("active", "divergence", "lqa"),
+  ssr = TRUE
 )
 }
 \arguments{
@@ -72,6 +73,12 @@ Where the matrix is not positive definite the active count is used for that
 lambda, and \code{df.fallback} counts how often. The df with respect to y is
 this divided by \code{1 + sum(eta)}. With no intercept, the
 Hessian is the LD block of the active set.}
+
+\item{ssr}{Logical. Sequential strong rule screening. \code{TRUE} (default)
+screens variables with the strong rule at each lambda and repairs any
+violation by a KKT check; \code{FALSE} fits without screening. The solutions
+agree up to the convergence tolerance for the LASSO and the elastic net,
+while MCP and SCAD may reach a different stationary point.}
 }
 \value{
 An object of class \code{"BRIER.eta"} containing model specification,
