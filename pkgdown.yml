@@ -10,7 +10,9 @@ articles:
   Appendix_Multiple: Appendix_Multiple.html
   Appendix_Preprocess: Appendix_Preprocess.html
   BRIER: BRIER.html
-last_built: 2026-11-10T03:17Z
+  Example_panAFR: Example_panAFR.html
+  Example_TCGA: Example_TCGA.html
+last_built: 2026-11-10T06:26Z
 urls:
   reference: https://um-kevinhe.github.io/BRIER/reference
   article: https://um-kevinhe.github.io/BRIER/articles

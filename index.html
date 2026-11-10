@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,13 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="index.html">Home</a></li>
 <li class="nav-item"><a class="nav-link" href="articles/BRIER.html">Get started</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-real-data-examples" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Real data examples</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-real-data-examples">
+<li><a class="dropdown-item" href="articles/Example_panAFR.html">Cross-ancestry PRS from summary statistics (Pan-UKB AFR height)</a></li>
+    <li><a class="dropdown-item" href="articles/Example_TCGA.html">Gene expression with all three modules (TCGA lung cancer)</a></li>
+  </ul>
+</li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-appendix" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Appendix</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-appendix">
@@ -183,6 +190,26 @@ Requires <strong>R ≥ 4.0.0</strong>.</p>
 <h1 id="detailed-tutorial">Detailed Tutorial<a class="anchor" aria-label="anchor" href="#detailed-tutorial"></a>
 </h1>
 <p>Full package documentation and parameter explanations: <a href="https://um-kevinhe.github.io/BRIER/">here</a></p>
+</div>
+<div class="section level1">
+<h1 id="real-data-examples">Real Data Examples<a class="anchor" aria-label="anchor" href="#real-data-examples"></a>
+</h1>
+<p>Two worked analyses on public data, each with its download, preprocessing, fitting and evaluation scripts:</p>
+<ul>
+<li>
+<a href="https://um-kevinhe.github.io/BRIER/articles/Example_panAFR.html">Cross-ancestry polygenic risk score from summary statistics</a>: <code>BRIERs</code> builds a height PRS for African-ancestry individuals from the Pan-UKB AFR GWAS, the PGS Catalog score PGS004999 and a public UKBB LD panel, tuned by GIC without individual-level data.</li>
+<li>
+<a href="https://um-kevinhe.github.io/BRIER/articles/Example_TCGA.html">Gene expression with all three modules</a>: <code>BRIERfull</code>, <code>BRIERi</code> and <code>BRIERs</code> predict tumour mutational burden in TCGA lung squamous cell carcinoma, borrowing from lung adenocarcinoma and bladder cancer.</li>
+</ul>
+</div>
+<div class="section level1">
+<h1 id="data-and-resources">Data and Resources<a class="anchor" aria-label="anchor" href="#data-and-resources"></a>
+</h1>
+<p>The Zenodo deposit (DOI: to be added) holds:</p>
+<ul>
+<li>public LD reference panels for African, European and East Asian ancestry, from 1000 Genomes and UK Biobank, on HapMap3 SNPs, ready for <code><a href="reference/BRIERs.html">BRIERs()</a></code>;</li>
+<li>the data, scripts and fitted models of both real data examples, and of the simulated example used in the tutorial.</li>
+</ul>
 </div>
 <div class="section level1">
 <h1 id="getting-help">Getting Help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
