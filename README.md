@@ -106,6 +106,22 @@ Or install the development version from GitHub:
 Full package documentation and parameter explanations: [here](https://um-kevinhe.github.io/BRIER/)
 
 
+# Real Data Examples
+
+Two worked analyses on public data, each with its download, preprocessing, fitting and evaluation scripts:
+
+- [Cross-ancestry polygenic risk score from summary statistics](https://um-kevinhe.github.io/BRIER/articles/Example_panAFR.html): `BRIERs` builds a height PRS for African-ancestry individuals from the Pan-UKB AFR GWAS, the PGS Catalog score PGS004999 and a public UKBB LD panel, tuned by GIC without individual-level data.
+- [Gene expression with all three modules](https://um-kevinhe.github.io/BRIER/articles/Example_TCGA.html): `BRIERfull`, `BRIERi` and `BRIERs` predict tumour mutational burden in TCGA lung squamous cell carcinoma, borrowing from lung adenocarcinoma and bladder cancer.
+
+
+# Data and Resources
+
+The Zenodo deposit (DOI: to be added) holds:
+
+- public LD reference panels for African, European and East Asian ancestry, from 1000 Genomes and UK Biobank, on HapMap3 SNPs, ready for `BRIERs()`;
+- the data, scripts and fitted models of both real data examples, and of the simulated example used in the tutorial.
+
+
 # Getting Help
 
 If you encounter problems or bugs, please contact us:

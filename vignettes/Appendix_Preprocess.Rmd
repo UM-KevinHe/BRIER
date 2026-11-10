@@ -69,6 +69,8 @@ The argument `target.info` takes a `data.frame` describing the SNPs in the targe
 
 We illustrate the use of `preprocessI()` with a height polygenic score example built entirely from public resources. The target SNP set is the 10,000 HapMap3 SNPs most associated with height in the Pan-UKB African-ancestry (AFR) GWAS. Two external models are published PGS Catalog height scores: PGS004995 on these 10,000 SNPs, with coefficients given for the trait-increasing allele (so about half of its SNPs are coded in the opposite allele orientation), and PGS004998 on a larger set of 158,558 SNPs.
 
+The [cross-ancestry real data example](Example_panAFR.html) carries this analysis through to a full `BRIERs` fit on 149,090 SNPs, with GIC tuning and evaluation on an independent test cohort.
+
 ```{r, echo = TRUE, eval = FALSE}
 library(BRIER)
 

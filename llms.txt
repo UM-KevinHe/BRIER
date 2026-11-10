@@ -398,6 +398,9 @@ These are **regular exported functions** despite the dotted names — they are n
 ## Articles
 
 - Get started: https://um-kevinhe.github.io/BRIER/articles/BRIER.html
+- Real data example, BRIERs on summary statistics with a public LD panel and GIC tuning (Pan-UKB AFR height, PGS Catalog external, UKBB AFR LD via `convertLDref`): https://um-kevinhe.github.io/BRIER/articles/Example_panAFR.html
+- Real data example, all three modules on gene expression (TCGA lung squamous cell carcinoma TMB, LUAD and BLCA externals): https://um-kevinhe.github.io/BRIER/articles/Example_TCGA.html
+- Public LD reference panels (AFR, EUR, EAS; 1000G and UKBB; HapMap3 SNPs; block-diagonal dgCMatrix per chromosome, rsID dimnames, signs for the 1000G GRCh38 ALT allele): Zenodo deposit, DOI to be added
 - Integration of multiple external models: https://um-kevinhe.github.io/BRIER/articles/Appendix_Multiple.html
 - Selecting the integration weight by Bayesian optimization: https://um-kevinhe.github.io/BRIER/articles/Appendix_BayesianOptimization.html
 - Genotype preprocessing and LD calculation (`preprocessI` / `preprocessS` / `calLD` / `getLDB`): https://um-kevinhe.github.io/BRIER/articles/Appendix_Preprocess.html
