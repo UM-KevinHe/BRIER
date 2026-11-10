@@ -272,4 +272,4 @@ What the sensitivity analysis shows:
 
 - **Public LD panels work about as well as in-sample LD.** Under GIC, the three LD matrices give nearly the same test $R^2$ (0.040 to 0.041) and MSPE (0.9829 to 0.9833), so a summary-statistic analysis does not need the target cohort's own genotypes.
 - **GIC selects the tuning parameters well without an independent validation set.** With every LD matrix, GIC reaches a higher test $R^2$ than tuning on the MGI validation set (0.040 to 0.041 against 0.022 to 0.029), with an MSPE within 0.002 of it.
-- **$R^2$ and MSPE can rank models differently.** Validation-tuned models have the lowest MSPE but a lower $R^2$. The external model's weights keep their own scale, since they are converted per SD but never rescaled, so the two metrics need not agree.
+- **$R^2$ and MSPE can rank models differently.** Validation-tuned models have the lowest MSPE but a lower $R^2$.

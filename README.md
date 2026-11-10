@@ -68,20 +68,25 @@ We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/ll
 
 # Features
 
-`BRIER` extends the flexibility and scalability of risk-prediction modeling, with a particular emphasis on high-dimensional genetic applications:
+`BRIER` improves risk prediction in a target cohort by borrowing from external information, with an integration weight $\eta$ that sets how much to borrow. Predictors can be SNPs, gene expression, proteins or other features.
 
-- **Flexibility to integrate external information according to different data access and privacy constraints**
-- **Support various distribution families for complex traits**  
-- **A suite of hyperparameter tuning tools.**  
-- **Ensemble weighting scheme integration of multiple external models.**  
+**Integrating external information**
 
-Several features to improve practical concerns in genetic applications:
+- **Three modules for different data access and privacy constraints**: `BRIERfull` pools raw external cohorts; `BRIERi` integrates pretrained external models with individual-level target data; `BRIERs` needs only target summary statistics and an LD matrix.
+- **Multiple external models**: one integration weight per source (`multi.method = "ind"`) or a weighted ensemble (`"stacking"`, `"stacking.c"`), with tools to screen, de-duplicate and reduce a large panel of external models (`screenExternals()`, `dedupExternals()`, `reduceExternalsPCA()`).
 
-- **Improved computational efficiency and parallel computing.**  
-- **Support input for imputed genotype data.**  
-- **Precomputed ancestry-specific LD panels.**  
-- **Various downstream analysis tools for interpretability**  
+**Modeling and tuning**
 
+- **Distribution families** for complex traits: Gaussian, binomial and Poisson.
+- **Penalties**: LASSO, MCP and SCAD, the elastic net, and unpenalized covariates.
+- **Hyperparameter tuning of $(\eta, \lambda)$**: on a validation set (MSPE, $R^2$, deviance, AUC), by cross-validation, by Bayesian optimization over $\eta$, or without held-out data by information criteria ($C_p$ for `BRIERi` and GIC for `BRIERs` came close to validation-set tuning in simulations).
+
+**Practical genetic applications**
+
+- **Computational efficiency**: a C++ coordinate-descent core with sequential strong-rule screening, and parallel fitting across $\eta$.
+- **Genotype input**: genotype dosages, including imputed data; allele alignment between target and external data (`preprocessI()`, `preprocessS()`); GWAS p-values to correlations (`p2cor()`).
+- **Public LD panels**: block LD from 1000 Genomes and UK Biobank for African, European and East Asian ancestry, on Zenodo and ready for `BRIERs`; `convertLDref()` also reads the PRS-CS panels directly, and `calLD()` with `getLDB()` computes LD from your own reference genotypes.
+- **Downstream analysis**: `coef()`, `predict()` and `evalMetric()`; test performance along $\eta$ (`plot.eta()`); bootstrap comparisons with target-only and external-only models (`plot.box()`); and variable importance from bootstrap selection frequencies (`plot.importance()`).
 
 # Installation
 
