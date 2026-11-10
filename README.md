@@ -108,10 +108,10 @@ Full package documentation and parameter explanations: [here](https://um-kevinhe
 
 # Real Data Examples
 
-Two worked analyses on public data, each with its download, preprocessing, fitting and evaluation scripts:
+We provide two analyses on public data to demonstrate the usage of BRIER:
 
-- [Cross-ancestry polygenic risk score from summary statistics](https://um-kevinhe.github.io/BRIER/articles/Example_panAFR.html): `BRIERs` builds a height PRS for African-ancestry individuals from the Pan-UKB AFR GWAS, the PGS Catalog score PGS004999 and a public UKBB LD panel, tuned by GIC without individual-level data.
-- [Gene expression with all three modules](https://um-kevinhe.github.io/BRIER/articles/Example_TCGA.html): `BRIERfull`, `BRIERi` and `BRIERs` predict tumour mutational burden in TCGA lung squamous cell carcinoma, borrowing from lung adenocarcinoma and bladder cancer.
+- [Modeling tumour mutational burden using gene expression from TCGA](https://um-kevinhe.github.io/BRIER/articles/Example_TCGA.html): `BRIERfull`, `BRIERi` and `BRIERs` predict tumour mutational burden in TCGA lung squamous cell carcinoma, borrowing from lung adenocarcinoma and bladder cancer.
+- [Cross-ancestry height polygenic risk modeling from summary statistics](https://um-kevinhe.github.io/BRIER/articles/Example_panAFR.html): `BRIERs` builds a height PRS for African-ancestry individuals from the Pan-UKB AFR GWAS, the PGS Catalog score PGS004999 and a public UKBB LD panel, tuned by GIC without individual-level data.
 
 
 # Data and Resources
