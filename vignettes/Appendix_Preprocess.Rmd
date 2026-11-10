@@ -67,7 +67,7 @@ The argument `target.info` takes a `data.frame` describing the SNPs in the targe
 
 ## 2.2 Example usage
 
-We illustrate the use of `preprocessI()` using a height PRS prediction example from the Michigan Genomics Initiative (MGI). In this example, the target cohort consists of 2,162 individuals of African ancestry (AFR), and the predictor set includes the top 10,000 SNPs ranked by marginal association. Two external models are provided: one trained using MGI European-ancestry (EUR) data and one derived from a published EUR GWAS with a larger set of 163,140 SNPs.
+We illustrate the use of `preprocessI()` with a height polygenic score example built entirely from public resources. The target SNP set is the 10,000 HapMap3 SNPs most associated with height in the Pan-UKB African-ancestry (AFR) GWAS. Two external models are published PGS Catalog height scores: PGS004995 on these 10,000 SNPs, with coefficients given for the trait-increasing allele (so about half of its SNPs are coded in the opposite allele orientation), and PGS004998 on a larger set of 158,558 SNPs.
 
 ```{r, echo = TRUE, eval = FALSE}
 library(BRIER)
@@ -93,10 +93,10 @@ The merged output contains columns `CHR`, `BP`, `REF`, `ALT`, followed by standa
 
 ```{r, echo = TRUE, eval = FALSE}
 external.merged <- mergeExternals(list(dat$external.coef1, dat$external.coef2))
-# Input SNPs per model (after CHR validation): external.list[[1]]=10000, external.list[[2]]=163140
-# Union SNP set: 163140 variants across 2 model(s).
-#   model1 (-> coef1): matched=10000, flipped=0, conflict=0, zero-padded=153140
-#   model2 (-> coef2): matched=161641, flipped=1499, conflict=0, zero-padded=0
+# Input SNPs per model (after CHR validation): external.list[[1]]=10000, external.list[[2]]=158558
+# Union SNP set: 158558 variants across 2 model(s).
+#   model1 (-> coef1): matched=10000, flipped=0, conflict=0, zero-padded=148558
+#   model2 (-> coef2): matched=153761, flipped=4797, conflict=0, zero-padded=0
 ```
 
 Then, we apply `preprocessI()` to harmonize the target SNP information with the merged external model coefficients and generate model-ready inputs for `BRIERi()`.
@@ -109,8 +109,8 @@ processed <- preprocessI(
   external.ss.cols = c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT"), 
   external.coef.cols = c("coef1", "coef2")
 )
-# Input SNPs: target.info=10000, external.ss=163140
-# External: 9000 matched, 1000 flipped, 0 conflict, 0 zero-padded.
+# Input SNPs: target.info=10000, external.ss=158558
+# External: 5203 matched, 4797 flipped, 0 conflict, 0 zero-padded.
 # Final analysis set: 10000 SNPs.
 
 names(processed)
@@ -118,7 +118,7 @@ names(processed)
 # [4] "external.coef.names" "summary" 
 ```
 
-Unfortunately, due to privacy constraints, we cannot share the raw MGI genotype matrix. Instead, we provide example code showing how the output from `preprocessI()` can be used to construct downstream inputs for `BRIERi()`.
+The example data contain SNP annotation only, no genotypes. The following code shows how the output of `preprocessI()` is used with a target genotype matrix `X` and outcome `y` to construct the inputs for `BRIERi()`.
 
 ```{r, echo = TRUE, eval = FALSE}
 X <- X[, processed$target.info.keep]
@@ -225,7 +225,7 @@ External models whose aligned coefficient columns are entirely zero are removed 
 
 ## 3.2 Example usage
 
-We illustrate the use of `preprocessS()` using a height PRS prediction example from the Michigan Genomics Initiative (MGI). In this example, the target data consists of GWAS summary statistics derived from 2,162 African (AFR) individuals, and the predictor set includes the top 10,000 SNPs ranked by marginal association. Two external models are provided: one trained using MGI European-ancestry (EUR) data and one derived from a published EUR GWAS with a larger set of 163,140 SNPs.
+We illustrate the use of `preprocessS()` with the same public height example. The target data are the Pan-UKB African-ancestry (AFR) height GWAS summary statistics (n = 6,556) for the 10,000 HapMap3 SNPs most associated with height, the target LD matrix is the UKBB AFR reference panel on those SNPs, and the two external models are the PGS Catalog scores PGS004995 (10,000 SNPs) and PGS004998 (158,558 SNPs).
 
 ```{r, echo = TRUE, eval = FALSE}
 library(BRIER)
@@ -242,10 +242,10 @@ As in the [previous example](#sec-preprocessI), multiple external models can fir
 
 ```{r, echo = TRUE, eval = FALSE}
 external.merged <- mergeExternals(list(dat$external.coef1, dat$external.coef2))
-# Input SNPs per model (after CHR validation): external.list[[1]]=10000, external.list[[2]]=163140
-# Union SNP set: 163140 variants across 2 model(s).
-#   model1 (-> coef1): matched=10000, flipped=0, conflict=0, zero-padded=153140
-#   model2 (-> coef2): matched=161641, flipped=1499, conflict=0, zero-padded=0
+# Input SNPs per model (after CHR validation): external.list[[1]]=10000, external.list[[2]]=158558
+# Union SNP set: 158558 variants across 2 model(s).
+#   model1 (-> coef1): matched=10000, flipped=0, conflict=0, zero-padded=148558
+#   model2 (-> coef2): matched=153761, flipped=4797, conflict=0, zero-padded=0
 ```
 
 Next, we apply `preprocessS()` to harmonize the target summary statistics, target LD reference panel, and merged external model coefficients. In this example, `target.ind = "gwas"` indicates that the target input is provided as GWAS summary statistics. The function uses p-values, sample sizes, and beta coefficients to compute marginal SNP-outcome correlations for `BRIERs()`.
@@ -260,9 +260,9 @@ processed <- preprocessS(
   external.ss.cols = c(chr = "CHR", bp = "BP", ref = "REF", alt = "ALT"), 
   external.coef.cols = c("coef1", "coef2")
 )
-# Input SNPs: target.ss=10000, target.ld=10000, external.ss=163140
-# Aligned 9000 SNPs in same orientation, 1000 in flipped orientation; 0 dropped (no allele match).
-# External: 9000 matched, 1000 flipped, 0 conflict, 0 zero-padded.
+# Input SNPs: target.ss=10000, target.ld=10000, external.ss=158558
+# Aligned 10000 SNPs in same orientation, 0 in flipped orientation; 0 dropped (no allele match).
+# External: 5203 matched, 4797 flipped, 0 conflict, 0 zero-padded.
 # Final analysis set: 10000 SNPs.
 ```
 
@@ -281,19 +281,15 @@ fit <- BRIERs(
 )
 ```
 
-If model selection is performed using criteria that require an estimate of SNP heritability, users may compute heritability externally and pass it to `BRIERs.selection()`. In this example, there are only 10,000 SNPs included, the heritability is not well estimated from package ldscr, therefore we use 0.
+If model selection is performed using criteria that require an estimate of SNP heritability, users may compute heritability externally and pass it to `BRIERs.selection()`. Here we use the SNP heritability that Pan-UKB reports for this GWAS (0.41, RHE-mc, observed scale); with other summary statistics it can be estimated, for example, with LD score regression (package `ldscr`).
 
 ```{r, echo = TRUE, eval = FALSE}
-ldsc_input <- dat$target.ss
-ldsc_input$Z <- ldsc_input$STAT 
-ldsc_input$N <- ldsc_input$NMISS
-h2_res <- ldscr::ldsc_h2(munged_sumstats = ldsc_input, ancestry = "AFR")
 fit <- BRIERs.selection(
   fit, criteria = "GIC", 
   TN = max(dat$target.ss$NMISS), 
-  h2 = max(0, h2_res$h2_observed)
+  h2 = 0.4148
 )
-# Best eta: 6.158 
+# Best eta: 0.695 
 # Best lambda: 0 
 ```
 

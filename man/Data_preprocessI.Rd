@@ -17,8 +17,10 @@ where \code{A1} is the effect allele.}
 coefficients from the first external model. The required columns are
 \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef}, where
 \code{coef} is the external model coefficient for the corresponding
-SNP.}
-\item{external.coef2}{A data.frame with 163,140 rows containing SNP-level
+SNP. Coefficients are given for the trait-increasing allele, so for
+some SNPs \code{REF} and \code{ALT} are reversed relative to the
+target and must be flipped during alignment.}
+\item{external.coef2}{A data.frame with 158,558 rows containing SNP-level
 coefficients from the second external model. The required columns are
 \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef}. This
 external model has substantially more SNPs than \code{external.coef1},
@@ -27,24 +29,25 @@ external models.}
 }
 }
 \source{
-Michigan Genomics Initiative (MGI), African-ancestry subcohort
-(\code{target.info}); MGI European-ancestry subcohort
-(\code{external.coef1}); published European-ancestry height GWAS summary
-statistics (\code{external.coef2}). Raw individual-level data are not
-redistributed.
+Public resources only (built by \code{data-raw/make_preprocess_public.R}
+in the package source): the SNPs are the 10,000 most associated with height in the Pan-UKB African-ancestry GWAS, among the PRS-CS
+UKBB HapMap3 SNPs with minor allele frequency at least 1\\% in 1000 Genomes
+and UKBB African-ancestry samples (GRCh38 positions); the external models
+are PGS Catalog height scores PGS004995 (\code{external.coef1}) and
+PGS004998 (\code{external.coef2}), from the harmonized GRCh38 files.
+Earlier versions of this object (before 1.7.1) were derived from a
+controlled-access cohort and were removed.
 }
 \description{
 A small example dataset used to demonstrate genotype preprocessing with
-\code{\link{preprocessI}} before fitting \code{\link{BRIERi}}. The example
-is based on a height PRS prediction analysis in the Michigan Genomics
-Initiative (MGI), where the target cohort contains African-ancestry
-individuals and the external models are derived from European-ancestry
-resources.
+\code{\link{preprocessI}} before fitting \code{\link{BRIERi}}: a height
+polygenic score setting with an African-ancestry target and two published
+polygenic scores as external models. Built entirely from public resources.
 }
 \details{
-The dataset contains SNP annotation information for the target genotype
-matrix and two external SNP-level coefficient files. Raw individual-level
-genotype and phenotype data are not included due to privacy constraints.
+The dataset contains SNP annotation for a target genotype matrix (HapMap3
+SNPs; no genotypes are included) and two external SNP-level coefficient
+files.
 
 This object is intended for illustrating the preprocessing workflow:
 first merge multiple external coefficient files with

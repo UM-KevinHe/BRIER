@@ -235,15 +235,13 @@ NULL
 #' Example data for preprocessing individual-level genotype inputs
 #'
 #' A small example dataset used to demonstrate genotype preprocessing with
-#' \code{\link{preprocessI}} before fitting \code{\link{BRIERi}}. The example
-#' is based on a height PRS prediction analysis in the Michigan Genomics
-#' Initiative (MGI), where the target cohort contains African-ancestry
-#' individuals and the external models are derived from European-ancestry
-#' resources.
+#' \code{\link{preprocessI}} before fitting \code{\link{BRIERi}}: a height
+#' polygenic score setting with an African-ancestry target and two published
+#' polygenic scores as external models. Built entirely from public resources.
 #'
-#' The dataset contains SNP annotation information for the target genotype
-#' matrix and two external SNP-level coefficient files. Raw individual-level
-#' genotype and phenotype data are not included due to privacy constraints.
+#' The dataset contains SNP annotation for a target genotype matrix (HapMap3
+#' SNPs; no genotypes are included) and two external SNP-level coefficient
+#' files.
 #'
 #' @format A list with three elements:
 #' \describe{
@@ -257,8 +255,10 @@ NULL
 #'     coefficients from the first external model. The required columns are
 #'     \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef}, where
 #'     \code{coef} is the external model coefficient for the corresponding
-#'     SNP.}
-#'   \item{external.coef2}{A data.frame with 163,140 rows containing SNP-level
+#'     SNP. Coefficients are given for the trait-increasing allele, so for
+#'     some SNPs \code{REF} and \code{ALT} are reversed relative to the
+#'     target and must be flipped during alignment.}
+#'   \item{external.coef2}{A data.frame with 158,558 rows containing SNP-level
 #'     coefficients from the second external model. The required columns are
 #'     \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef}. This
 #'     external model has substantially more SNPs than \code{external.coef1},
@@ -280,11 +280,14 @@ NULL
 #' external coefficient matrix when no external intercept is used.
 #'
 #' @source
-#' Michigan Genomics Initiative (MGI), African-ancestry subcohort
-#' (\code{target.info}); MGI European-ancestry subcohort
-#' (\code{external.coef1}); published European-ancestry height GWAS summary
-#' statistics (\code{external.coef2}). Raw individual-level data are not
-#' redistributed.
+#' Public resources only (built by \code{data-raw/make_preprocess_public.R}
+#' in the package source): the SNPs are the 10,000 most associated with height in the Pan-UKB African-ancestry GWAS, among the PRS-CS
+#' UKBB HapMap3 SNPs with minor allele frequency at least 1\% in 1000 Genomes
+#' and UKBB African-ancestry samples (GRCh38 positions); the external models
+#' are PGS Catalog height scores PGS004995 (\code{external.coef1}) and
+#' PGS004998 (\code{external.coef2}), from the harmonized GRCh38 files.
+#' Earlier versions of this object (before 1.7.1) were derived from a
+#' controlled-access cohort and were removed.
 #'
 #' @seealso \code{\link{preprocessI}}, \code{\link{mergeExternals}},
 #'   \code{\link{BRIERi}}
@@ -303,10 +306,10 @@ NULL
 #' Example data for preprocessing summary-level genotype inputs
 #'
 #' A small example dataset used to demonstrate summary-statistic preprocessing
-#' with \code{\link{preprocessS}} before fitting \code{\link{BRIERs}}. The
-#' example is based on a height PRS prediction analysis in the Michigan
-#' Genomics Initiative (MGI), where the target data are provided as GWAS
-#' summary statistics rather than individual-level genotypes.
+#' with \code{\link{preprocessS}} before fitting \code{\link{BRIERs}}: a height
+#' polygenic score setting where the target is an African-ancestry GWAS (Pan-UKB)
+#' and the external models are two published polygenic scores. Built entirely
+#' from public resources.
 #'
 #' The dataset contains target GWAS summary statistics, target LD reference
 #' SNP information, a precomputed target LD matrix, and two external
@@ -327,15 +330,16 @@ NULL
 #'     the target LD reference panel, with columns \code{SNP}, \code{CHR},
 #'     \code{BP}, \code{A2}, and \code{A1}. Rows correspond to the rows and
 #'     columns of \code{target.ld.mat}.}
-#'   \item{target.ld.mat}{A 10,000 x 10,000 sparse LD matrix
+#'   \item{target.ld.mat}{A 10,000 x 10,000 sparse LD matrix (UKBB AFR panel)
 #'     (\code{Matrix::dgCMatrix}) for the SNPs described in
 #'     \code{target.ld}. After running \code{\link{preprocessS}}, this
 #'     matrix should be subset using \code{processed$target.ld.keep} before
 #'     being passed to \code{\link{BRIERs}}.}
 #'   \item{external.coef1}{A data.frame with 10,000 rows containing SNP-level
 #'     coefficients from the first external model, with required columns
-#'     \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef}.}
-#'   \item{external.coef2}{A data.frame with 163,140 rows containing SNP-level
+#'     \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef};
+#'     given for the trait-increasing allele, so some SNPs need an allele flip.}
+#'   \item{external.coef2}{A data.frame with 158,558 rows containing SNP-level
 #'     coefficients from the second external model, with required columns
 #'     \code{CHR}, \code{BP}, \code{REF}, \code{ALT}, and \code{coef}. This
 #'     model has substantially more SNPs than \code{external.coef1},
@@ -360,11 +364,15 @@ NULL
 #' intercept row in \code{beta.external}.
 #'
 #' @source
-#' Michigan Genomics Initiative (MGI), African-ancestry subcohort
-#' (\code{target.ss}, \code{target.ld}, \code{target.ld.mat}); MGI
-#' European-ancestry subcohort (\code{external.coef1}); published
-#' European-ancestry height GWAS summary statistics
-#' (\code{external.coef2}). Raw individual-level data are not redistributed.
+#' Public resources only (built by \code{data-raw/make_preprocess_public.R}
+#' in the package source): \code{target.ss} is the Pan-UKB African-ancestry
+#' height GWAS (phenocode 50, inverse rank normalized, both sexes;
+#' \code{NMISS} is its sample size, 6,556) on the 10,000 SNPs it ranks most associated, among the
+#' PRS-CS UKBB HapMap3 SNPs (GRCh38); \code{target.ld.mat} is the PRS-CS UKBB
+#' African-ancestry LD panel on those SNPs; the external models are PGS Catalog
+#' height scores PGS004995 (\code{external.coef1}) and PGS004998
+#' (\code{external.coef2}). Earlier versions of this object (before 1.7.1) were
+#' derived from a controlled-access cohort and were removed.
 #'
 #' @seealso \code{\link{preprocessS}}, \code{\link{mergeExternals}},
 #'   \code{\link{BRIERs}}, \code{\link{p2cor}}
