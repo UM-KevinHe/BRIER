@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Real Data Example: Cross-ancestry Polygenic Risk Score from Summary Statistics • BRIER</title>
+<title>Real Data Example: Cross-ancestry Height Polygenic Risk Modeling from Summary Statistics • BRIER</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -18,7 +18,7 @@
 <link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Real Data Example: Cross-ancestry Polygenic Risk Score from Summary Statistics">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Real Data Example: Cross-ancestry Height Polygenic Risk Modeling from Summary Statistics">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,8 +42,8 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-real-data-examples" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Real data examples</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-real-data-examples">
-<li><a class="dropdown-item" href="../articles/Example_panAFR.html">Cross-ancestry PRS from summary statistics (Pan-UKB AFR height)</a></li>
-    <li><a class="dropdown-item" href="../articles/Example_TCGA.html">Gene expression with all three modules (TCGA lung cancer)</a></li>
+<li><a class="dropdown-item" href="../articles/Example_TCGA.html">Modeling tumour mutational burden using gene expression from TCGA</a></li>
+    <li><a class="dropdown-item" href="../articles/Example_panAFR.html">Cross-ancestry height polygenic risk modeling from summary statistics</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -75,7 +75,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Real Data Example: Cross-ancestry Polygenic Risk Score from Summary Statistics</h1>
+      <h1>Real Data Example: Cross-ancestry Height Polygenic Risk Modeling from Summary Statistics</h1>
             
       
 
@@ -94,14 +94,14 @@ builds a height PRS for AFR individuals with <code><a href="../reference/BRIERs.
 using only public data:</p>
 <ul>
 <li>
-<strong>Target</strong>: the Pan-UKB height GWAS of AFR participants
-(N = 6,556), as summary statistics.</li>
+<strong>Target</strong>: the <a href="https://pan.ukbb.broadinstitute.org" class="external-link">Pan-UKB</a> height GWAS of
+AFR participants (N = 6,556), as summary statistics.</li>
 <li>
-<strong>External model</strong>: the PGS Catalog height score
-PGS004999, a pretrained PRS whose development samples include no UK
-Biobank AFR participants.</li>
+<strong>External model</strong>: the <a href="https://www.pgscatalog.org" class="external-link">PGS Catalog</a> height score <a href="https://www.pgscatalog.org/score/PGS004999/" class="external-link">PGS004999</a> (Gunn
+et al., <em>HGG Advances</em> 2024), a pretrained PRS whose development
+samples include no UK Biobank AFR participants.</li>
 <li>
-<strong>LD</strong>: the public UKBB AFR LD reference panel.</li>
+<strong>LD</strong>: the public UKBB AFR LD reference panel of <a href="https://github.com/getian107/PRScsx" class="external-link">PRS-CSx</a>.</li>
 <li>
 <strong>Tuning</strong>: the generalized information criterion
 (GIC), which needs no individual-level data.</li>
@@ -135,6 +135,11 @@ list</td>
 <td><code>results/</code></td>
 <td>the fitted <code>BRIER</code> object and the selected model’s
 coefficients</td>
+</tr>
+<tr class="even">
+<td><code>figures/</code></td>
+<td>eta lines, boxplots and a summary on the MGI test set (section
+5)</td>
 </tr>
 </tbody>
 </table>
@@ -281,10 +286,89 @@ standardize within each bootstrap subsample:</p>
 <span>  bootstrap.n <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">20260912</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>The figures below come from the method paper’s analysis of this
-example. It fits the same model with three LD matrices and two tuning
-methods, and summarizes test performance over 200 random subsamples
-(80%) of the MGI test set:</p>
+<p><strong>Results.</strong> Test performance of the model fitted above,
+with the UKBB AFR LD and tuned by GIC. The spread is over 100 bootstrap
+subsamples (80%) of the MGI test set.</p>
+<p><strong>Test performance along <span class="math inline">\(\eta\)</span>.</strong> Test Pearson <span class="math inline">\(R^2\)</span> (left) and MSPE (right) of the model
+at each <span class="math inline">\(\eta\)</span>, each at its own
+GIC-best <span class="math inline">\(\lambda\)</span>. The dashed light
+blue line is the external PGS004999 alone, and the point marks the
+GIC-selected <span class="math inline">\(\eta = 286.8\)</span>.</p>
+<div style="display: flex; justify-content: space-between;">
+<p><img src="../reference/figures/panAFR_GIC_UKBB_line.eta.r2.png" alt="Test Pearson R-squared along eta, UKBB LD, tuned by GIC" style="width:49%;"><img src="../reference/figures/panAFR_GIC_UKBB_line.eta.mspe.png" alt="Test MSPE along eta, UKBB LD, tuned by GIC" style="width:49%;"></p>
+</div>
+<p><strong>Test performance of the selected models.</strong> The
+target-only model (<span class="math inline">\(\eta = 0\)</span>), the
+external alone, and <code>BRIERs</code> tuned by GIC.</p>
+<div style="display: flex; justify-content: space-between;">
+<p><img src="../reference/figures/panAFR_GIC_UKBB_boxplot.r2.png" alt="Test Pearson R-squared of the selected models, UKBB LD, GIC" style="width:49%;"><img src="../reference/figures/panAFR_GIC_UKBB_boxplot.mspe.png" alt="Test MSPE of the selected models, UKBB LD, GIC" style="width:49%;"></p>
+</div>
+<table class="table">
+<thead><tr class="header">
+<th>Model</th>
+<th>Test <span class="math inline">\(R^2\)</span>
+</th>
+<th>Test MSPE</th>
+<th>
+<span class="math inline">\(R^2\)</span>, bootstrap mean (SD)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Target only (<span class="math inline">\(\eta = 0\)</span>,
+GIC)</td>
+<td>0.000</td>
+<td>1.000</td>
+<td>0.000 (0.000)</td>
+</tr>
+<tr class="even">
+<td>External PGS004999 alone</td>
+<td>0.043</td>
+<td>0.985</td>
+<td>0.043 (0.014)</td>
+</tr>
+<tr class="odd">
+<td>
+<code>BRIERs</code>, UKBB LD, GIC</td>
+<td>0.040</td>
+<td>0.984</td>
+<td>0.041 (0.014)</td>
+</tr>
+</tbody>
+</table>
+<p>How to read these results:</p>
+<ul>
+<li>
+<strong>The AFR GWAS alone carries almost no signal.</strong> At
+<span class="math inline">\(\eta = 0\)</span>, GIC chooses the empty
+model (test <span class="math inline">\(R^2\)</span> = 0.000). With N =
+6,556, the target data cannot support a polygenic score on their
+own.</li>
+<li>
+<strong>Integration recovers nearly all of the external model’s
+accuracy without any individual-level data.</strong> <span class="math inline">\(R^2\)</span> rises steeply with <span class="math inline">\(\eta\)</span> and levels off at the external
+model’s. The GIC-selected model reaches a test <span class="math inline">\(R^2\)</span> of 0.040, close to the external alone
+at 0.043, with a slightly lower MSPE (0.9843 against 0.9854).</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="sec-use">6. Using the fitted model<a class="anchor" aria-label="anchor" href="#sec-use"></a>
+</h2>
+<p><code>results/BRIERs_GIC.rds</code> is the fitted <code>BRIER</code>
+object after GIC selection. To keep it small, each <span class="math inline">\(\eta\)</span> keeps only its GIC-best <span class="math inline">\(\lambda\)</span>, which is all that
+<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> need:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"results/BRIERs_GIC.rds"</span><span class="op">)</span></span>
+<span><span class="va">beta</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span>                                 <span class="co"># the selected model</span></span>
+<span><span class="va">prs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, X <span class="op">=</span> <span class="va">X_std</span><span class="op">)</span>                    <span class="co"># X_std: standardized ALT dosages</span></span>
+<span><span class="va">prs_eta</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, X <span class="op">=</span> <span class="va">X_std</span>, eta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>   <span class="co"># other eta values</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="sec-sensitivity">7. Sensitivity analysis<a class="anchor" aria-label="anchor" href="#sec-sensitivity"></a>
+</h2>
+<p>Because of data privacy, we cannot share the individual-level
+genotypes of MGI or the LD matrix computed from them, so the data for
+this analysis are not part of the deposit. We show its results from the
+method paper, which fits the same model in two more ways:</p>
 <ul>
 <li>
 <strong>Training LD</strong>: in-sample LD from MGI AFR training
@@ -292,8 +376,10 @@ genotypes, and the two public panels, UKBB AFR and 1000 Genomes
 AFR.</li>
 <li>
 <strong>Tuning</strong>: on an MGI AFR validation set (BRIERs-val),
-or by GIC (BRIERs-GIC).</li>
+or by GIC (BRIERs-GIC), which needs no individual-level data.</li>
 </ul>
+<p>Test performance is summarized over 200 random subsamples (80%) of
+the MGI test set.</p>
 <p><strong>Test performance along <span class="math inline">\(\eta\)</span>.</strong> For each tuning method,
 test Pearson <span class="math inline">\(R^2\)</span> (left) and MSPE
 (right) as functions of <span class="math inline">\(\eta\)</span>, one
@@ -313,23 +399,64 @@ and by GIC, one box per training LD.</p>
 <div style="display: flex; justify-content: space-between;">
 <p><img src="../reference/figures/panAFR_boxplot.r2.png" alt="Test Pearson R-squared of the selected models" style="width:49%;"><img src="../reference/figures/panAFR_boxplot.mspe.png" alt="Test MSPE of the selected models" style="width:49%;"></p>
 </div>
-<p>How to read these results:</p>
+<p>Test <span class="math inline">\(R^2\)</span> and MSPE on the full
+MGI test set (target only: 0.0002 and 0.9993; external PGS004999 alone:
+0.043 and 0.9844):</p>
+<table class="table">
+<colgroup>
+<col width="20%">
+<col width="20%">
+<col width="20%">
+<col width="20%">
+<col width="20%">
+</colgroup>
+<thead><tr class="header">
+<th>Training LD</th>
+<th>BRIERs-val <span class="math inline">\(R^2\)</span>
+</th>
+<th>BRIERs-val MSPE</th>
+<th>BRIERs-GIC <span class="math inline">\(R^2\)</span>
+</th>
+<th>BRIERs-GIC MSPE</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>In-sample (MGI)</td>
+<td>0.022</td>
+<td>0.9825</td>
+<td>0.041</td>
+<td>0.9832</td>
+</tr>
+<tr class="even">
+<td>UKBB</td>
+<td>0.023</td>
+<td>0.9830</td>
+<td>0.040</td>
+<td>0.9833</td>
+</tr>
+<tr class="odd">
+<td>1000 Genomes</td>
+<td>0.029</td>
+<td>0.9816</td>
+<td>0.040</td>
+<td>0.9829</td>
+</tr>
+</tbody>
+</table>
+<p>What the sensitivity analysis shows:</p>
 <ul>
-<li>
-<strong>The AFR GWAS alone carries almost no signal.</strong> The
-target-only model reaches a test <span class="math inline">\(R^2\)</span> of 0.0002. With N = 6,556, the target
-data cannot support a polygenic score on their own.</li>
-<li>
-<strong>Integration recovers the external model’s accuracy without
-any individual-level data.</strong> <span class="math inline">\(R^2\)</span> rises steeply with <span class="math inline">\(\eta\)</span> and levels off near the external
-model’s. BRIERs-GIC reaches a test <span class="math inline">\(R^2\)</span> of 0.040 with the public UKBB LD
-(0.041 with in-sample MGI LD), close to the external alone at 0.043, and
-a slightly lower MSPE (0.9833 against 0.9844).</li>
 <li>
 <strong>Public LD panels work about as well as in-sample
 LD.</strong> Under GIC, the three LD matrices give nearly the same test
-<span class="math inline">\(R^2\)</span>, so a summary-statistic
-analysis does not need the target cohort’s own genotypes.</li>
+<span class="math inline">\(R^2\)</span> (0.040 to 0.041) and MSPE
+(0.9829 to 0.9833), so a summary-statistic analysis does not need the
+target cohort’s own genotypes.</li>
+<li>
+<strong>GIC selects the tuning parameters well without an
+independent validation set.</strong> With every LD matrix, GIC reaches a
+higher test <span class="math inline">\(R^2\)</span> than tuning on the
+MGI validation set (0.040 to 0.041 against 0.022 to 0.029), with an MSPE
+within 0.002 of it.</li>
 <li>
 <strong><span class="math inline">\(R^2\)</span> and MSPE can rank
 models differently.</strong> Validation-tuned models have the lowest
@@ -337,18 +464,6 @@ MSPE but a lower <span class="math inline">\(R^2\)</span>. The external
 model’s weights keep their own scale, since they are converted per SD
 but never rescaled, so the two metrics need not agree.</li>
 </ul>
-</div>
-<div class="section level2">
-<h2 id="sec-use">6. Using the fitted model<a class="anchor" aria-label="anchor" href="#sec-use"></a>
-</h2>
-<p><code>results/BRIERs_GIC.rds</code> is the fitted <code>BRIER</code>
-object after GIC selection. To keep it small, each <span class="math inline">\(\eta\)</span> keeps only its GIC-best <span class="math inline">\(\lambda\)</span>, which is all that
-<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> need:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"results/BRIERs_GIC.rds"</span><span class="op">)</span></span>
-<span><span class="va">beta</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span>                                 <span class="co"># the selected model</span></span>
-<span><span class="va">prs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, X <span class="op">=</span> <span class="va">X_std</span><span class="op">)</span>                    <span class="co"># X_std: standardized ALT dosages</span></span>
-<span><span class="va">prs_eta</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, X <span class="op">=</span> <span class="va">X_std</span>, eta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>   <span class="co"># other eta values</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
