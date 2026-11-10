@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -146,29 +146,33 @@ Constructing PRS from GWAS summary statistics [4] <br> Building GReX models from
 <div class="section level1">
 <h1 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h1>
-<p><code>BRIER</code> extends the flexibility and scalability of risk-prediction modeling, with a particular emphasis on high-dimensional genetic applications:</p>
+<p><code>BRIER</code> improves risk prediction in a target cohort by borrowing from external information, with an integration weight <span class="math inline">\(\eta\)</span> that sets how much to borrow. Predictors can be SNPs, gene expression, proteins or other features.</p>
+<p><strong>Integrating external information</strong></p>
 <ul>
-<li><strong>Flexibility to integrate external information according to different data access and privacy constraints</strong></li>
 <li>
-<strong>Support various distribution families for complex traits</strong><br>
-</li>
+<strong>Three modules for different data access and privacy constraints</strong>: <code>BRIERfull</code> pools raw external cohorts; <code>BRIERi</code> integrates pretrained external models with individual-level target data; <code>BRIERs</code> needs only target summary statistics and an LD matrix.</li>
 <li>
-<strong>A suite of hyperparameter tuning tools.</strong><br>
-</li>
-<li><strong>Ensemble weighting scheme integration of multiple external models.</strong></li>
+<strong>Multiple external models</strong>: one integration weight per source (<code>multi.method = "ind"</code>) or a weighted ensemble (<code>"stacking"</code>, <code>"stacking.c"</code>), with tools to screen, de-duplicate and reduce a large panel of external models (<code><a href="reference/screenExternals.html">screenExternals()</a></code>, <code><a href="reference/dedupExternals.html">dedupExternals()</a></code>, <code><a href="reference/reduceExternalsPCA.html">reduceExternalsPCA()</a></code>).</li>
 </ul>
-<p>Several features to improve practical concerns in genetic applications:</p>
+<p><strong>Modeling and tuning</strong></p>
 <ul>
 <li>
-<strong>Improved computational efficiency and parallel computing.</strong><br>
-</li>
+<strong>Distribution families</strong> for complex traits: Gaussian, binomial and Poisson.</li>
 <li>
-<strong>Support input for imputed genotype data.</strong><br>
-</li>
+<strong>Penalties</strong>: LASSO, MCP and SCAD, the elastic net, and unpenalized covariates.</li>
 <li>
-<strong>Precomputed ancestry-specific LD panels.</strong><br>
-</li>
-<li><strong>Various downstream analysis tools for interpretability</strong></li>
+<strong>Hyperparameter tuning of <span class="math inline">\((\eta, \lambda)\)</span></strong>: on a validation set (MSPE, <span class="math inline">\(R^2\)</span>, deviance, AUC), by cross-validation, by Bayesian optimization over <span class="math inline">\(\eta\)</span>, or without held-out data by information criteria (<span class="math inline">\(C_p\)</span> for <code>BRIERi</code> and GIC for <code>BRIERs</code> came close to validation-set tuning in simulations).</li>
+</ul>
+<p><strong>Practical genetic applications</strong></p>
+<ul>
+<li>
+<strong>Computational efficiency</strong>: a C++ coordinate-descent core with sequential strong-rule screening, and parallel fitting across <span class="math inline">\(\eta\)</span>.</li>
+<li>
+<strong>Genotype input</strong>: genotype dosages, including imputed data; allele alignment between target and external data (<code><a href="reference/preprocessI.html">preprocessI()</a></code>, <code><a href="reference/preprocessS.html">preprocessS()</a></code>); GWAS p-values to correlations (<code><a href="reference/p2cor.html">p2cor()</a></code>).</li>
+<li>
+<strong>Public LD panels</strong>: block LD from 1000 Genomes and UK Biobank for African, European and East Asian ancestry, on Zenodo and ready for <code>BRIERs</code>; <code><a href="reference/convertLDref.html">convertLDref()</a></code> also reads the PRS-CS panels directly, and <code><a href="reference/calLD.html">calLD()</a></code> with <code><a href="reference/getLDB.html">getLDB()</a></code> computes LD from your own reference genotypes.</li>
+<li>
+<strong>Downstream analysis</strong>: <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> and <code><a href="reference/evalMetric.html">evalMetric()</a></code>; test performance along <span class="math inline">\(\eta\)</span> (<code><a href="reference/plot.eta.html">plot.eta()</a></code>); bootstrap comparisons with target-only and external-only models (<code><a href="reference/plot.box.html">plot.box()</a></code>); and variable importance from bootstrap selection frequencies (<code><a href="reference/plot.importance.html">plot.importance()</a></code>).</li>
 </ul>
 </div>
 <div class="section level1">
