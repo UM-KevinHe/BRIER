@@ -1,12 +1,12 @@
 ---
-title: "Real Data Example: Cross-ancestry Polygenic Risk Score from Summary Statistics"
+title: "Real Data Example: Cross-ancestry Height Polygenic Risk Modeling from Summary Statistics"
 output:
   bookdown::html_document2:
     toc: true
     toc_depth: 6
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{Real Data Example: Cross-ancestry Polygenic Risk Score from Summary Statistics}
+  %\VignetteIndexEntry{Real Data Example: Cross-ancestry Height Polygenic Risk Modeling from Summary Statistics}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -28,9 +28,9 @@ knitr::opts_chunk$set(
 
 Polygenic risk scores (PRS) are far less accurate in African-ancestry (AFR) individuals than in European-ancestry individuals, mostly because AFR genome-wide association studies (GWAS) are small. This example builds a height PRS for AFR individuals with `BRIERs()`, using only public data:
 
-- **Target**: the Pan-UKB height GWAS of AFR participants (N = 6,556), as summary statistics.
-- **External model**: the PGS Catalog height score PGS004999, a pretrained PRS whose development samples include no UK Biobank AFR participants.
-- **LD**: the public UKBB AFR LD reference panel.
+- **Target**: the [Pan-UKB](https://pan.ukbb.broadinstitute.org) height GWAS of AFR participants (N = 6,556), as summary statistics.
+- **External model**: the [PGS Catalog](https://www.pgscatalog.org) height score [PGS004999](https://www.pgscatalog.org/score/PGS004999/) (Gunn et al., *HGG Advances* 2024), a pretrained PRS whose development samples include no UK Biobank AFR participants.
+- **LD**: the public UKBB AFR LD reference panel of [PRS-CSx](https://github.com/getian107/PRScsx).
 - **Tuning**: the generalized information criterion (GIC), which needs no individual-level data.
 
 The analysis uses 149,090 HapMap3 SNPs. Every input, script and result is in the Zenodo deposit (DOI: to be added), folder `panAFR_example/`:
@@ -40,6 +40,7 @@ The analysis uses 149,090 HapMap3 SNPs. Every input, script and result is in the
 | `data/` | fit-ready inputs: aligned GWAS, LD matrix, external model, SNP list |
 | `scripts/` | `01_download.sh`, `02_preprocess.R`, `03_fit.R`, `04_eval.R` |
 | `results/` | the fitted `BRIER` object and the selected model's coefficients |
+| `figures/` | eta lines, boxplots and a summary on the MGI test set (section 5) |
 
 The code below is abridged from those scripts. Run every script from the `panAFR_example/` folder. Steps 2 and 3 can be skipped, since `data/` already holds their output.
 
@@ -169,10 +170,62 @@ out_box = plot.box(
 )
 ```
 
-The figures below come from the method paper's analysis of this example. It fits the same model with three LD matrices and two tuning methods, and summarizes test performance over 200 random subsamples (80%) of the MGI test set:
+**Results.** Test performance of the model fitted above, with the UKBB AFR LD and tuned by GIC. The spread is over 100 bootstrap subsamples (80%) of the MGI test set.
+
+**Test performance along $\eta$.** Test Pearson $R^2$ (left) and MSPE (right) of the model at each $\eta$, each at its own GIC-best $\lambda$. The dashed light blue line is the external PGS004999 alone, and the point marks the GIC-selected $\eta = 286.8$.
+
+<div style="display: flex; justify-content: space-between;">
+  <img src="../man/figures/panAFR_GIC_UKBB_line.eta.r2.png"
+       alt="Test Pearson R-squared along eta, UKBB LD, tuned by GIC"
+       style="width:49%;" />
+  <img src="../man/figures/panAFR_GIC_UKBB_line.eta.mspe.png"
+       alt="Test MSPE along eta, UKBB LD, tuned by GIC"
+       style="width:49%;" />
+</div>
+
+**Test performance of the selected models.** The target-only model ($\eta = 0$), the external alone, and `BRIERs` tuned by GIC.
+
+<div style="display: flex; justify-content: space-between;">
+  <img src="../man/figures/panAFR_GIC_UKBB_boxplot.r2.png"
+       alt="Test Pearson R-squared of the selected models, UKBB LD, GIC"
+       style="width:49%;" />
+  <img src="../man/figures/panAFR_GIC_UKBB_boxplot.mspe.png"
+       alt="Test MSPE of the selected models, UKBB LD, GIC"
+       style="width:49%;" />
+</div>
+
+| Model | Test $R^2$ | Test MSPE | $R^2$, bootstrap mean (SD) |
+|---|---|---|---|
+| Target only ($\eta = 0$, GIC) | 0.000 | 1.000 | 0.000 (0.000) |
+| External PGS004999 alone | 0.043 | 0.985 | 0.043 (0.014) |
+| `BRIERs`, UKBB LD, GIC | 0.040 | 0.984 | 0.041 (0.014) |
+
+How to read these results:
+
+- **The AFR GWAS alone carries almost no signal.** At $\eta = 0$, GIC chooses the empty model (test $R^2$ = 0.000). With N = 6,556, the target data cannot support a polygenic score on their own.
+- **Integration recovers nearly all of the external model's accuracy without any individual-level data.** $R^2$ rises steeply with $\eta$ and levels off at the external model's. The GIC-selected model reaches a test $R^2$ of 0.040, close to the external alone at 0.043, with a slightly lower MSPE (0.9843 against 0.9854).
+
+
+# 6. Using the fitted model {#sec-use}
+
+`results/BRIERs_GIC.rds` is the fitted `BRIER` object after GIC selection. To keep it small, each $\eta$ keeps only its GIC-best $\lambda$, which is all that `coef()` and `predict()` need:
+
+```{r}
+model = readRDS("results/BRIERs_GIC.rds")
+beta = coef(model)                                 # the selected model
+prs = predict(model, X = X_std)                    # X_std: standardized ALT dosages
+prs_eta = predict(model, X = X_std, eta = matrix(c(0, 100), ncol = 1))   # other eta values
+```
+
+
+# 7. Sensitivity analysis {#sec-sensitivity}
+
+Because of data privacy, we cannot share the individual-level genotypes of MGI or the LD matrix computed from them, so the data for this analysis are not part of the deposit. We show its results from the method paper, which fits the same model in two more ways:
 
 - **Training LD**: in-sample LD from MGI AFR training genotypes, and the two public panels, UKBB AFR and 1000 Genomes AFR.
-- **Tuning**: on an MGI AFR validation set (BRIERs-val), or by GIC (BRIERs-GIC).
+- **Tuning**: on an MGI AFR validation set (BRIERs-val), or by GIC (BRIERs-GIC), which needs no individual-level data.
+
+Test performance is summarized over 200 random subsamples (80%) of the MGI test set.
 
 **Test performance along $\eta$.** For each tuning method, test Pearson $R^2$ (left) and MSPE (right) as functions of $\eta$, one line per training LD. The dotted blue line is the external PGS004999 alone, and the points mark each method's selected $\eta$.
 
@@ -207,21 +260,16 @@ The figures below come from the method paper's analysis of this example. It fits
        style="width:49%;" />
 </div>
 
-How to read these results:
+Test $R^2$ and MSPE on the full MGI test set (target only: 0.0002 and 0.9993; external PGS004999 alone: 0.043 and 0.9844):
 
-- **The AFR GWAS alone carries almost no signal.** The target-only model reaches a test $R^2$ of 0.0002. With N = 6,556, the target data cannot support a polygenic score on their own.
-- **Integration recovers the external model's accuracy without any individual-level data.** $R^2$ rises steeply with $\eta$ and levels off near the external model's. BRIERs-GIC reaches a test $R^2$ of 0.040 with the public UKBB LD (0.041 with in-sample MGI LD), close to the external alone at 0.043, and a slightly lower MSPE (0.9833 against 0.9844).
-- **Public LD panels work about as well as in-sample LD.** Under GIC, the three LD matrices give nearly the same test $R^2$, so a summary-statistic analysis does not need the target cohort's own genotypes.
+| Training LD | BRIERs-val $R^2$ | BRIERs-val MSPE | BRIERs-GIC $R^2$ | BRIERs-GIC MSPE |
+|---|---|---|---|---|
+| In-sample (MGI) | 0.022 | 0.9825 | 0.041 | 0.9832 |
+| UKBB | 0.023 | 0.9830 | 0.040 | 0.9833 |
+| 1000 Genomes | 0.029 | 0.9816 | 0.040 | 0.9829 |
+
+What the sensitivity analysis shows:
+
+- **Public LD panels work about as well as in-sample LD.** Under GIC, the three LD matrices give nearly the same test $R^2$ (0.040 to 0.041) and MSPE (0.9829 to 0.9833), so a summary-statistic analysis does not need the target cohort's own genotypes.
+- **GIC selects the tuning parameters well without an independent validation set.** With every LD matrix, GIC reaches a higher test $R^2$ than tuning on the MGI validation set (0.040 to 0.041 against 0.022 to 0.029), with an MSPE within 0.002 of it.
 - **$R^2$ and MSPE can rank models differently.** Validation-tuned models have the lowest MSPE but a lower $R^2$. The external model's weights keep their own scale, since they are converted per SD but never rescaled, so the two metrics need not agree.
-
-
-# 6. Using the fitted model {#sec-use}
-
-`results/BRIERs_GIC.rds` is the fitted `BRIER` object after GIC selection. To keep it small, each $\eta$ keeps only its GIC-best $\lambda$, which is all that `coef()` and `predict()` need:
-
-```{r}
-model = readRDS("results/BRIERs_GIC.rds")
-beta = coef(model)                                 # the selected model
-prs = predict(model, X = X_std)                    # X_std: standardized ALT dosages
-prs_eta = predict(model, X = X_std, eta = matrix(c(0, 100), ncol = 1))   # other eta values
-```

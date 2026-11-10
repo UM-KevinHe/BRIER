@@ -21,10 +21,10 @@ navbar:
     href: articles/BRIER.html
   - text: Real data examples
     menu:
-    - text: "Cross-ancestry PRS from summary statistics (Pan-UKB AFR height)"
-      href: articles/Example_panAFR.html
-    - text: "Gene expression with all three modules (TCGA lung cancer)"
+    - text: "Modeling tumour mutational burden using gene expression from TCGA"
       href: articles/Example_TCGA.html
+    - text: "Cross-ancestry height polygenic risk modeling from summary statistics"
+      href: articles/Example_panAFR.html
   - text: Appendix
     menu:
     - text: Integration of Multiple External Models
@@ -54,8 +54,8 @@ articles:
 - title: Real data examples
   navbar: Real data examples
   contents:
-  - Example_panAFR
   - Example_TCGA
+  - Example_panAFR
 - title: Appendix
   navbar: Appendix
   contents:

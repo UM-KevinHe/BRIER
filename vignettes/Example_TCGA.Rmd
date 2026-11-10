@@ -1,12 +1,12 @@
 ---
-title: "Real Data Example: Tumour Mutational Burden from Gene Expression with All Three Modules"
+title: "Real Data Example: Modeling Tumour Mutational Burden Using Gene Expression from TCGA"
 output:
   bookdown::html_document2:
     toc: true
     toc_depth: 6
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{Real Data Example: Tumour Mutational Burden from Gene Expression with All Three Modules}
+  %\VignetteIndexEntry{Real Data Example: Modeling Tumour Mutational Burden Using Gene Expression from TCGA}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -46,6 +46,7 @@ Every input, script and result is in the Zenodo deposit (DOI: to be added), fold
 | `data/` | fit-ready inputs: target train, validation and test sets, summary statistics, gene correlation matrix, external data and coefficients |
 | `scripts/` | `01_download.sh`, `02_preprocess.R`, `03_fit.R`, `04_eval.R` |
 | `results/` | the three fitted `BRIER` objects and their selected coefficients |
+| `figures/` | eta lines, boxplots and a summary on the test tumours |
 
 The code below is abridged from those scripts. Run every script from the `TCGA_example/` folder. Steps 2 and 3 can be skipped, since `data/` already holds their output.
 

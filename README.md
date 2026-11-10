@@ -116,10 +116,10 @@ We provide two analyses on public data to demonstrate the usage of BRIER:
 
 # Data and Resources
 
-The Zenodo deposit (DOI: to be added) holds:
+We deposited the data used in this tutorial on Zenodo (DOI: to be added):
 
-- public LD reference panels for African, European and East Asian ancestry, from 1000 Genomes and UK Biobank, on HapMap3 SNPs, ready for `BRIERs()`;
-- the data, scripts and fitted models of both real data examples, and of the simulated example used in the tutorial.
+- public LD reference panels for `BRIERs` modeling of polygenic risk: built from **1000 Genomes** and **UK Biobank** (the [PRS-CSx](https://github.com/getian107/PRScsx) reference panels) on HapMap3 SNPs, for African, European and East Asian ancestry;
+- the data, scripts and fitted models of the two real data examples and the one simulated data example used in the tutorial.
 
 
 # Getting Help
