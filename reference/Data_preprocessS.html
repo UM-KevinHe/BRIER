@@ -6,14 +6,14 @@
     }
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Roboto-0.4.10/font.css" rel="stylesheet"><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Example data for preprocessing summary-level genotype inputs — Data_preprocessS"><meta name="description" content="A small example dataset used to demonstrate summary-statistic preprocessing
-with preprocessS before fitting BRIERs. The
-example is based on a height PRS prediction analysis in the Michigan
-Genomics Initiative (MGI), where the target data are provided as GWAS
-summary statistics rather than individual-level genotypes."><meta property="og:description" content="A small example dataset used to demonstrate summary-statistic preprocessing
-with preprocessS before fitting BRIERs. The
-example is based on a height PRS prediction analysis in the Michigan
-Genomics Initiative (MGI), where the target data are provided as GWAS
-summary statistics rather than individual-level genotypes."></head><body>
+with preprocessS before fitting BRIERs: a height
+polygenic score setting where the target is an African-ancestry GWAS (Pan-UKB)
+and the external models are two published polygenic scores. Built entirely
+from public resources."><meta property="og:description" content="A small example dataset used to demonstrate summary-statistic preprocessing
+with preprocessS before fitting BRIERs: a height
+polygenic score setting where the target is an African-ancestry GWAS (Pan-UKB)
+and the external models are two published polygenic scores. Built entirely
+from public resources."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -21,7 +21,7 @@ summary statistics rather than individual-level genotypes."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,10 +58,10 @@ summary statistics rather than individual-level genotypes."></head><body>
 
     <div class="ref-description section level2">
     <p>A small example dataset used to demonstrate summary-statistic preprocessing
-with <code><a href="preprocessS.html">preprocessS</a></code> before fitting <code><a href="BRIERs.html">BRIERs</a></code>. The
-example is based on a height PRS prediction analysis in the Michigan
-Genomics Initiative (MGI), where the target data are provided as GWAS
-summary statistics rather than individual-level genotypes.</p>
+with <code><a href="preprocessS.html">preprocessS</a></code> before fitting <code><a href="BRIERs.html">BRIERs</a></code>: a height
+polygenic score setting where the target is an African-ancestry GWAS (Pan-UKB)
+and the external models are two published polygenic scores. Built entirely
+from public resources.</p>
     </div>
 
 
@@ -83,7 +83,7 @@ the target LD reference panel, with columns <code>SNP</code>, <code>CHR</code>,
 columns of <code>target.ld.mat</code>.</p></dd>
 
 <dt>target.ld.mat</dt>
-<dd><p>A 10,000 x 10,000 sparse LD matrix
+<dd><p>A 10,000 x 10,000 sparse LD matrix (UKBB AFR panel)
 (<code>Matrix::dgCMatrix</code>) for the SNPs described in
 <code>target.ld</code>. After running <code><a href="preprocessS.html">preprocessS</a></code>, this
 matrix should be subset using <code>processed$target.ld.keep</code> before
@@ -92,10 +92,11 @@ being passed to <code><a href="BRIERs.html">BRIERs</a></code>.</p></dd>
 <dt>external.coef1</dt>
 <dd><p>A data.frame with 10,000 rows containing SNP-level
 coefficients from the first external model, with required columns
-<code>CHR</code>, <code>BP</code>, <code>REF</code>, <code>ALT</code>, and <code>coef</code>.</p></dd>
+<code>CHR</code>, <code>BP</code>, <code>REF</code>, <code>ALT</code>, and <code>coef</code>;
+given for the trait-increasing allele, so some SNPs need an allele flip.</p></dd>
 
 <dt>external.coef2</dt>
-<dd><p>A data.frame with 163,140 rows containing SNP-level
+<dd><p>A data.frame with 158,558 rows containing SNP-level
 coefficients from the second external model, with required columns
 <code>CHR</code>, <code>BP</code>, <code>REF</code>, <code>ALT</code>, and <code>coef</code>. This
 model has substantially more SNPs than <code>external.coef1</code>,
@@ -106,11 +107,15 @@ alignment, and zero-padding.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
-    <p>Michigan Genomics Initiative (MGI), African-ancestry subcohort
-(<code>target.ss</code>, <code>target.ld</code>, <code>target.ld.mat</code>); MGI
-European-ancestry subcohort (<code>external.coef1</code>); published
-European-ancestry height GWAS summary statistics
-(<code>external.coef2</code>). Raw individual-level data are not redistributed.</p>
+    <p>Public resources only (built by <code>data-raw/make_preprocess_public.R</code>
+in the package source): <code>target.ss</code> is the Pan-UKB African-ancestry
+height GWAS (phenocode 50, inverse rank normalized, both sexes;
+<code>NMISS</code> is its sample size, 6,556) on the 10,000 SNPs it ranks most associated, among the
+PRS-CS UKBB HapMap3 SNPs (GRCh38); <code>target.ld.mat</code> is the PRS-CS UKBB
+African-ancestry LD panel on those SNPs; the external models are PGS Catalog
+height scores PGS004995 (<code>external.coef1</code>) and PGS004998
+(<code>external.coef2</code>). Earlier versions of this object (before 1.7.1) were
+derived from a controlled-access cohort and were removed.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

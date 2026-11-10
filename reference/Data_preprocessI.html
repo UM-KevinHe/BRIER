@@ -6,16 +6,12 @@
     }
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Roboto-0.4.10/font.css" rel="stylesheet"><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Example data for preprocessing individual-level genotype inputs — Data_preprocessI"><meta name="description" content="A small example dataset used to demonstrate genotype preprocessing with
-preprocessI before fitting BRIERi. The example
-is based on a height PRS prediction analysis in the Michigan Genomics
-Initiative (MGI), where the target cohort contains African-ancestry
-individuals and the external models are derived from European-ancestry
-resources."><meta property="og:description" content="A small example dataset used to demonstrate genotype preprocessing with
-preprocessI before fitting BRIERi. The example
-is based on a height PRS prediction analysis in the Michigan Genomics
-Initiative (MGI), where the target cohort contains African-ancestry
-individuals and the external models are derived from European-ancestry
-resources."></head><body>
+preprocessI before fitting BRIERi: a height
+polygenic score setting with an African-ancestry target and two published
+polygenic scores as external models. Built entirely from public resources."><meta property="og:description" content="A small example dataset used to demonstrate genotype preprocessing with
+preprocessI before fitting BRIERi: a height
+polygenic score setting with an African-ancestry target and two published
+polygenic scores as external models. Built entirely from public resources."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -23,7 +19,7 @@ resources."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,11 +56,9 @@ resources."></head><body>
 
     <div class="ref-description section level2">
     <p>A small example dataset used to demonstrate genotype preprocessing with
-<code><a href="preprocessI.html">preprocessI</a></code> before fitting <code><a href="BRIERi.html">BRIERi</a></code>. The example
-is based on a height PRS prediction analysis in the Michigan Genomics
-Initiative (MGI), where the target cohort contains African-ancestry
-individuals and the external models are derived from European-ancestry
-resources.</p>
+<code><a href="preprocessI.html">preprocessI</a></code> before fitting <code><a href="BRIERi.html">BRIERi</a></code>: a height
+polygenic score setting with an African-ancestry target and two published
+polygenic scores as external models. Built entirely from public resources.</p>
     </div>
 
 
@@ -83,10 +77,12 @@ where <code>A1</code> is the effect allele.</p></dd>
 coefficients from the first external model. The required columns are
 <code>CHR</code>, <code>BP</code>, <code>REF</code>, <code>ALT</code>, and <code>coef</code>, where
 <code>coef</code> is the external model coefficient for the corresponding
-SNP.</p></dd>
+SNP. Coefficients are given for the trait-increasing allele, so for
+some SNPs <code>REF</code> and <code>ALT</code> are reversed relative to the
+target and must be flipped during alignment.</p></dd>
 
 <dt>external.coef2</dt>
-<dd><p>A data.frame with 163,140 rows containing SNP-level
+<dd><p>A data.frame with 158,558 rows containing SNP-level
 coefficients from the second external model. The required columns are
 <code>CHR</code>, <code>BP</code>, <code>REF</code>, <code>ALT</code>, and <code>coef</code>. This
 external model has substantially more SNPs than <code>external.coef1</code>,
@@ -97,17 +93,20 @@ external models.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
-    <p>Michigan Genomics Initiative (MGI), African-ancestry subcohort
-(<code>target.info</code>); MGI European-ancestry subcohort
-(<code>external.coef1</code>); published European-ancestry height GWAS summary
-statistics (<code>external.coef2</code>). Raw individual-level data are not
-redistributed.</p>
+    <p>Public resources only (built by <code>data-raw/make_preprocess_public.R</code>
+in the package source): the SNPs are the 10,000 most associated with height in the Pan-UKB African-ancestry GWAS, among the PRS-CS
+UKBB HapMap3 SNPs with minor allele frequency at least 1\<!-- % in 1000 Genomes -->
+and UKBB African-ancestry samples (GRCh38 positions); the external models
+are PGS Catalog height scores PGS004995 (<code>external.coef1</code>) and
+PGS004998 (<code>external.coef2</code>), from the harmonized GRCh38 files.
+Earlier versions of this object (before 1.7.1) were derived from a
+controlled-access cohort and were removed.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The dataset contains SNP annotation information for the target genotype
-matrix and two external SNP-level coefficient files. Raw individual-level
-genotype and phenotype data are not included due to privacy constraints.</p>
+    <p>The dataset contains SNP annotation for a target genotype matrix (HapMap3
+SNPs; no genotypes are included) and two external SNP-level coefficient
+files.</p>
 <p>This object is intended for illustrating the preprocessing workflow:
 first merge multiple external coefficient files with
 <code><a href="mergeExternals.html">mergeExternals</a></code>, then align the merged external coefficients
