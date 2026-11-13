@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BRIER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -170,7 +170,7 @@ Constructing PRS from GWAS summary statistics [4] <br> Building GReX models from
 <li>
 <strong>Genotype input</strong>: genotype dosages, including imputed data; allele alignment between target and external data (<code><a href="reference/preprocessI.html">preprocessI()</a></code>, <code><a href="reference/preprocessS.html">preprocessS()</a></code>); GWAS p-values to correlations (<code><a href="reference/p2cor.html">p2cor()</a></code>).</li>
 <li>
-<strong>Public LD panels</strong>: block LD from 1000 Genomes and UK Biobank for African, European and East Asian ancestry, on Zenodo and ready for <code>BRIERs</code>; <code><a href="reference/convertLDref.html">convertLDref()</a></code> also reads the PRS-CS panels directly, and <code><a href="reference/calLD.html">calLD()</a></code> with <code><a href="reference/getLDB.html">getLDB()</a></code> computes LD from your own reference genotypes.</li>
+<strong>Public LD panels</strong>: block LD from 1000 Genomes and UK Biobank for African, European and East Asian ancestry, available on <a href="https://www.dropbox.com/scl/fo/ite9396qhib2dlg68jl65/AAkfLkq1qT-PGeyexfk2LVw?rlkey=m3nurmzmefi5sjjlfstsboqld&amp;dl=0" class="external-link">Dropbox</a> and ready for <code>BRIERs</code>; <code><a href="reference/convertLDref.html">convertLDref()</a></code> also reads the PRS-CS panels directly, and <code><a href="reference/calLD.html">calLD()</a></code> with <code><a href="reference/getLDB.html">getLDB()</a></code> computes LD from your own reference genotypes.</li>
 <li>
 <strong>Downstream analysis</strong>: <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> and <code><a href="reference/evalMetric.html">evalMetric()</a></code>; test performance along <span class="math inline">\(\eta\)</span> (<code><a href="reference/plot.eta.html">plot.eta()</a></code>); bootstrap comparisons with target-only and external-only models (<code><a href="reference/plot.box.html">plot.box()</a></code>); and variable importance from bootstrap selection frequencies (<code><a href="reference/plot.importance.html">plot.importance()</a></code>).</li>
 </ul>
@@ -209,10 +209,12 @@ Requires <strong>R ≥ 4.0.0</strong>.</p>
 <div class="section level1">
 <h1 id="data-and-resources">Data and Resources<a class="anchor" aria-label="anchor" href="#data-and-resources"></a>
 </h1>
-<p>We deposited the data used in this tutorial on Zenodo (DOI: to be added):</p>
+<p>The data used in this tutorial are available on <a href="https://www.dropbox.com/scl/fo/ite9396qhib2dlg68jl65/AAkfLkq1qT-PGeyexfk2LVw?rlkey=m3nurmzmefi5sjjlfstsboqld&amp;dl=0" class="external-link">Dropbox</a>:</p>
 <ul>
-<li>public LD reference panels for <code>BRIERs</code> modeling of polygenic risk: built from <strong>1000 Genomes</strong> and <strong>UK Biobank</strong> (the <a href="https://github.com/getian107/PRScsx" class="external-link">PRS-CSx</a> reference panels) on HapMap3 SNPs, for African, European and East Asian ancestry;</li>
-<li>the data, scripts and fitted models of the two real data examples and the one simulated data example used in the tutorial.</li>
+<li>
+<code>public_ld/</code>: public LD reference panels for <code>BRIERs</code> modeling of polygenic risk, built from <strong>1000 Genomes</strong> and <strong>UK Biobank</strong> (the <a href="https://github.com/getian107/PRScsx" class="external-link">PRS-CSx</a> reference panels) on HapMap3 SNPs, for African, European and East Asian ancestry;</li>
+<li>
+<code>TCGA_example/</code>, <code>panAFR_example/</code> and <code>simulated_example/</code>: the data, scripts and fitted models of the two real data examples and the one simulated data example used in the tutorial.</li>
 </ul>
 </div>
 <div class="section level1">
