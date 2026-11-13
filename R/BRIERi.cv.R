@@ -266,6 +266,7 @@ BRIERi.cv <- function(
       function(eta) cv_one_eta(eta, fit.args, fold, nfolds, n, trace, returnY),
       mc.cores = ncores
     )
+    .stop_on_worker_errors(res, eta.grid.list)
   }
 
   # -- Build eta.lambda summary table --

@@ -33,7 +33,7 @@ Polygenic risk scores (PRS) are far less accurate in African-ancestry (AFR) indi
 - **LD**: the public UKBB AFR LD reference panel of [PRS-CSx](https://github.com/getian107/PRScsx).
 - **Tuning**: the generalized information criterion (GIC), which needs no individual-level data.
 
-The analysis uses 149,090 HapMap3 SNPs. Every input, script and result is in the Zenodo deposit (DOI: to be added), folder `panAFR_example/`:
+The analysis uses 149,090 HapMap3 SNPs. Every input, script and result is on [Dropbox](https://www.dropbox.com/scl/fo/ite9396qhib2dlg68jl65/AAkfLkq1qT-PGeyexfk2LVw?rlkey=m3nurmzmefi5sjjlfstsboqld&dl=0), folder `panAFR_example/`:
 
 | Folder | Content |
 |---|---|

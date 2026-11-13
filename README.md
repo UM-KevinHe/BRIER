@@ -85,7 +85,7 @@ We publish an AI-optimized reference at **<https://um-kevinhe.github.io/BRIER/ll
 
 - **Computational efficiency**: a C++ coordinate-descent core with sequential strong-rule screening, and parallel fitting across $\eta$.
 - **Genotype input**: genotype dosages, including imputed data; allele alignment between target and external data (`preprocessI()`, `preprocessS()`); GWAS p-values to correlations (`p2cor()`).
-- **Public LD panels**: block LD from 1000 Genomes and UK Biobank for African, European and East Asian ancestry, on Zenodo and ready for `BRIERs`; `convertLDref()` also reads the PRS-CS panels directly, and `calLD()` with `getLDB()` computes LD from your own reference genotypes.
+- **Public LD panels**: block LD from 1000 Genomes and UK Biobank for African, European and East Asian ancestry, available on [Dropbox](https://www.dropbox.com/scl/fo/ite9396qhib2dlg68jl65/AAkfLkq1qT-PGeyexfk2LVw?rlkey=m3nurmzmefi5sjjlfstsboqld&dl=0) and ready for `BRIERs`; `convertLDref()` also reads the PRS-CS panels directly, and `calLD()` with `getLDB()` computes LD from your own reference genotypes.
 - **Downstream analysis**: `coef()`, `predict()` and `evalMetric()`; test performance along $\eta$ (`plot.eta()`); bootstrap comparisons with target-only and external-only models (`plot.box()`); and variable importance from bootstrap selection frequencies (`plot.importance()`).
 
 # Installation
@@ -121,10 +121,10 @@ We provide two analyses on public data to demonstrate the usage of BRIER:
 
 # Data and Resources
 
-We deposited the data used in this tutorial on Zenodo (DOI: to be added):
+The data used in this tutorial are available on [Dropbox](https://www.dropbox.com/scl/fo/ite9396qhib2dlg68jl65/AAkfLkq1qT-PGeyexfk2LVw?rlkey=m3nurmzmefi5sjjlfstsboqld&dl=0):
 
-- public LD reference panels for `BRIERs` modeling of polygenic risk: built from **1000 Genomes** and **UK Biobank** (the [PRS-CSx](https://github.com/getian107/PRScsx) reference panels) on HapMap3 SNPs, for African, European and East Asian ancestry;
-- the data, scripts and fitted models of the two real data examples and the one simulated data example used in the tutorial.
+- `public_ld/`: public LD reference panels for `BRIERs` modeling of polygenic risk, built from **1000 Genomes** and **UK Biobank** (the [PRS-CSx](https://github.com/getian107/PRScsx) reference panels) on HapMap3 SNPs, for African, European and East Asian ancestry;
+- `TCGA_example/`, `panAFR_example/` and `simulated_example/`: the data, scripts and fitted models of the two real data examples and the one simulated data example used in the tutorial.
 
 
 # Getting Help

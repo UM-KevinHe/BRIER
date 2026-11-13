@@ -192,6 +192,7 @@ BRIERfull <- function(
       ext_cohorts = ext_cohorts, trace = trace,
       mc.cores = ncores
     )
+    .stop_on_worker_errors(res, eta.grid.list)
   }
 
   # -- Output: same structure as BRIERi --

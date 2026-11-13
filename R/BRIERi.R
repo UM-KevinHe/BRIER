@@ -239,6 +239,7 @@ BRIERi = function(
       trace    = trace,
       mc.cores = ncores
     )
+    .stop_on_worker_errors(res, eta.grid.list)
   }
 
   out <- list(

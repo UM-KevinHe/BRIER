@@ -209,6 +209,7 @@ BRIERs <- function(
       fit.args = fit.args, trace = trace,
       mc.cores = ncores
     )
+    .stop_on_worker_errors(res, eta.grid.list)
   }
 
   # -- Output: same structure as BRIERi --
