@@ -171,8 +171,11 @@ validation <- function(i, object, X.val, y.val, criteria) {
     rsq
 
   } else if (criteria == "binomial.dev") {
+    # MEAN deviance per validation observation (v1.7.7), the scale of evalMetric(),
+    # calcDev() and BRIERi.cv(). Until v1.7.6 this was the total over the validation
+    # rows; the selected (eta, lambda) is the same on either scale.
     apply(mu.pred, 2, function(pred) {
-      -2 * sum(y.val * log(pred) + (1 - y.val) * log(1 - pred))
+      -2 * mean(y.val * log(pred) + (1 - y.val) * log(1 - pred))
     })
 
   } else if (criteria == "binomial.mcfrsq") {
@@ -192,9 +195,10 @@ validation <- function(i, object, X.val, y.val, criteria) {
     })
 
   } else if (criteria == "poisson.dev") {
+    # MEAN deviance per validation observation (v1.7.7), as binomial.dev above.
     apply(mu.pred, 2, function(mu) {
       term <- ifelse(y.val == 0, 0, y.val * log(y.val / mu))
-      2 * sum(term - (y.val - mu))
+      2 * mean(term - (y.val - mu))
     })
   }
 
