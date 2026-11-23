@@ -7,7 +7,9 @@
 #' @param X An n x p reference genotype matrix (individual-level).
 #' @param SNP.info A data.frame describing the columns of \code{X}, in
 #'   order. Required when \code{LDB} is supplied; must contain \code{CHR}
-#'   and \code{BP} columns for assigning SNPs to LD blocks.
+#'   and \code{BP} columns for assigning SNPs to LD blocks, numeric, grouped
+#'   by chromosome and sorted by position within each chromosome (any
+#'   chromosome order); otherwise \code{calLD} stops.
 #' @param LDB Optional m x 3 matrix of LD block boundaries (\code{chr},
 #'   \code{start}, \code{stop}), e.g. from Berisa et al. If NULL, the full
 #'   p x p LD matrix is computed.
@@ -89,9 +91,25 @@ calLD <- function(X, SNP.info = NULL, LDB = NULL, tau = 0) {
         call. = FALSE
       )
     }
+    ## LD blocks are contiguous columns, so each chromosome must be one run of
+    ## columns, sorted by position (any chromosome order is fine)
+    chr_n <- suppressWarnings(as.numeric(as.character(chr)))
+    pos_n <- suppressWarnings(as.numeric(as.character(pos)))
+    if (anyNA(chr_n) || anyNA(pos_n)) {
+      stop("SNP.info$CHR and SNP.info$BP must be numeric, with no NA (use 1, not \"chr1\").", call. = FALSE)
+    }
+    run_chr <- rle(chr_n)$values
+    same_chr <- chr_n[-1] == chr_n[-length(chr_n)]
+    if (anyDuplicated(run_chr) || any(diff(pos_n)[same_chr] < 0)) {
+      stop(
+        "SNP.info (and the columns of X) must be grouped by chromosome and sorted by position ",
+        "within each chromosome; LD blocks are contiguous columns.",
+        call. = FALSE
+      )
+    }
     ## Block boundaries are 0-based column indices, so they must be computed on
     ## the columns that remain after constant columns are dropped
-    blk <- LD_blocks(chr[nz], pos[nz], LDB)
+    blk <- LD_blocks(chr_n[nz], pos_n[nz], as.matrix(LDB))
     XtX <- LD_sigma(X = std.X, blk = blk, tau = tau)
     out <- list(
       XtX = XtX,

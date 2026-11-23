@@ -19,6 +19,16 @@ where each block starts, including the end marker at n.
 }
 \description{
 Calculate LD-block group boundaries for a list of SNPs given a pre-computed
-block definition (Berisa et al.). The inputs must be sorted by chromosome and
-position.
+block definition (Berisa et al.). The SNPs must be grouped by chromosome
+(each chromosome in one contiguous run, in any chromosome order) and sorted by
+position within each chromosome; \code{calLD} checks this. The rows of
+\code{LDB} may be in any order.
+}
+\details{
+A SNP belongs to the first block of its own chromosome whose stop is above
+its position; a SNP beyond the last block of its chromosome belongs to that
+last block, and all SNPs of a chromosome with no row in \code{LDB} form one
+block. Before 1.7.8 the first SNP's block was looked up without its
+chromosome, so a SNP set that did not start on the first chromosome of
+\code{LDB} was cut at that chromosome's boundaries on its first chromosome.
 }

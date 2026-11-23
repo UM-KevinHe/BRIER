@@ -18,8 +18,17 @@ using namespace arma;
 //' LD Block Structured SNP grouping
 //'
 //' Calculate LD-block group boundaries for a list of SNPs given a pre-computed
-//' block definition (Berisa et al.). The inputs must be sorted by chromosome and
-//' position.
+//' block definition (Berisa et al.). The SNPs must be grouped by chromosome
+//' (each chromosome in one contiguous run, in any chromosome order) and sorted by
+//' position within each chromosome; \code{calLD} checks this. The rows of
+//' \code{LDB} may be in any order.
+//'
+//' A SNP belongs to the first block of its own chromosome whose stop is above
+//' its position; a SNP beyond the last block of its chromosome belongs to that
+//' last block, and all SNPs of a chromosome with no row in \code{LDB} form one
+//' block. Before 1.7.8 the first SNP's block was looked up without its
+//' chromosome, so a SNP set that did not start on the first chromosome of
+//' \code{LDB} was cut at that chromosome's boundaries on its first chromosome.
 //'
 //' @param chr Numeric vector of chromosome IDs (length n).
 //' @param pos Numeric vector of base-pair positions (length n).
@@ -37,32 +46,41 @@ arma::ivec LD_blocks(const arma::vec& chr, const arma::vec& pos, const arma::mat
 
   // first block always starts at index 0
   boundaries.push_back(0);
-
-  // locate the block for the first SNP
-  int j = 0;
-  while (j < m && pos(0) >= LDB(j, 2)) {
-    ++j;
+  if (n == 0) {
+    arma::ivec out0(1);
+    out0(0) = 0;
+    return out0;
   }
-  double current_chr = chr(0);
 
-  // scan the rest of the SNPs
+  // the block stops of each chromosome, sorted
+  std::map<double, std::vector<double> > stops;
+  for (int r = 0; r < m; r++) {
+    stops[LDB(r, 0)].push_back(LDB(r, 2));
+  }
+  for (auto& kv : stops) {
+    std::sort(kv.second.begin(), kv.second.end());
+  }
+
+  // block of SNP i within its chromosome: the first stop above its position,
+  // the last block when it lies beyond every stop, -1 when the chromosome has
+  // no block at all
+  auto block_of = [&](int i) -> long {
+    auto it = stops.find(chr(i));
+    if (it == stops.end()) return -1;
+    const std::vector<double>& s = it->second;
+    long k = (long)(std::upper_bound(s.begin(), s.end(), pos(i)) - s.begin());
+    if (k >= (long)s.size()) k = (long)s.size() - 1;
+    return k;
+  };
+
+  long prev_blk = block_of(0);
   for (int i = 1; i < n; i++) {
-    // chromosome change -> new block
-    if (chr(i) != current_chr) {
+    long b = block_of(i);
+    // a new block at every chromosome change and every change of block
+    if (chr(i) != chr(i - 1) || b != prev_blk) {
       boundaries.push_back(i);
-      current_chr = chr[i];
-      // find new block for this SNP
-      while (j < m && !(LDB(j, 0) == current_chr && pos(i) < LDB(j, 2))) {
-        j++;
-      }
     }
-    // past the end of current block -> new block
-    if (j < m && pos(i) >= LDB(j, 2)) {
-      boundaries.push_back(i);
-      while (j < m && pos(i) >= LDB(j, 2)) {
-        j++;
-      }
-    }
+    prev_blk = b;
   }
 
   // append end marker

@@ -11,7 +11,9 @@ calLD(X, SNP.info = NULL, LDB = NULL, tau = 0)
 
 \item{SNP.info}{A data.frame describing the columns of \code{X}, in
 order. Required when \code{LDB} is supplied; must contain \code{CHR}
-and \code{BP} columns for assigning SNPs to LD blocks.}
+and \code{BP} columns for assigning SNPs to LD blocks, numeric, grouped
+by chromosome and sorted by position within each chromosome (any
+chromosome order); otherwise \code{calLD} stops.}
 
 \item{LDB}{Optional m x 3 matrix of LD block boundaries (\code{chr},
 \code{start}, \code{stop}), e.g. from Berisa et al. If NULL, the full
